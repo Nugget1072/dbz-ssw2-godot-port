@@ -48,7 +48,9 @@ GDExtension (geometry, mixer, SDK memory functions, FS lookup) → `bin/` · `to
 user's art. Legacy, unused: `scenes/battle/`, `scripts/{battle,ui,audio,pilot}/`.
 
 ## Run, test, deliver (Claude Code on the user's Windows PC, from part 35 on — details `docs/CLAUDE_CODE.md`)
-- `py` = `tools\Python3.14.8\python.exe`. One harness for routine work: `py tools\test\ssw2.py env | parse FILE |
+- `py` = `tools\Python3.14.8\python.exe` (the Windows `py` launcher runs a system Python instead). `git` is not on
+  PATH on the user's PC: use GitHub Desktop's `%LOCALAPPDATA%\GitHubDesktop\app-<ver>\resources\app\git\cmd\git.exe`
+  (`docs/CLAUDE_CODE.md` setup). One harness for routine work: `py tools\test\ssw2.py env | parse FILE |
   import | run NAME --battle --every N --from F --to T --inputs ... FLAGS | offcheck | baseline | pngdiff A B | export`
   (output in `local/`, git-ignored). Slash commands: `/brief`, `/offcheck`, `/deliver`, `/handoff`; helper agent
   brief: `.claude/agents/ssw2-helper.md`.

@@ -23,14 +23,16 @@ here; nothing from the old sandbox is required. Start every session with `CLAUDE
 |---|---|
 | Godot 4.7.2 | already in `tools/Godot_v4.7.2-stable_win64.exe/` (use the `_console.exe` from scripts: it prints output) |
 | Python 3.14 | already in `tools/Python3.14.8/` (stdlib is enough for `tools/test/ssw2.py`; the Linux tools in `tools/linux/` also want `pip install pillow numpy`) |
-| Export templates 4.7.2 | Godot editor → Editor → Manage Export Templates → Download (installs to `%APPDATA%\Godot\export_templates\4.7.2.stable\`, outside the folder: note it in `WORK_OUTSIDE_FOLDER.txt`) |
+| Export templates 4.7.2 | Godot editor → Editor → Manage Export Templates → Download (installs to `%APPDATA%\Godot\export_templates\4.7.2.stable\`, outside the folder: note it in `WORK_OUTSIDE_FOLDER.txt`). Already installed on the user's PC (checked part 36) |
 | The ROM | the user's European dump (code ADBP) in `finished/` (any `.nds` name; git-ignored) |
 | The 100% save | `GodotGame/new-game-project/data/save100.sav` (present; git-ignored) |
-| git | Claude Code on Windows needs Git for Windows; the folder is a git repository from part 35 on (`.gitignore` keeps ROM-derived data out — check `git status` before every commit) |
+| git | the folder is a git repository from part 35 on (`.gitignore` keeps ROM-derived data out — check `git status` before every commit). On the user's PC `git` is **not on PATH**: the only git is the one bundled with GitHub Desktop, `%LOCALAPPDATA%\GitHubDesktop\app-<version>\resources\app\git\cmd\git.exe` (part 36: `app-3.6.6`; the version folder changes when GitHub Desktop updates). Call it by full path, or install Git for Windows to get `git` on PATH |
 | Native library | prebuilt in `GodotGame/new-game-project/bin/` (Windows DLL + Linux .so). Rebuilding needs godot-cpp + CMake + llvm-mingw or MSVC (`docs/TOOLING.md`); only rebuild when a C++ change is needed and no game is running |
 
 ## Everyday commands (from the folder root)
-`py` below = `tools\Python3.14.8\python.exe` (or any Python 3.8+ on PATH).
+`py` below = `tools\Python3.14.8\python.exe` (or any Python 3.8+ on PATH). Note: typing `py` itself on Windows
+starts the Python launcher, which runs a system Python (3.12 / 3.13 on the user's PC), not the bundled one; that
+also works for `ssw2.py` (stdlib only), but write the full path in scripts.
 
 | Job | Command |
 |---|---|
@@ -42,6 +44,7 @@ here; nothing from the old sandbox is required. Start every session with `CLAUDE
 | Record this PC's baselines (once, on the delivered state, before changing anything) | `py tools\test\ssw2.py baseline` |
 | Compare two capture folders | `py tools\test\ssw2.py pngdiff DIR_A DIR_B` |
 | Export + copy README / BUGFIXES into `finished/` | `py tools\test\ssw2.py export` (close running game instances first) |
+| Capture run of the exported exe | `finished\DBZ_SSW2_Port.exe -- quit_at=2400 capture=<ABSOLUTE path>\local\exe_cap cap_every=200 cap_to=2400` (a relative `capture=` lands next to the exe, in `finished\`). It uses the player's `finished\DBZ_SSW2_Port.sav`: with the clock frozen for captures the game rewrites the +4 time stamp of all 16 save blocks (contents kept; DATA_NOTES "Saving"), so back the file up first or pass `save=` a copy |
 | Play / edit in the editor | `tools\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64.exe --path GodotGame\new-game-project` |
 
 Debug flags go after `--` on a game run: full list `docs/DEBUG_FLAGS.md`. Test procedures per feature:
@@ -57,6 +60,13 @@ Debug flags go after `--` on a game run: full list `docs/DEBUG_FLAGS.md`. Test p
   the cloud), then every later `offcheck` compares against the PC's own pictures. The CHT lines are checked against
   the PC's file, or the llvmpipe one when the PC has none.
 - Never re-record baselines to make a failing check pass: re-record only on a state that is known to be right.
+- `local/baselines/windows/` was recorded in part 36 on the user's RTX 4070 laptop (CHT lines identical to the
+  llvmpipe file). GPU vs llvmpipe, for reference: battle 0/21 PNGs identical (0.4-10 k px each, all in the 3D floor
+  of the top screen, almost all < 8 colour levels in the 5 frames checked; bottom screen identical), intro 215/221
+  identical (6 frames differ by 0.2-4.6 k px; the 2 checked by ≤ 5 levels). So never compare PNGs across machines; use the CHT lines for that.
+- Every game log ends with `ERROR: 1 RID allocations ... leaked at exit` / `resources still in use at exit` (and
+  sometimes `WARNING: ... ObjectDB instances were leaked`): Godot shutdown noise, harmless; `ssw2.py` only reports
+  `SCRIPT ERROR` / `Parse Error` / `game stopped`.
 
 ## Working style that worked (parts 1-35)
 - Rewrite the request into a brief first; make a task list; finish with verification (captures you looked at +

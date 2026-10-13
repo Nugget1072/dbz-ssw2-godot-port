@@ -1,6 +1,6 @@
 # HANDOFF — state of the port
 
-_Last updated: 2026-10-12 (session 1, part 35 — last Cowork part; from now on Claude Code on the user's PC:
+_Last updated: 2026-10-13 (part 36 — first Claude Code session on the user's PC; part 35 was the last Cowork part:
 `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
 Per-part history: `docs/HISTORY.md`.
 
@@ -95,3 +95,19 @@ baseline / export), `local/baselines/linux-llvmpipe/` (git-ignored), `.claude/` 
 /handoff, helper agent), `docs/CLAUDE_CODE.md` (setup, philosophy, commands). First Claude Code session: install the
 4.7.2 export templates if missing, run `py tools\test\ssw2.py baseline` on the delivered state (records the PC's own
 PNG baselines) and `offcheck` once to confirm; the folder is a git repository (initial commit = part 35).
+
+## Part 36: first Claude Code session (2026-10-13) — sanity check + test build, no game code changed
+- Environment OK: Godot 4.7.2, ROM in `finished\`, `save100.sav`, export templates already installed, import clean,
+  all 33 `scripts/qol/*.gd` + `game_ds.gd` parse OK. `git` is not on PATH (GitHub Desktop's bundled git is used,
+  `docs/CLAUDE_CODE.md` setup).
+- **Baselines recorded** on the RTX 4070 laptop: `local/baselines/windows/` (battle 21 PNGs + 1382 CHT lines, intro 221;
+  the CHT lines are identical to the cloud's `linux-llvmpipe` file). **offcheck: PASS** (21/21, 1382, 221/221).
+  GPU vs llvmpipe PNGs: battle 0/21 identical (3D floor, mostly < 8 levels), intro 215/221 (numbers in CLAUDE_CODE.md).
+- All-Star smoke (`allstar=1 asdbg cheats=one_hit_ko`, A every 10 frames 4200-5600): 5 KOs (1/26 → 5/26 at 00:18),
+  5 swaps, 11 "life bar … repainted" lines; every incoming enemy bar full (yellow slot 0 / lavender slot 1; slot 2 =
+  green not reached in this window); space sky shown.
+- **Export OK** (`ssw2.py export`, code 0); the new `finished\DBZ_SSW2_Port.exe` boots intro → title by frame 2400, its
+  intro captures pixel-identical to the editor baseline. Doc fixes: git path, `py` launcher, exe capture runs rewrite
+  the save's time stamps (CLAUDE_CODE.md, DEBUG_FLAGS.md `capture=`), harmless "leaked at exit" log lines.
+- Open question for the user: `docs/mp_mockup.png` (the user's MP mockup) is built from the game's portraits / plates,
+  i.e. ROM-derived pixels in git (rule 3); proposed: untrack + ignore it (still in the part-35 commit).

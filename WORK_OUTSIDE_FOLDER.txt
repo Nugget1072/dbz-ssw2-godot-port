@@ -83,3 +83,9 @@ Session 1, part 2 (cloud sandbox, Linux) — same rule as above, nothing written
   editor settings / shader cache (%APPDATA%\Godot\), and Claude Code's own data (%USERPROFILE%\.claude\).
 - Cloud sandbox only: test captures in /tmp/ssw2 (temporary); the baselines worth keeping were copied into
   local\baselines\ (git-ignored).
+
+2026-10-13 (part 36, first Claude Code session on your PC):
+- Nothing written outside SupersonicMain except what Godot and Claude Code always write (%APPDATA%\Godot\,
+  %APPDATA%\Godot\app_userdata\..., %USERPROFILE%\.claude\, temp files under %LOCALAPPDATA%\Temp\claude\).
+- Used, not changed: the Godot 4.7.2 export templates (already in %APPDATA%\Godot\export_templates\4.7.2.stable\)
+  and GitHub Desktop's bundled git (%LOCALAPPDATA%\GitHubDesktop\app-3.6.6\..., git is not on PATH).

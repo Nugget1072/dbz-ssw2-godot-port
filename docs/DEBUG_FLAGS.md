@@ -8,7 +8,7 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 ## Capture, scripted input, test setup
 | Flag | Meaning |
 |---|---|
-| `capture=DIR cap_every=N cap_to=M [cap_from=A]` | frame-exact screenshots `DIR/p<frame>.png` (relative DIR = next to the exe); RTC frozen, settings.cfg ignored |
+| `capture=DIR cap_every=N cap_to=M [cap_from=A]` | frame-exact screenshots `DIR/p<frame>.png` (relative DIR = next to the exe); RTC frozen, settings.cfg ignored; the save file is still loaded and written (an exe run uses the player's `DBZ_SSW2_Port.sav`, whose 16 block time stamps the game rewrites to the frozen clock: pass `save=` a copy) |
 | `cap_fast` | captures draw only the captured frames (not every emulated frame) |
 | `capinterp=A` | captures drawn as in-between frames at A (0..1) — smooth-motion checks |
 | `layersweep=F` | capture the lower screen one layer at a time at frame F |
