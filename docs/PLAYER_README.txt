@@ -60,9 +60,9 @@ SETTINGS (new in this port)
   ZOOM ............. battle camera distance: 100 = the game's own camera; 70 / 85 show more of the stage; 115 / 130
                      bring the camera closer while the fighters are near each other (both always stay on screen).
                      The far background layers keep their size.
-  HI-SCORES - RESET  puts the Z-Battle HI-SCORE RANKING back to the game's own list (100000 ... 60000) and saves.
-                     It asks "ARE YOU SURE?" first (YES / NO; NO is selected first, Z (B) = NO). Nothing else in
-                     your save changes (story, unlocks).
+  HI-SCORES - RESET  puts the Z-Battle HI-SCORE RANKING back to the game's own list (100000 ... 60000) and saves,
+                     and clears the ALL-STAR and ENDLESS records (see NEW GAMEMODES). It asks "ARE YOU SURE?" first
+                     (YES / NO; NO is selected first, Z (B) = NO). Nothing else in your save changes (story, unlocks).
   Page 3 ("SETTINGS 3"):
   AUTO SKIP ........ ON: Story Mode dialogue and narration scenes skip themselves (the game's own SKIP button is
                      pressed for you, so story progress and unlocks are exactly as when you watch them), and the
@@ -130,7 +130,8 @@ LAN MULTIPLAYER (MULTIPLAYER ON, VS BATTLE -> LAN; two PCs / Steam Decks on the 
     shows CONNECTION LOST after a few seconds and both players are back in the room / LAN page.
 
 CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; they act for player 1 only)
-  While any cheat is on, Z-Battle scores are not put in the HI-SCORE RANKING (settings and weird stuff don't count).
+  While any cheat is on, Z-Battle scores are not put in the HI-SCORE RANKING and ALL-STAR / ENDLESS runs are not
+  recorded (settings and weird stuff don't count).
  Page 5 FIGHTING
   INFINITE HEALTH .. player 1's team takes no damage (hits still land, the life bar stays full).
   HARD MODE ........ enemy attacks do double damage to you, and enemies have double health (they take half damage).
@@ -176,9 +177,14 @@ CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; th
                      Local / LAN multiplayer: it hunts both players: it picks one at random and switches to the
                      other every 10 seconds, except while it is right next to its target; once that player gets
                      away it picks a random target again. It knocks out either player it touches.
+  BOMB RAIN ........ little walking bombs fall from the sky during fights. A direct hit takes a quarter of a
+                     fighter's max HP and knocks them back; a bomb that lands nearby hurts less (guarding helps).
+                     Watch the shadows on the floor and move away - they hurt both teams. Uses the game's own
+                     explosion and sound. (It was a weird option before; now it is a cheat, so no scores or
+                     records while it is on. A BOMB RAIN that was on in an older settings.cfg stays on.)
 WEIRD STUFF (settings pages 10-12, after the cheats; all OFF unless you turn them on; for fun)
  Page 10: BEVEL EMBOSS, TOUCH FUZZY, GAME BOY, MIRROR MODE, SCREEN SHAKE, CRT TV. Page 11: BLOOD, AFTERIMAGES,
- 2ND FIDDLE, EPIC MODE, FLASHY KI, KO CONFETTI. Page 12: RAINBOW KI, BOMB RAIN.
+ 2ND FIDDLE, EPIC MODE, FLASHY KI, KO CONFETTI. Page 12: RAINBOW KI.
   BEVEL EMBOSS ..... every picture gets a Photoshop-style bevel & emboss (light top-left edges, shadowed
                      bottom-right), menus included (the port's own settings menu stays flat so it stays readable).
   TOUCH FUZZY ...... in every battle (Story, Z-Battle, Maximum, Practice, Free Battle...): a slow rainbow shimmer
@@ -205,10 +211,6 @@ WEIRD STUFF (settings pages 10-12, after the cheats; all OFF unless you turn the
   KO CONFETTI ...... a burst of colourful confetti when a fighter is knocked out; it flutters down and lies on the
                      floor for a moment.
   RAINBOW KI ....... ki blasts and beams cycle through the colours of the rainbow.
-  BOMB RAIN ........ little walking bombs fall from the sky during fights. A direct hit takes a quarter of a
-                     fighter's max HP and knocks them back; a bomb that lands nearby hurts less (guarding helps).
-                     Watch the shadows on the floor and move away - they hurt both teams. Uses the game's own
-                     explosion and sound.
   Cheats are saved with the settings; the PORT tile's description says how many are on.
   Settings (and your controls) are kept in settings.cfg next to the exe (delete it for the defaults).
   The window's icon is the game's own icon, read from your ROM when the game starts (the exe file itself has a
@@ -224,10 +226,10 @@ FUN FACTS
   - The wobbly "MODE SELECT" bar was a polygon-clipping detail: the DS clips a 4-sided shape as one piece, not two triangles.
   - Its last stray pixels only showed on real graphics cards: they rebuild long thin triangles from rounded corners.
 
-NEW GAMEMODES / ALL-STAR (settings page 4, BIG CHANGES -> NEW GAMEMODES; OFF by default)
+NEW GAMEMODES / ALL-STAR / ENDLESS (settings page 4, BIG CHANGES -> NEW GAMEMODES; OFF by default)
   With NEW GAMEMODES ON, Mode Select's FREE BATTLE tile becomes GAMEMODE (Free Battle is not reachable while it is
-  on; every other mode is unchanged). GAMEMODE opens a 4-slot menu: ALL-STAR (the other three slots are EMPTY for
-  now). ALL-STAR: pick your team (up to 3, a support counts as one) and confirm with GO. Then fight all 26 playable
+  on; every other mode is unchanged). GAMEMODE opens a 4-slot menu: ALL-STAR, ENDLESS (the last two slots are EMPTY
+  for now); Up / Down + A, or tap a slot and tap it again; B goes back. ALL-STAR: pick your team (up to 3, a support counts as one) and confirm with GO. Then fight all 26 playable
   characters one after another in story order: Goku, Krillin, Piccolo, Gohan (Kid), Vegeta, Ginyu, Frieza, SSJ Goku,
   Cooler, Mecha Frieza, Trunks (Teen), Trunks (Super), Metal Cooler, Dr. Gero, SSJ Vegeta, Android 18, Cell (2nd
   form), Cell, Broly, Gohan (Super 2), Gohan (Teen), Majin Vegeta, Majin Buu, Gotenks, Gotenks (Super 3), Kid Buu.
@@ -245,9 +247,20 @@ NEW GAMEMODES / ALL-STAR (settings page 4, BIG CHANGES -> NEW GAMEMODES; OFF by 
   ALL-STAR table (enemies beaten, hearts used, rank, best time, New Record! / Not Ranked / not recorded with cheats)
   with your clear TIME in the orange bar and the WINNER banner; bottom = the top 5 clear times (fastest first; equal
   times: fewer hearts used first) with each team's faces and hearts used, your new row lit. Records are kept in
-  allstar_records.cfg next to the exe (delete it to reset); nothing is recorded while cheats are on. Press A / START /
+  allstar_records.cfg next to the exe (settings page 2 HI-SCORES RESET clears them); nothing is recorded while cheats are on. Press A / START /
   B, tap Character Select or click it with the gamepad cursor to return to the All-Star team select. The Gamemode
   menu's header reads GAMEMODE SELECT.
+  ENDLESS: pick your team the same way, then fight random enemies with no end (any of the 26 fighters; never the
+  same one twice in a row, and the two enemies on the field are always different). Everything else is as in
+  ALL-STAR: the Time Chamber in deep space with its rotating music, three HEARTS, no enemy tag / Team Arts, the
+  clock (MM:SS) at the top; under it the number of enemies beaten so far. When your whole team is knocked out
+  (Game Over) the ENDLESS RECORDS screen opens: top = your team, the ENDLESS table (enemies beaten, hearts used,
+  rank, best run, New Record! / Not Ranked / not recorded with cheats), your TIME in the orange bar and the game's
+  own "Game Over" title; bottom = the top 5 runs (most enemies first; equal: faster, then fewer hearts) with the
+  enemies beaten (n KO), each team's faces and the time, your new row lit. A run that beat nobody is not ranked.
+  Records are kept in endless_records.cfg next to the exe; nothing is recorded while cheats are on. A / START / B
+  or Character Select returns to the team select (the pause menu's Return to Character Select does too, without a
+  record); B there -> the GAMEMODE menu.
 
 PERFORMANCE (settings page 4, BIG CHANGES; OFF by default)
   For slow PCs and the Steam Deck. ON: the next game frame is computed while the current picture is uploaded and

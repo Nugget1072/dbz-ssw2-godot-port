@@ -311,7 +311,7 @@ func _update_top() -> void:
 		top.show_text("VS BATTLE", "LOCAL: two players on this PC,\nwith the keyboard and / or\ngamepads.\nLAN: against a friend's PC on\nyour network (HOST / JOIN).")
 	else:
 		var n := settings.cheats_on()
-		top.show_text("SETTINGS", "Change the game's settings." + ("" if n == 0 else "\n\nCheats on: %d (menu pages 5-8)." % n))   # part 24 QA: pages moved, text ran out of the box
+		top.show_text("SETTINGS", "Change the game's settings." + ("" if n == 0 else "\n\nCheats on: %d (menu pages 5-9)." % n))   # part 24 QA: pages moved, text ran out of the box
 
 
 ## keys that work anywhere in the game: F3 frame-rate counter, F11 full screen (both saved)
@@ -932,9 +932,10 @@ var as_top: QoLTopInfo
 var _top_gm := false                 ## the Mode Select box shows the GAMEMODE text (tile 5)
 const AS_TEXTS := [
 	["ALL-STAR", "Fight all 26 characters, one after\nanother in story order, in one long\nbattle in the Time Chamber. Lose\nand you start over from the\ncharacter select!"],
+	["ENDLESS", "Random enemies, one after\nanother, with no end, in the\nTime Chamber. How many can you\nbeat? When your team is out,\nyour run goes on the records!"],   # part 38
 	["EMPTY", "Nothing here yet:\nmore game modes may come in a\nlater version of the port."],
 ]
-const AS_TILE_TEXT := ["GAMEMODE", "New game modes made for the\nport: ALL-STAR (the whole cast\nin a row) and more to come."]
+const AS_TILE_TEXT := ["GAMEMODE", "New game modes made for the\nport: ALL-STAR (the whole cast\nin a row), ENDLESS (random\nenemies with no end) and more\nto come."]
 
 
 func _as_setup(g) -> void:
@@ -967,7 +968,7 @@ func _as_after(core) -> void:
 	var st: int = core.r8(0x020DE554) if menu_on else 0
 	var show := menu_on and st >= 5 and st <= 9
 	if show:
-		var t: Array = AS_TEXTS[0 if allstar.menu_cursor == 0 else 1]
+		var t: Array = AS_TEXTS[mini(allstar.menu_cursor, 2)]
 		as_top.show_text(t[0], t[1])
 		var swap: bool = (core.IO.decode_u16(0x304) & 0x8000) != 0
 		var bu := _mp_bright(core, 0 if swap else 0x1000)

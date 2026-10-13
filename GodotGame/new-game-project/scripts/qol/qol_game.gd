@@ -5536,8 +5536,8 @@ func _asb_battle_setup() -> void:
 			_asb_heart_at.append([int(q[0]), int(q[1]) if q.size() > 1 else -1])
 	_asb_hud_reset()
 	_ass_reset()                                       # part 34 phase 3 (`# ---- ALLSTAR STAGE`)
-	_asb_log("battle start: enemies %d, %d (index %d of %d) P1 %s heap %s" % [a, b, allstar.index, allstar.total(),
-		str(allstar.p1_ids), str(_heap_free())])
+	_asb_log("battle start%s: enemies %d, %d (index %d of %d) P1 %s heap %s" % [" (ENDLESS)" if allstar.endless else "", a, b,
+		allstar.index, allstar.total(), str(allstar.p1_ids), str(_heap_free())])
 
 
 ## FUN_020140C8 post-super: no time limit
@@ -5637,7 +5637,7 @@ func _asb_swap(t1: int, cnt: int) -> void:
 
 ## load order[_asb_next] into side-1 record r (slot k), like a CHARACTER SHUFFLE swap of a bench record
 func _asb_load(r: int, k: int) -> void:
-	var n: int = allstar.order[_asb_next]
+	var n: int = allstar.at(_asb_next)                 # (part 38 ENDLESS: the next random fighter)
 	var old: int = _ld(r + 5, 1, false)
 	var h0 := _heap_free()
 	_shuf_loading = true                               # part 18: no VBlank texture / BG uploads while loading
@@ -5983,6 +5983,8 @@ func _asb_hud(st: int) -> void:
 		_asb_text(px, clock, 7)
 		_asb_put(px, ASB_TILE)
 	var n := "%d/%d" % [allstar.start_index + allstar.beaten, allstar.total()]
+	if allstar.endless:                                # part 38 ENDLESS: enemies beaten so far, no total
+		n = str(mini(allstar.beaten, 99999))
 	if n != _asb_shown[1]:
 		_asb_shown[1] = n
 		var px := _asb_plate()
@@ -6057,8 +6059,9 @@ func f_02075738(_x0: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int
 
 
 ## FUN_0205495C: scene 0xB's draw task (3 bars, header, cursor). Gamemode menu: 4 bars — slot 0 = the first bar object
-## (texture +0x2000, relabelled ALL-STAR), slots 1-3 = the second bar object (texture +0x4000, EMPTY) drawn three times
-## at its slots (FUN_0200AEBC draws at once: GX commands), with the first bar's palette; then header and cursor.
+## (texture +0x2000, relabelled ALL-STAR), slot 1 = the third bar object (texture +0x6000, relabelled ENDLESS; part 38),
+## slots 2-3 = the second bar object (texture +0x4000, EMPTY) drawn twice at its slots (FUN_0200AEBC draws at once: GX
+## commands), all with the first bar's palette; then header and cursor.
 func f_0205495c(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
 	if not _gm_menu():
 		return super.f_0205495c(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
@@ -6069,13 +6072,17 @@ func f_0205495c(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4:
 	f_0200b468(2)
 	var o0 := _ld(q + 0x14, 4, false)
 	var o1 := _ld(q + 0x18, 4, false)
+	var o2 := _ld(q + 0x1C, 4, false)                 # part 38: the third bar (texture +0x6000, relabelled ENDLESS)
 	var pal1 := _ld(o1 + 4, 1, false)
+	var pal2 := _ld(o2 + 4, 1, false)
 	_st(o1 + 4, 1, _ld(o0 + 4, 1, false))             # (a closed course's bar may use another palette)
+	_st(o2 + 4, 1, _ld(o0 + 4, 1, false))
 	for i in 4:
-		var o := o0 if i == 0 else o1
+		var o := o0 if i == 0 else (o2 if i == 1 else o1)
 		_gm_pos(o, GM_SLOTS[i].x, GM_SLOTS[i].y, 20)
 		f_0200aebc(o)
 	_st(o1 + 4, 1, pal1)
+	_st(o2 + 4, 1, pal2)
 	f_0200aebc(_ld(q + 0x20, 4, false))
 	var c: int = clampi(allstar.menu_cursor, 0, 3)
 	var cur := _ld(q + 0x24, 4, false)
@@ -6099,8 +6106,8 @@ func _gm_rect(i: int) -> Array:
 
 ## FUN_0204DD8C: scene 0xB's input (state 6; 0 = leave). Gamemode menu: own cursor 0..3 with the game's own rules and
 ## sounds (tap a slot = move there, tap it again / A = choose; Up / Down with the game's key repeat; SE 8 move, 2
-## decide, 4 back, 0xD buzzer). ALL-STAR -> exit 3 (scene 4, redirected to the All-Star select in f_02001014);
-## EMPTY -> buzzer, nothing else; B -> exit 4 (scene 6 = Mode Select).
+## decide, 4 back, 0xD buzzer). ALL-STAR / ENDLESS (part 38) -> exit 3 (scene 4, redirected to the All-Star select in
+## f_02001014; the cursor tells which session starts); EMPTY -> buzzer, nothing else; B -> exit 4 (scene 6 = Mode Select).
 func f_0204dd8c(_x0: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
 	if not _gm_menu():
 		return super.f_0204dd8c(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
@@ -6129,12 +6136,12 @@ func f_0204dd8c(_x0: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int
 
 
 func _gm_decide() -> int:
-	if allstar.menu_cursor != 0:                       # EMPTY: nothing here yet
+	if allstar.menu_cursor > 1:                        # EMPTY: nothing here yet
 		f_0200ff9c(0, 0xD)
 		return 1
 	f_0200ff9c(0, 2)
 	_st(GM_EXIT, 1, 3)
-	allstar._log("Gamemode menu: ALL-STAR")
+	allstar._log("Gamemode menu: %s" % ("ENDLESS" if allstar.menu_cursor == 1 else "ALL-STAR"))
 	return 0
 
 
@@ -6151,7 +6158,7 @@ func _gm_route(param_1: int) -> int:
 	var to := param_1 & 0xFF
 	if allstar.debug_battle and not allstar.active and (to == 0 or to == 0x13) and _ld(GAME_MODE, 4, false) == 5 \
 			and (mp == null or not mp.active) and (lan == null or lan.state == QoLLan.IDLE):
-		allstar.start()                                # allstar=1: this Free Battle is an All-Star battle
+		allstar.start(allstar.debug_endless)           # allstar=1: this Free Battle is an All-Star (endless=1: ENDLESS) battle
 	if not allstar.active and allstar.stage != QoLAllStar.MENU:
 		return param_1
 	if to == 2 and cur != 2:                           # the team select's teardown (FUN_02066230) asks for scene 2
@@ -6169,13 +6176,15 @@ func _gm_route(param_1: int) -> int:
 			if allstar.stage == QoLAllStar.MENU:
 				if to == 4:
 					f_0200297c(QoLAllStar.GAME_MODE)
-					allstar.start()
+					allstar.start(allstar.menu_cursor == 1)   # part 38: slot 1 = ENDLESS
 				else:
 					allstar.end()
 		4:
 			if to == 6:                                # B with nothing picked: the Gamemode menu again
+				var mc: int = 1 if allstar.endless else 0  # (part 38: the cursor back on the mode left)
 				allstar.end()
 				if cheats != null and cheats.new_gamemodes:
+					allstar.menu_cursor = mc
 					allstar.stage = QoLAllStar.MENU
 					_st(GM_STATE, 1, 0)
 					_st(GM_EXIT, 1, 0)
@@ -6205,9 +6214,14 @@ func _gm_route(param_1: int) -> int:
 ## sends it to the All-Star select instead): QoLController's records page (QoLAllStarRecords) opens over the select
 ## loading behind it. Only the request and P1's support (still in the party block here; the select clears it) are
 ## taken on the game thread; the page, the file and the input are the main thread's.
+## Part 38 ENDLESS: the battle ends only when player 1's team is out (Game Over, scene 0x14, rerouted the same way):
+## that asks for the ENDLESS RECORDS page (a pause exit, 3 / 0xD, does not: nothing recorded).
 func _asr_win(to: int) -> void:
-	if to != 10 or allstar.result != "win":
+	if allstar.endless:
+		if to != 0x14 or allstar.result != "lose":
+			return
+	elif to != 10 or allstar.result != "win":
 		return
 	allstar.p1_support = _ld(PARTY_SUPPORT, 4, false)
 	allstar.records_req = true
-	allstar._log("win -> records page (support %d)" % allstar.p1_support)
+	allstar._log("%s -> records page (support %d)" % [allstar.result, allstar.p1_support])

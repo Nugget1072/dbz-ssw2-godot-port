@@ -79,6 +79,7 @@ const CHEAT_PAGES := {
 	]],
 	"cheats5": ["CHALLENGES", [   # part 36
 		["green_demon", "GREEN DEMON", "A green 1-UP slowly chases\nyour fighter. If it touches\nyou, that fighter is KO'd at\nonce! Keep moving to escape.\n(Multiplayer: it hunts both.)"],
+		["bomb_rain", "BOMB RAIN", "Little bombs rain down in\nbattle! A direct hit takes 1/4\nof max HP, a blast nearby less.\nWatch their shadows and dodge.\n(They hurt both teams.)"],   # part 38: was WEIRD STUFF 3
 	]],
 }
 ## WEIRD SETTINGS (part 21, page 7, after the cheats): [QoLSettings field, label, description]
@@ -102,7 +103,6 @@ const WEIRD_PAGES := {
 	]],
 	"weird3": ["WEIRD STUFF 3", [
 		["rainbow_ki", "RAINBOW KI", "Ki blasts and beams cycle\nthrough all the colours of the\nrainbow. Only the looks change."],
-		["bomb_rain", "BOMB RAIN", "Little bombs rain down in\nbattle! A direct hit takes 1/4\nof max HP, a blast nearby less.\nWatch their shadows and dodge.\n(They hurt both teams.)"],
 	]],
 }
 ## BOSS CHARACTERS' LIST button: the bosses' names on the upper screen (three columns, "\t" between them)
@@ -200,7 +200,7 @@ func _build() -> void:
 			for i in ZOOM_LABELS.size():
 				zm.append(["zoom:%d" % i, ZOOM_LABELS[i]])
 			_add_row("ZOOM", zm, "Battle camera distance in %:\n100.......the game's own camera\n70 85......see more of the stage\n115 130....closer, while the\nfighters are near each other.")
-			_add_row("HI-SCORES", [["lbask", "RESET"]], "Z-Battle HI-SCORE RANKING back\nto the game's own list (asks\nfirst). Scores made while any\ncheat is on are never ranked;\nweird stuff is fine.")
+			_add_row("HI-SCORES", [["lbask", "RESET"]], "Z-Battle HI-SCORE RANKING back\nto the game's own list, ALL-STAR\nand ENDLESS records cleared\n(asks first). No scores with\ncheats on; weird stuff is fine.")
 			_layout_main()
 			if page == "lbconfirm":
 				_rows.append({"label": "", "desc": "", "buttons": [
@@ -214,7 +214,7 @@ func _build() -> void:
 		"mpset":
 			_add_row("MULTIPLAYER", [["mpon:1", "ON"], ["mpon:0", "OFF"]], "ON: VS BATTLE on the Mode Select\nscreen opens LOCAL (two players\non this PC, keyboard / gamepads)\nand LAN (a friend's PC on your\nnetwork). OFF: as in the game.")
 			_add_row("PERFORMANCE", [["perf:1", "ON"], ["perf:0", "OFF"]], "ON: for slow PCs / Steam Deck.\nThe picture is prepared while\nthe game runs on, no in-between\nframes. The game plays exactly\nthe same. OFF: as before.")
-			_add_row("NEW GAMEMODES", [["newmodes:1", "ON"], ["newmodes:0", "OFF"]], "ON: the FREE BATTLE tile on the\nMode Select screen becomes\nGAMEMODE: new modes such as\nALL-STAR. OFF: FREE BATTLE as\nin the game.")
+			_add_row("NEW GAMEMODES", [["newmodes:1", "ON"], ["newmodes:0", "OFF"]], "ON: the FREE BATTLE tile on the\nMode Select screen becomes\nGAMEMODE: the new modes\nALL-STAR and ENDLESS. OFF:\nFREE BATTLE as in the game.")
 			_layout_main()
 		"controls1", "controls2":
 			var bl: Array = QoLControls.BUTTONS
@@ -417,12 +417,12 @@ func focus_title() -> String:
 func focus_desc() -> String:
 	match page:
 		"jukebox": return "Listen to the game's music:\nPREVIOUS / NEXT...change track\nPLAY/PAUSE........play or pause\nBACK..............the settings"
-		"lbconfirm": return "The HI-SCORE RANKING goes back\nto the game's own list. Your\nscores in it are lost; nothing\nelse changes (unlocks, story).\nYES......reset    NO......keep"
+		"lbconfirm": return "HI-SCORE RANKING back to the\ngame's list, ALL-STAR / ENDLESS\nrecords cleared. Nothing else\nchanges (unlocks, story).\nYES......reset    NO......keep"
 		"confirm": return "Keep the new window size?\nKEEP......keep it\nUNDO......go back\nWithout an answer the old size\ncomes back by itself."
 	if cur_id() == "bosslist":
 		return BOSS_LIST
 	if cur_id() == "lbask" and _notice_lb != "":
-		return _notice_lb + "\nThe Z-Battle HI-SCORE RANKING\nis back to the game's own list."
+		return _notice_lb + "\nThe Z-Battle HI-SCORE RANKING\nis back to the game's own list;\nALL-STAR / ENDLESS records\nare cleared."
 	if cur_id() == "exit":
 		return "Leave the settings and go back\nto the Mode Select menu.\n(B does the same.)"
 	if cur_id() == "cback":
@@ -550,6 +550,7 @@ func _press(id: String) -> void:
 			if core != null and core.has_method("reset_leaderboards"):
 				qol.on_game_thread(core.reset_leaderboards)
 				_notice_lb = "HI-SCORES RESET"
+			QoLAllStarRecords.reset_files()            # part 38: the ALL-STAR / ENDLESS records too
 			page = "main2"
 			_build()
 			_focus_value(_rows.size() - 1)
@@ -932,7 +933,7 @@ func _draw_lbconfirm() -> void:
 	draw_rect(Rect2(0, y, 256, 88), Color.BLACK)
 	draw_rect(Rect2(0, y + 88, 256, 1), TRIM)
 	font.draw_centered(self, Rect2(0, y + 9, 256, 13), "ARE YOU SURE?", HEX_TEXT, QoLFont.BIG)
-	font.draw_centered(self, Rect2(0, y + 31, 256, 10), "RESET THE HI-SCORE RANKING", HEX_EDGE, QoLFont.BOLD)
+	font.draw_centered(self, Rect2(0, y + 31, 256, 10), "RESET ALL HI-SCORES AND RECORDS", HEX_EDGE, QoLFont.BOLD)
 	var bs: Array = _rows[_rows.size() - 1]["buttons"]
 	for i in bs.size():
 		_hex(bs[i]["rect"], bs[i]["text"], false, col == i, _flash.has(bs[i]["id"]))

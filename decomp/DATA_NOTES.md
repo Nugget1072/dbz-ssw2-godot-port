@@ -3152,3 +3152,25 @@ KO swap, pause, WIN; zoom 0 + mirror; zoom 4), `sky_built.png` = the built BG3 p
   0x10·i (offset, size, key, refs; keys 0x2000000x / 0x364000xx / 0x5000000x / 0x4000004a / 0x5800000a), the port's
   block 11 at 0x02100A00 {0x5F000, 0x1000, 0x7B0B0B26, 1} (BOMB RAIN / GREEN DEMON, parts 26 / 36), tail sentinel
   0x02100BA8 {0x60000, 0}. | H for this battle; M that the addresses are the same in every battle |
+
+## Session 2, part 38 findings (Endless) — V = port verified, C = code read
+- **Free Battle loss -> scene 0x14** (V gover, btnrun Goku vs Goku, P1 record HP u16 0x02107812 poked to 0 at f4700):
+  battle state 0x11 then 0x12 / 0x13, scene byte 0x020DD4C4 = 0x14 (Game Over / Continue, FUN_0209DED8) from ≈f5200;
+  the same poke on P2's record (u16 0x021080FA = 0x02107812 + 0x8E8) gives the WINNER results scene 10. The two
+  record addresses are this battle's (HP = record + 0x24A: P1 record 0 at 0x021075C8, P2 record 0 at + 0x8E8, the
+  team stride). | H (V) for the btnrun battle; M that the records sit there in other battles |
+- **Game Over screen art** `romdata/game/gameover_dat.arc` (V, GARC: u32 count +8 = 27, data base +12, entries
+  {offset, size} at +0x10 + 8·i): 0 = 192 bytes chars + 1 palette + 2 map (2048), then 8 groups (chars, palette 32
+  bytes, map) at entries 3+3g / 4+3g / 5+3g; groups 0-4 = "Continue? / Yes / No" plates (32x32 maps, one per language),
+  groups 5-7 = the Game Over emblem (32x24 maps): 5 = "Game Over" (English), 6 = "PARTIE TERMINEE", 7 = another
+  language. Emblem 5: round logo + black plate; title white letters (palette brightness > 0.5) at x 102-229, y 119-144
+  (128 x 26), underline at y 147, small print y 150-166, plate borders as white columns / the top edge above y 118. | H |
+- **Results panel banner** (V e_res_bg, all five languages): the WINNER band = rows between two full-width white lines
+  (y ≈ 134 and ≈ 180 of e_res_bg); its word is per language (WINNER / VAINQUEUR / SIEGER / VINCITORE / GANADOR, two
+  font widths), so no "Game Over" can be built from it. | H |
+- **Bar textures of scene 0xB in the Gamemode menu** (V esm): rewriting texture +0x6000 (the Mania bar) while the
+  Gamemode menu runs and drawing the third bar object (q+0x1C) at slot 1 with bar 0's palette byte shows the relabelled
+  bar with the game's cursor frame; MAXIMUM's own course select reloads its textures on entry (unchanged). | H |
+- **ENDLESS swaps** (V es1, 47 swaps of random pairs incl. Kid Buu / Broly / Gotenks SSJ3 pairs): heap free 0.98-1.23 MB,
+  file cache 24 entries, open archives 7-9, no trend; mirror palette applied when the incoming enemy is P1's
+  character. | H |

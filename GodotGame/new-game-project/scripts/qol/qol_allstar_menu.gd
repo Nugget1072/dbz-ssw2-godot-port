@@ -9,8 +9,9 @@ extends RefCounted
 ##   one) is the port's own, drawn in the same style.
 ## - Scene 0xB (MAXIMUM's COURSE SELECT) as the Gamemode menu: the bar textures (256x64 4-bit, +0x2000 Novice, +0x4000
 ##   Hard, +0x6000 Mania; palette 1): +0x2000 = a copy of the Hard bar labelled ALL-STAR, +0x4000 = the Hard bar
-##   labelled EMPTY (QoLGame f_0205495c draws it for slots 1-3). Letters: the bars' heavy 15-row font; M and R are
-##   copied from the Mania bar's "Mania Rank", the others are the port's own in the same style (stems 4 px).
+##   labelled EMPTY (QoLGame f_0205495c draws it for slots 2-3), +0x6000 = the Hard bar labelled ENDLESS (part 38;
+##   slot 1). Letters: the bars' heavy 15-row font; M and R are copied from the Mania bar's "Mania Rank" (read before
+##   that texture is relabelled), the others are the port's own in the same style (stems 4 px).
 ## Runs on the main thread after each game frame (QoLController `# ---- ALLSTAR`), like QoLButton: the texture is
 ## checked whenever its VRAM bank was written or remapped, and rewritten when it differs.
 
@@ -52,6 +53,12 @@ const BAR_GLYPHS := {
 		"55555553.", "5555.....", "5555.....", "5555.....", "5555.....", "5555.....", "5555....."],
 	"Y": ["5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "555555555", "c5555555c", ".3555553.",
 		"..55555..", "..55555..", "..55555..", "..55555..", "..55555..", "..55555..", "..55555.."],
+	## part 38 (ENDLESS)
+	"N": ["5555...5555", "55553..5555", "555555.5555", "555555.5555", "555555c5555", "5555c555555", "5555.555555",
+		"5555.555555", "5555.555555", "5555.c55555", "5555..55555", "5555..55555", "5555..35555", "5555...5555",
+		"5555...5555"],
+	"D": ["55555553.", "55555555c", "555555555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555",
+		"5555.5555", "5555.5555", "5555.5555", "5555.5555", "555555555", "55555555c", "55555553."],
 	## fallbacks when the Mania bar cannot be read
 	"M": ["5555....5555", "55553..35555", "55555..55555", "555553355555", "555555555555", "555555555555",
 		"555555555555", "555555555555", "555535535555", "5555.55.5555", "5555....5555", "5555....5555",
@@ -67,6 +74,7 @@ var _tile_out := PackedByteArray()   ## label rows 32..41 of tile 5 as they shou
 var _bar_seen: Array = [-1, -1, -1]
 var _bar_all := PackedByteArray()    ## the two bar textures as they should be (0x2000 bytes each)
 var _bar_empty := PackedByteArray()
+var _bar_endless := PackedByteArray()  ## part 38: the Mania bar's texture (+0x6000) = the Hard bar labelled ENDLESS
 ## part 34 phase 4: the header plate (texture +0x1000, 256x32 4-bit, palette 0 = black 3 .. white 0xF greys): its
 ## "COURSE SELECT" re-lettered (QoLAllStarRecords.retitle, the same heavy italic capitals as the records page title)
 const HDR := 0x1000
@@ -179,9 +187,10 @@ func bars_frame(core, on: bool) -> void:
 		if not _bar_ok(hard):
 			return                       # not loaded (yet)
 		var font := BAR_GLYPHS.duplicate()
-		_mania_letters(bank.slice(o + BAR_MANIA, o + BAR_MANIA + 0x2000), font)
+		_mania_letters(bank.slice(o + BAR_MANIA, o + BAR_MANIA + 0x2000), font)   # (before the Mania bar is relabelled)
 		_bar_all = _bar_label(hard, "ALL-STAR", font)
 		_bar_empty = _bar_label(hard, "EMPTY", font)
+		_bar_endless = _bar_label(hard, "ENDLESS", font)
 	if _hdr.is_empty():                  # part 34 phase 4: header relabel (built once from the game's own plate)
 		var h := bank.slice(o + HDR, o + HDR + 0x1000)
 		if _hdr_ok(h):
@@ -193,9 +202,9 @@ func bars_frame(core, on: bool) -> void:
 						print("AS Gamemode menu header: %s" % txt)
 					break
 	var wrote := false
-	for k in 2:
-		var at: int = o + (BAR_ALL if k == 0 else BAR_EMPTY)
-		var want: PackedByteArray = _bar_all if k == 0 else _bar_empty
+	for k in 3:
+		var at: int = o + [BAR_ALL, BAR_EMPTY, BAR_MANIA][k]
+		var want: PackedByteArray = [_bar_all, _bar_empty, _bar_endless][k]
 		if bank.slice(at, at + 0x2000) != want:
 			DSHardware.blit(bank, at, want, 0, 0x2000)
 			wrote = true
@@ -206,7 +215,7 @@ func bars_frame(core, on: bool) -> void:
 		hw.bank_gen[b] += 1
 		hw.dirty_vram = true
 		if dbg:
-			print("AS Gamemode menu bars labelled (texture bank %d + %x / %x)" % [b, o + BAR_ALL, o + BAR_EMPTY])
+			print("AS Gamemode menu bars labelled (texture bank %d + %x / %x / %x)" % [b, o + BAR_ALL, o + BAR_EMPTY, o + BAR_MANIA])
 	_bar_seen = [b, hw.bank_gen[b], hw.map_gen]
 
 

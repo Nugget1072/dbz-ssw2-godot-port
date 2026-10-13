@@ -12,7 +12,7 @@ var fps_counter: bool = false
 ## cheats (settings page 2), all off unless the player turns them on; saved like the other settings
 const CHEATS := ["no_cooldown", "infinite_health", "one_hit_ko", "infinite_ki", "ki_homing", "same_characters",
 	"boss_characters", "random_characters", "infinite_assists", "assist_spam", "random_music", "character_shuffle",
-	"chaos_shuffle", "stage_shuffle", "triple_ki", "attack_spam", "hard_mode", "random_stage", "green_demon"]
+	"chaos_shuffle", "stage_shuffle", "triple_ki", "attack_spam", "hard_mode", "random_stage", "green_demon", "bomb_rain"]
 var music_seed := 0                       ## RANDOM MUSIC: the current shuffle (a new one each time it is switched on)
 var cheats := {}
 var music: bool = true
@@ -36,7 +36,11 @@ var screen_shake: bool = false            ## part 23: the battle picture shakes 
 var ko_confetti: bool = false             ## part 23: confetti burst when a fighter is knocked out
 var damage_numbers: bool = false          ## part 24: each hit's damage pops up as a floating number
 var rainbow_ki: bool = false              ## part 24: ki blasts and beams cycle through rainbow colours
-var bomb_rain: bool = false               ## part 25: walking bombs rain on the battle (they hurt)
+## part 25: walking bombs rain on the battle (they hurt). Part 38: a cheat (page 9 CHALLENGES, [cheats] bomb_rain;
+## counts in cheats_on(), so no leaderboard entry while it is on); this property just reads / writes cheats["bomb_rain"]
+var bomb_rain: bool:
+	get: return cheat("bomb_rain")
+	set(v): cheats["bomb_rain"] = v
 var input_display: bool = false           ## part 25: player 1's buttons shown on the battle screen
 var crt_tv: bool = false                  ## part 25: old-TV picture (scanlines, glow, dark corners)
 var performance_mode: bool = false        ## part 32 (BIG CHANGES page): cheaper paths for slow PCs / Steam Deck
@@ -46,7 +50,7 @@ var lan_name := ""                        ## part 30 LAN menus: the last DISPLAY
 var lan_ip := ""
 var auto_skip: bool = false               ## part 24 (settings page 3): skip Story cutscenes / Z-Battle blue screens
 const WEIRD := ["bevel_emboss", "touch_fuzzy", "epic_mode", "second_fiddle", "blood", "afterimages", "game_boy", "mirror_mode",
-	"flashy_ki", "screen_shake", "ko_confetti", "rainbow_ki", "bomb_rain", "crt_tv"]
+	"flashy_ki", "screen_shake", "ko_confetti", "rainbow_ki", "crt_tv"]
 ## part 26: DAMAGE NUMBERS and INPUT DISPLAY are settings (page 3) now; still saved in [weird] (old files keep them)
 var controls := QoLControls.new()         ## key / gamepad mapping of the DS buttons (settings page 2 → CONTROLS)
 var mp_input := QoLMpInput.new(controls)  ## part 27 LOCAL MULTIPLAYER: devices + mappings per player ([mp] keys)
@@ -95,13 +99,15 @@ func load_file() -> void:
 	touch_fuzzy = bool(_val(c, "weird", "touch_fuzzy", touch_fuzzy))
 	epic_mode = bool(_val(c, "weird", "epic_mode", epic_mode))
 	second_fiddle = bool(_val(c, "weird", "second_fiddle", second_fiddle))
-	for k in ["blood", "afterimages", "game_boy", "mirror_mode", "flashy_ki", "screen_shake", "ko_confetti", "damage_numbers", "rainbow_ki", "bomb_rain", "input_display", "crt_tv"]:
+	for k in ["blood", "afterimages", "game_boy", "mirror_mode", "flashy_ki", "screen_shake", "ko_confetti", "damage_numbers", "rainbow_ki", "input_display", "crt_tv"]:
 		set(k, bool(_val(c, "weird", k, get(k))))
 	controls.load_cfg(c)
 	mp_input.load_cfg(c)
 	mp_input.refresh_defaults()
 	for k in CHEATS:
 		cheats[k] = bool(_val(c, "cheats", k, false))
+	if not c.has_section_key("cheats", "bomb_rain"):   # part 38: files from before BOMB RAIN became a cheat
+		cheats["bomb_rain"] = bool(_val(c, "weird", "bomb_rain", false))
 	music_seed = int(_val(c, "cheats", "music_seed", 0))
 
 
@@ -146,7 +152,7 @@ func save_file() -> void:
 	c.set_value("weird", "touch_fuzzy", touch_fuzzy)
 	c.set_value("weird", "epic_mode", epic_mode)
 	c.set_value("weird", "second_fiddle", second_fiddle)
-	for k in ["blood", "afterimages", "game_boy", "mirror_mode", "flashy_ki", "screen_shake", "ko_confetti", "damage_numbers", "rainbow_ki", "bomb_rain", "input_display", "crt_tv"]:
+	for k in ["blood", "afterimages", "game_boy", "mirror_mode", "flashy_ki", "screen_shake", "ko_confetti", "damage_numbers", "rainbow_ki", "input_display", "crt_tv"]:
 		c.set_value("weird", k, get(k))
 	controls.save_cfg(c)
 	mp_input.save_cfg(c)

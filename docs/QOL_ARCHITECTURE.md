@@ -33,9 +33,9 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
   RATE 60/120/240/MAX, FPS COUNTER, MUSIC, SOUND FX, JUKEBOX) · 2 SETTINGS 2 (`main2`: CONTROLS, VOLUME, AUTO PAUSE,
   DETAILED SHADOWS, ZOOM, HI-SCORES RESET → `lbconfirm` page) · 3 SETTINGS 3 (`main3`: AUTO SKIP, DAMAGE NUMBERS, INPUT
   DISPLAY) · 4 BIG CHANGES (`mpset`: MULTIPLAYER, PERFORMANCE) · 5-9 cheats (`QoLMenu.CHEAT_PAGES`: FIGHTING, KI &
-  ASSISTS, CHARACTERS, STAGE & MUSIC, CHALLENGES (part 36: GREEN DEMON)) · 10-12 WEIRD STUFF (`QoLMenu.WEIRD_PAGES`: 10
-  bevel / fuzzy / game boy / mirror / shake / crt, 11 blood / afterimages / 2nd fiddle / epic / flashy / confetti, 12
-  rainbow / bombs). The header's help text (`QoLMenu` page-row description) lists the page numbers. Sub-pages:
+  ASSISTS, CHARACTERS, STAGE & MUSIC, CHALLENGES (part 36: GREEN DEMON; part 38: + BOMB RAIN)) · 10-12 WEIRD STUFF
+  (`QoLMenu.WEIRD_PAGES`: 10 bevel / fuzzy / game boy / mirror / shake / crt, 11 blood / afterimages / 2nd fiddle / epic /
+  flashy / confetti, 12 rainbow). HI-SCORES RESET (`lbyes`) also calls `QoLAllStarRecords.reset_files()` (part 38). The header's help text (`QoLMenu` page-row description) lists the page numbers. Sub-pages:
   `controls1`-`controls3` (`QoLMenu.CPAGES`), `jukebox`, `confirm`, `lbconfirm`.
 - Text: the game's font `romdata/scene/font_eu.bin` read from the ROM at startup (`QoLFont`; styles REGULAR / BOLD /
   LABEL / BIG / HEAVY; HEAVY = hand-drawn title font `QoLFont.HEAVY_GLYPHS`). `QoLTopInfo` writes the upper-screen header
@@ -94,7 +94,8 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
 | RANDOM STAGE / STAGE SHUFFLE | f_020140C8 writes 0x020DD54A; `# ---- STAGE SHUFFLE` (`_stg_busy`, `_stage_regs_defer` / `_stage_regs_apply`) |
 | RANDOM MUSIC | see Sound |
 | GREEN DEMON (part 36, page 9 CHALLENGES) | `scripts/qol/qol_green_demon.gd` (no class_name) owned by QoLGame `# ---- GREEN DEMON (part 36)`: tick from f_0202954C, reset at f_0202A40C, drawn in `_fx_draw`, f_02021DD4 override (wrap-around / STAGE SHUFFLE move it), `_gd_kill` (KO through f_020293A4 with `_gd_killing` = damage cheats skipped). Art assets_qol/greendemon.png (16x16, from greendemon_src.png); texels in the shared port texture block `scripts/qol/qol_texblock.gd` (QoLGame `_tex_block()`, also BOMB RAIN's). Hunts P1 (both players in local / LAN MP: `_mp_on()`); LAN-safe (own RNG, game camera) |
-| Leaderboard rule | f_02002560 returns 0 while `QoLSettings.cheats_on() > 0`; `reset_leaderboards()` (`# ---- LEADERBOARD`) |
+| BOMB RAIN (part 38: a cheat, page 9 under GREEN DEMON) | see "Weird stuff" below for the code; `QoLSettings.bomb_rain` is now a property over `cheats["bomb_rain"]` ([cheats] in settings.cfg; an old [weird] value is read once when [cheats] has none) |
+| Leaderboard rule | f_02002560 returns 0 while `QoLSettings.cheats_on() > 0`; `reset_leaderboards()` (`# ---- LEADERBOARD`); the ALL-STAR / ENDLESS records pages write nothing either |
 
 ## Weird stuff (pages 10-12) and other picture effects
 - Renderer only (no game state): BEVEL EMBOSS, TOUCH FUZZY (`FX_*` shader variants in ds_engine2d / ds_poly,
@@ -105,7 +106,7 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
 - QoLGame drawing (GX quads after the game's sprite list, `_fx_draw` path): BLOOD / AFTERIMAGES (`# ---- BLOOD /
   AFTERIMAGES`), FLASHY KI / KO CONFETTI (`# ---- FLASHY KI / KO CONFETTI`), DAMAGE NUMBERS / RAINBOW KI (`# ---- WEIRD 3`,
   f_020A71C8 per-sprite hook), DETAILED SHADOWS (silhouettes in the f_02011384 override, `# ---- DETAILED SHADOWS`).
-- BOMB RAIN: `scripts/qol/qol_bombs.gd` (no class_name; owned by QoLGame `# ---- BOMB RAIN`): sprite
+- BOMB RAIN (a cheat since part 38, CHALLENGES page): `scripts/qol/qol_bombs.gd` (no class_name; owned by QoLGame `# ---- BOMB RAIN`): sprite
   assets_qol/bomb.png (from the user's bomb_src.png), one direct-colour textured quad per bomb at texture VRAM 0x5F000
   reserved through the game's texture manager 0x020DE380 (part 36: that block is `qol_texblock.gd`, shared with GREEN
   DEMON); hits copy FUN_0201E9EC, explosion FUN_0202247C / FUN_0202216C + SE 0x1E.
@@ -171,3 +172,11 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
   letters cut at runtime from the game's pre-lettered labels (inner classes `Canvas` = index image, `GFont` = harvested
   font; `harvest()` / `harvest_plate()` / `plate_title()`); `show_page()` builds + shows (also from
   `tools/qol_preview.gd` `asrec`).
+- ENDLESS (part 38; docs/ALLSTAR_DESIGN.md section 7): the same session class with `QoLAllStar.endless` — Gamemode
+  menu slot 1 (`f_0205495c` draws the third bar object, texture +0x6000 relabelled ENDLESS by QoLAllStarMenu;
+  `_gm_decide` / `_gm_route` start the session with `start(menu_cursor == 1)`), every battle hook of `# ---- ALLSTAR
+  BATTLE` unchanged except: enemies from `QoLAllStar.at(i)` (random list growing on demand, never one of the two
+  before), `total()` = no end, HUD tracker = enemies beaten. Death (0 -> 0x14) -> `_asr_win` asks for the records page;
+  `QoLAllStarRecords.endless` = the ENDLESS RECORDS layout (`_open_endless`, `_table_lines_e`, `_row_endless`,
+  `_gameover_letters` = the Game Over screen's title from `game/gameover_dat.arc` over the WINNER band, `_make_d`) and
+  `endless_records.cfg` (`path(true)`, `before_e`). Preview: `tools/qol_preview.gd asrec` states `es_*`.

@@ -6,6 +6,13 @@ how the systems fit together now: `docs/QOL_ARCHITECTURE.md`; decoded facts per 
 page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in QOL_ARCHITECTURE.md).
 
 ## Per part (details in DATA_NOTES / transpiler notes)
+- **Part 38** — *ENDLESS mode (2026-10-13)*: Gamemode menu slot 2 = ENDLESS (random enemies with no end on the
+  All-Star machinery, `QoLAllStar.endless` / `at()`), death → ENDLESS RECORDS page (the records page with the Game Over
+  screen's own title, "n KO" rows, `endless_records.cfg`); HI-SCORES RESET clears both records files; BOMB RAIN moved
+  from WEIRD STUFF 3 to the cheats (page 9, counts for the leaderboard rule). ALLSTAR_DESIGN 7, TESTING 29, DATA_NOTES
+  "part 38 findings (Endless)".
+- **Part 37** — *first-session fixes, editor-vs-exe "divergence" (a settings leak in test runs), private GitHub
+  repository* (HANDOFF part 37, TESTING 28, DATA_NOTES "part 37 findings").
 - **Part 36** — *first Claude Code session (2026-10-13)*: sanity check + Windows baselines + test build (HANDOFF part
   36); then the cheat **GREEN DEMON** (new cheat page 9 CHALLENGES; weird pages now 10-12): a 1-UP (the user's art,
   edited to 16x16) chases the player's fighter and KOs it on touch, warps away and rests; local / LAN MP: hunts both

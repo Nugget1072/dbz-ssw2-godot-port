@@ -97,6 +97,6 @@ user's art. Legacy, unused: `scenes/battle/`, `scripts/{battle,ui,audio,pilot}/`
 | Translator, runtime, lockstep | `decomp/notes/transpiler.md` |
 | A decoded fact / RAM address | `decomp/DATA_NOTES_INDEX.md` → grep / read that section of `decomp/DATA_NOTES.md` |
 | Local MP / LAN design + facts | `docs/MULTIPLAYER_DESIGN.md`, `docs/LAN_DESIGN.md` (read their top summary first) |
-| All-Star mode (parts 34-35) | `docs/ALLSTAR_DESIGN.md` (2a = status + QoLAllStar API) |
+| All-Star mode (parts 34-35), Endless mode (part 38) | `docs/ALLSTAR_DESIGN.md` (2a = status + QoLAllStar API, 7 = ENDLESS) |
 | Player-facing texts | `docs/PLAYER_README.txt`, `docs/BUGFIXES.txt`, `docs/BOSS_CHARACTERS.txt` |
 | Original task | `docs/PROJECT_BRIEF.md` (historical: paths there predate part 21) |

@@ -94,3 +94,7 @@ Session 1, part 2 (cloud sandbox, Linux) — same rule as above, nothing written
 - The project is now also on GitHub as a PRIVATE repository: https://github.com/Nugget1072/dbz-ssw2-godot-port
   (published with GitHub Desktop, which also lists it). It holds no ROM, save or anything taken from the game.
 - Nothing else written outside SupersonicMain (test clones are in local\clonetest and local\clonegh, git-ignored).
+
+2026-10-13 (part 38):
+- Nothing new outside SupersonicMain. ENDLESS records are saved in finished\endless_records.cfg (next to the exe, like
+  allstar_records.cfg); editor runs keep theirs in the project's user data folder (%APPDATA%\DBZSSW2Port\).

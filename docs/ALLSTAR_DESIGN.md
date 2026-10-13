@@ -441,3 +441,42 @@ Gero/SSJ Vegeta)? `asorder=` lets them try.
 - Timer cells: if the game redraws the HUD map (pause, Team Arts cut-in), the per-frame check rewrites them.
 - Star field via the BG manager queue: queue limit 32 entries (part 18) — one-off at load, far below.
 - Music: a STRM switch costs a stream restart (brief gap like the jukebox); never during pause / KO end.
+
+## 7. ENDLESS (part 38) — status: DONE
+Second NEW GAMEMODES mode: ALL-STAR's machinery with random enemies and no end. Facts: DATA_NOTES "part 38 findings
+(Endless)". Code: `QoLAllStar.endless` + `at()` (qol_allstar.gd), QoLGame `# ---- ALLSTAR MENU / BATTLE / RECORDS`,
+QoLAllStarMenu (ENDLESS bar), QoLAllStarRecords (`endless`), QoLController `AS_TEXTS`.
+- **Menu**: Gamemode menu slot 1 (was EMPTY) = the third bar object (MAXIMUM's Mania bar, texture +0x6000), its texture
+  rewritten as the Hard bar labelled ENDLESS (port-drawn N / D in the bar font; the Mania M / R are read before the
+  texture is relabelled). Slots 2-3 stay EMPTY (buzzer). Keys / taps as before; upper box = ENDLESS description.
+  `_gm_decide`: slots 0-1 -> exit 3; `_gm_route` 0xB -> 4: `start(menu_cursor == 1)`; B on the select with nothing
+  picked -> Gamemode menu with the cursor back on the mode left.
+- **Session**: `start(true)` = `endless`, `start_index` 0; ALL-STAR's own order / `asstart=` are kept apart
+  (`_as_order`, `_as_start`) and put back by `start(false)`. `battle_reset()` reseeds the RNG (`esseed=N` + battle
+  number) and empties `order`; `at(i)` appends random ROSTER ids until index i exists, each never one of the two ids
+  before it (so the active enemy and the bench differ, no repeat of the one just beaten). `total()` = 1<<30, so the
+  "last enemy" / `done` logic never fires and `_asb_swap` always reloads.
+- **Battle** (unchanged code paths): P2 = [at(0), at(1)], count 2, stage 4 (space sky + music rotation), hearts,
+  CPU tag / Team Arts refused, clock (cap 99:59, keeps the cap), swaps through `_asb_load(at(next))`. HUD tracker plate
+  shows the enemies beaten ("n", no "/26"). V es1 (headless, one-hit KO + infinite health + ki homing, A spam): 47
+  random swaps in 11800 frames, heap free 0.98-1.23 MB without a trend, cache 24, archives 7-9, mirror palette when the
+  enemy is P1's character ("mirror true" at 18 -> 0 with P1 Goku).
+- **End**: P1's team out -> state 0x11 -> result "lose" -> the game asks scene 0x14 (Game Over / Continue; V es2 f5038)
+  -> `_gm_route` sends it to the select (4) and `_asr_win` raises `records_req` (ENDLESS: only on 0x14 + "lose";
+  pause exits 3 / 0xD = no page). Pause "Return to Menu" ends the session as in ALL-STAR.
+- **ENDLESS RECORDS page** (QoLAllStarRecords with `endless`): the ALL-STAR page's layout and art with: tab "ENDLESS"
+  (white tab font; D = L's stem + O's right half, `_make_d`), the WINNER band's white letters erased and the "Game Over"
+  title of the game's Game Over screen (gameover_dat.arc entries 18-20, the English emblem; only its white / grey
+  pixels, 128 x 26 at (102,119)) centred in the band; table Enemies n / Hearts Used / Rank / Best (most enemies) /
+  status; Total bar = TIME. Ranking plate "ENDLESS RECORDS" (the plate's own capitals); rows: enemies beaten in the
+  `no` digits right-aligned to x 101 + "KO" (table letters, bottoms on the digits' last ink row), faces, the time in the
+  difficulty word's slot (word digits + drawn colon, underline); empty rows "--" / "--:--".
+- **File** `endless_records.cfg` (next to the exe; editor user://; `esrec=PATH`; capture runs without it: none):
+  `[records] r1..r5 = {"beaten", "date", "frames", "hearts", "ids"}`; load needs beaten 1..99999 + the ALL-STAR
+  checks; order `before_e` = more beaten, then shorter time, fewer hearts, older. beaten 0 -> "Not Ranked"; cheats on
+  -> "Cheats On | Not Recorded"; write failure -> "File Error". Settings HI-SCORES RESET removes both records files
+  (`reset_files`).
+- **Isolation**: NEW GAMEMODES off -> no tile, no menu, no session (off-identity PASS). ALL-STAR with the part-38
+  code = the part-37 code (V asnew / asold: identical AS lines for an `allstar=1 asstart=22` one-hit-KO battle incl.
+  the records page; only the art log's new white "D"). MP / LAN never start a session (`_asb_session` / tile checks).
+- Flags: `endless=1` (+ `allstar=1`), `esseed=N`, `esrec=PATH`, `esfake=N[:M:SS[:h]]`, `esrecdemo=F`.

@@ -27,8 +27,18 @@ extends Node2D
 ##   the whole roster (`asstart=` / `asorder=`). The game's save is never touched.
 ## Opened by QoLAllStar.records_req (QoLGame `# ---- ALLSTAR RECORDS`: the won battle asks for scene 10, rerouted to
 ## the All-Star select); runs on the main thread (QoLController.after_step / filter_input).
+## Part 38 ENDLESS RECORDS (`endless`, set at open from QoLAllStar.endless): the same page after an ENDLESS battle was
+## lost (Game Over, scene 0x14, rerouted to the select): tab "ENDLESS" (its D put together from the tab font's O and L),
+## the "WINNER" banner's letters replaced by the "Game Over" title of the game's own Game Over screen
+## (`game/gameover_dat.arc`), table Enemies n / Hearts Used / Rank / Best (most enemies) / status, Total bar = the
+## time; ranking "ENDLESS RECORDS" with per row the enemies beaten in the ranking digits + "KO" (table letters) and the
+## time in the difficulty word's slot. File `endless_records.cfg` (`esrec=PATH`), [records] r1..r5 = {"beaten",
+## "frames", "ids", "hearts", "date"}, sorted by most enemies, then shorter time, fewer hearts, older entry; a run that
+## beat nobody is not ranked; nothing is written while cheats are on.
 
 const FILE := "allstar_records.cfg"
+const FILE_ENDLESS := "endless_records.cfg"  ## part 38
+const BEATEN_MAX := 99999                    ## part 38: ENDLESS enemies beaten (file check / display)
 const MAX := 5
 const FPS := 59.8261
 const CAP_S := 5999                          ## 99:59
@@ -99,6 +109,7 @@ var entry := {}                              ## this run
 var new_rank := -1                           ## 0..4 = this run's row in `table`, -1 = not entered
 var note := ""                               ## "" saved / "cheats" / "partial" / "out" (not in the top 5) / "nofile" (write failed)
 var saved := false
+var endless := false                         ## part 38: this page is the ENDLESS RECORDS page
 var _ok := false                             ## ROM art found
 var _built := false
 var _task := -1                              ## WorkerThreadPool task building the art (started with the session)
@@ -107,6 +118,8 @@ var _rows: Array = []                        ## base1st..base5st textures, + fla
 var _rows_hi: Array = []
 var _row_info: Array = []                    ## per row: content texture (time + hearts word) or null
 var _plate_top                               ## the ranking's title plate, re-lettered (Image until _textures())
+var _plate_top_e                             ## part 38: the same plate lettered "ENDLESS RECORDS"
+var _gover: Image                            ## part 38: the Game Over screen's "Game Over" letters (white / greys only)
 var _button                                  ## OK plate (compact e_charasele)
 var _cursor                                  ## the results' cursor (compact cursol)
 var _faces := {}                             ## id -> 24 x 24 texture
@@ -272,6 +285,8 @@ func setup(q, r: PackedByteArray) -> void:
 	dbg = Game.args.has("asdbg")
 	if Game.args.has("asrecdemo"):
 		_demo_at = int(Game.flag("asrecdemo"))
+	elif Game.args.has("esrecdemo"):
+		_demo_at = int(Game.flag("esrecdemo"))
 
 
 ## the art is cut from the ROM in a worker thread as soon as an All-Star session is running (nothing otherwise; a
@@ -306,6 +321,8 @@ func _textures() -> void:
 			_faces[k] = ImageTexture.create_from_image(_faces[k])
 	if _plate_top is Image:
 		_plate_top = ImageTexture.create_from_image(_plate_top)
+	if _plate_top_e is Image:
+		_plate_top_e = ImageTexture.create_from_image(_plate_top_e)
 	if _button is Image:
 		_button = ImageTexture.create_from_image(_button)
 	if _cursor is Image:
@@ -315,47 +332,71 @@ func _textures() -> void:
 
 
 # ------------------------------------------------------------------------------------------------ records file
-## "" = no file (captures without `asrec=`)
-static func path() -> String:
-	if Game.args.has("asrec"):
-		return Game.flag("asrec")
+## the file's name / its debug flag per mode (part 38: ENDLESS has its own file)
+static func _file(e: bool) -> String:
+	return FILE_ENDLESS if e else FILE
+
+
+static func _flag(e: bool) -> String:
+	return "esrec" if e else "asrec"
+
+
+## "" = no file (captures without `asrec=` / `esrec=`)
+static func path(e := false) -> String:
+	if Game.args.has(_flag(e)):
+		return Game.flag(_flag(e))
 	if Game.args.has("capture"):
 		return ""
 	if OS.has_feature("template"):
-		return OS.get_executable_path().get_base_dir().path_join(FILE)
-	return "user://" + FILE
+		return OS.get_executable_path().get_base_dir().path_join(_file(e))
+	return "user://" + _file(e)
+
+
+## part 38 (settings HI-SCORES RESET): both records files removed (and their user:// copies of a read-only exe folder)
+static func reset_files() -> void:
+	for e in [false, true]:
+		var ps := [path(e)]
+		if OS.has_feature("template") and not Game.args.has(_flag(e)):
+			ps.append("user://" + _file(e))
+		for p in ps:
+			if p != "" and FileAccess.file_exists(p):
+				DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
 
 
 ## the valid entries of the file, best first (at most MAX); [entries, damaged]
-static func load_table(p: String) -> Array:
+static func load_table(p: String, e := false) -> Array:
 	var out: Array = []
 	if p == "":
 		return [out, false]
 	var c := ConfigFile.new()
 	var err := c.load(p)
-	if err != OK and OS.has_feature("template") and not Game.args.has("asrec"):
-		err = c.load("user://" + FILE)       # (written there when the exe folder was read-only)
+	if err != OK and OS.has_feature("template") and not Game.args.has(_flag(e)):
+		err = c.load("user://" + _file(e))   # (written there when the exe folder was read-only)
 	if err != OK:
 		return [out, err != ERR_FILE_NOT_FOUND and FileAccess.file_exists(p)]
 	if c.has_section("records"):
 		for k in c.get_section_keys("records"):
-			var e := entry_from(c.get_value("records", k, null))
-			if not e.is_empty():
-				out.append(e)
-	out.sort_custom(before)
+			var x := entry_from(c.get_value("records", k, null), e)
+			if not x.is_empty():
+				out.append(x)
+	out.sort_custom(before_e if e else before)
 	if out.size() > MAX:
 		out.resize(MAX)
 	return [out, false]
 
 
-## a record from a file value, or {} when it is not one (any field missing / of a wrong type / out of range)
-static func entry_from(v: Variant) -> Dictionary:
+## a record from a file value, or {} when it is not one (any field missing / of a wrong type / out of range);
+## part 38 ENDLESS records also need "beaten" (1..BEATEN_MAX)
+static func entry_from(v: Variant, e := false) -> Dictionary:
 	if not v is Dictionary:
 		return {}
 	var d: Dictionary = v
 	var f := _int(d.get("frames"))
 	var h := _int(d.get("hearts"))
 	if f < 1 or f > int((CAP_S + 1) * FPS) or h < 0 or h > 3:
+		return {}
+	var bt := _int(d.get("beaten")) if e else 0
+	if e and (bt < 1 or bt > BEATEN_MAX):
 		return {}
 	var ids: Array = []
 	var raw: Variant = d.get("ids")
@@ -369,7 +410,10 @@ static func entry_from(v: Variant) -> Dictionary:
 	if ids.is_empty():
 		return {}
 	var date: Variant = d.get("date", "")
-	return {"frames": f, "ids": ids, "hearts": h, "date": date if date is String else ""}
+	var out := {"frames": f, "ids": ids, "hearts": h, "date": date if date is String else ""}
+	if e:
+		out["beaten"] = bt
+	return out
 
 
 static func _int(v: Variant) -> int:
@@ -391,17 +435,24 @@ static func before(a: Dictionary, b: Dictionary) -> bool:
 	return String(a.date) < String(b.date)
 
 
+## part 38 ENDLESS sort order: more enemies beaten, then shorter time, fewer hearts, the older entry
+static func before_e(a: Dictionary, b: Dictionary) -> bool:
+	if int(a.get("beaten", 0)) != int(b.get("beaten", 0)):
+		return int(a.get("beaten", 0)) > int(b.get("beaten", 0))
+	return before(a, b)
+
+
 ## where `e` goes (0..MAX-1) in `t` (sorted), MAX = not in the top: below every entry that is not worse
-static func rank_of(t: Array, e: Dictionary) -> int:
+static func rank_of(t: Array, e: Dictionary, endless_order := false) -> int:
 	var r := 0
 	for x in t:
-		if before(e, x):
+		if (before_e(e, x) if endless_order else before(e, x)):
 			break
 		r += 1
 	return mini(r, MAX)
 
 
-static func save_table(p: String, t: Array, damaged: bool) -> bool:
+static func save_table(p: String, t: Array, damaged: bool, e := false) -> bool:
 	if p == "":
 		return false
 	if damaged and FileAccess.file_exists(p):
@@ -410,8 +461,8 @@ static func save_table(p: String, t: Array, damaged: bool) -> bool:
 	for i in t.size():
 		c.set_value("records", "r%d" % (i + 1), t[i])
 	var err := c.save(p)
-	if err != OK and OS.has_feature("template") and not Game.args.has("asrec"):
-		err = c.save("user://" + FILE)           # read-only folder: keep it in the user data folder (as settings.cfg)
+	if err != OK and OS.has_feature("template") and not Game.args.has(_flag(e)):
+		err = c.save("user://" + _file(e))       # read-only folder: keep it in the user data folder (as settings.cfg)
 	return err == OK
 
 
@@ -429,7 +480,7 @@ func frame(_core) -> void:
 		if allstar != null and allstar.records_req:
 			allstar.records_req = false
 			_open(false)
-		elif _demo_at >= 0 and qol.game.frames == _demo_at:
+		elif _demo_at >= 0 and qol.game.frames == _demo_at:   # (`esrecdemo=F`: the ENDLESS page, part 38)
 			_open(true)                          # `asrecdemo=F`: the page as after a win, no battle needed
 		return
 	_t += 1
@@ -449,6 +500,10 @@ func frame(_core) -> void:
 
 
 func _open(demo: bool) -> void:
+	endless = (allstar != null and allstar.endless) or (demo and Game.args.has("esrecdemo"))
+	if endless:
+		_open_endless(demo)
+		return
 	var cheats: int = qol.settings.cheats_on()
 	var full := allstar != null and allstar.start_index == 0 and allstar.order == QoLAllStar.ROSTER
 	var ids: Array = []
@@ -494,6 +549,55 @@ func _open(demo: bool) -> void:
 	_log("open: time %s (%d frames) hearts %d ids %s cheats %d full %s -> rank %d saved %s note '%s' file '%s' damaged %s table %s" % [
 		time_text(e.frames), e.frames, e.hearts, str(e.ids), cheats, full, new_rank + 1, saved, note, path(), ld[1],
 		str(table.map(func(x): return "%s/%d/%s" % [time_text(x.frames), x.hearts, str(x.ids)]))])
+	show_page()
+
+
+## part 38: the ENDLESS RECORDS page after a lost ENDLESS battle: this run = {beaten, frames, ids, hearts, date}
+func _open_endless(demo: bool) -> void:
+	var cheats: int = qol.settings.cheats_on()
+	var ids: Array = []
+	for i in ((allstar.p1_ids + [allstar.p1_support]) if allstar != null else []):   # fighters, then the support
+		if int(i) >= 0 and int(i) < 37 and ids.size() < 3:
+			ids.append(int(i))
+	var e := {"beaten": clampi(allstar.beaten if allstar != null else 0, 0, BEATEN_MAX),
+		"frames": maxi(1, allstar.elapsed_frames if allstar != null else 1), "ids": ids,
+		"hearts": clampi(allstar.hearts_used if allstar != null else 0, 0, 3),
+		"date": Time.get_datetime_string_from_system(false, true)}
+	if Game.args.has("esfake") or demo:      # debug: a cheat-free run with these enemies / time / hearts
+		var p := Game.flag("esfake").split(":") if Game.args.has("esfake") else PackedStringArray(["12", "8", "21"])
+		if p.size() >= 1:
+			e.beaten = clampi(int(p[0]), 0, BEATEN_MAX)
+		if p.size() >= 3:
+			e.frames = int((int(p[1]) * 60 + int(p[2])) * FPS) + 1
+		if p.size() >= 4:
+			e.hearts = clampi(int(p[3]), 0, 3)
+		if Game.args.has("esfake"):
+			cheats = 0
+	if e.ids.is_empty():
+		e.ids = [0, 5, 6] if not Game.args.has("asp1") else Array(Array(Game.flag("asp1").split(",")).map(func(s): return clampi(int(s), 0, 36)))
+	entry = e
+	var ld := load_table(path(true), true)
+	table = ld[0]
+	new_rank = -1
+	saved = false
+	note = ""
+	if cheats > 0:
+		note = "cheats"
+	else:
+		var r := rank_of(table, e, true) if e.beaten > 0 else MAX
+		if r >= MAX:
+			note = "out"
+		else:
+			table.insert(r, e)
+			if table.size() > MAX:
+				table.resize(MAX)
+			new_rank = r
+			saved = save_table(path(true), table, ld[1], true)
+			if not saved:
+				note = "nofile"
+	_log("open ENDLESS: beaten %d time %s (%d frames) hearts %d ids %s cheats %d -> rank %d saved %s note '%s' file '%s' damaged %s table %s" % [
+		e.beaten, time_text(e.frames), e.frames, e.hearts, str(e.ids), cheats, new_rank + 1, saved, note, path(true), ld[1],
+		str(table.map(func(x): return "%d/%s/%d/%s" % [x.beaten, time_text(x.frames), x.hearts, str(x.ids)]))])
 	show_page()
 
 
@@ -628,6 +732,13 @@ func _load_art() -> void:
 		retitle(raw, 256, 5, 1, [1, 0xB, 0xD, 0xC, 0xF], "ALL-STAR RECORDS")
 		top = lin4(raw, 256)
 	_plate_top = top.image(ppal)
+	var top_e := plate.copy()                          # part 38: the ENDLESS RECORDS plate (same rules)
+	if base_y < 0 or not plate_title(top_e, _pfont, base_y, "ENDLESS RECORDS"):
+		var raw := _member(pk, "e_hi_score.ntft")
+		retitle(raw, 256, 5, 1, [1, 0xB, 0xD, 0xC, 0xF], "ENDLESS RECORDS")
+		top_e = lin4(raw, 256)
+	_plate_top_e = top_e.image(ppal)
+	_gover = _gameover_letters()                       # part 38: the Game Over screen's title letters
 	# OK plate + the results' cursor (frame + triangle), rows 2-7 left out (plain plate yellow)
 	var cpal := _pal(_member(pk, "e_continue.ntfp"))
 	_button = lin4(_member(pk, "e_charasele.ntft"), 256).rows(BTN_ROWS).image(cpal)
@@ -668,6 +779,51 @@ func _load_art() -> void:
 			"".join(_rfont.glyphs.keys()), "".join(_pfont.glyphs.keys())])
 		_log("art built in %d ms" % (Time.get_ticks_msec() - t0))
 		_log("word gap %d space %d widths %s" % [_rfont.gap, _rfont.space, str(HEART_WORDS.map(func(o): return o.map(func(t): return _rfont.width(t))))])
+
+
+## part 38: the "Game Over" title of the game's Game Over screen (scene 0x14; `game/gameover_dat.arc`, a GARC whose
+## entries 18 / 19 / 20 are the English emblem's characters / palette / 32x24 map: a round logo + a black plate with
+## the white title at x ~100-234, y ~118-146, its underline at y 147, small print below): the title's white and grey
+## pixels only (the plate's black left out), as an Image; null when it does not look like that
+func _gameover_letters() -> Image:
+	var fo := QoLFont.nitro_file(rom, "romdata/game/gameover_dat.arc")
+	if fo.x < 0 or rom.decode_u32(fo.x + 8) < 21:
+		return null
+	var gb := fo.x + rom.decode_u32(fo.x + 12)
+	var ent := func(i: int) -> PackedByteArray:
+		var o := rom.decode_u32(fo.x + 0x10 + 8 * i)
+		return rom.slice(gb + o, gb + o + rom.decode_u32(fo.x + 0x14 + 8 * i))
+	var mp: PackedByteArray = ent.call(20)
+	if mp.size() < 1536:
+		return null
+	var img := tiles(ent.call(18), mp, 32, 24).image(_pal(ent.call(19)))
+	var bright := func(x: int, y: int) -> bool:
+		return img.get_pixel(x, y).get_luminance() > 0.5
+	var box := Rect2i()
+	for y in range(118, 147):                          # (the plate's top edge / the logo's ring end above row 118)
+		var n := 0                                     # (the title's underline: a long white row)
+		for x in range(96, 241):
+			n += 1 if bright.call(x, y) else 0
+		if n > 80:
+			continue
+		for x in range(96, 241):
+			var col := 0                               # (its left / right borders: white columns as high as the plate)
+			for yy in range(112, 147):
+				col += 1 if bright.call(x, yy) else 0
+			if col < 28 and bright.call(x, y):
+				box = Rect2i(x, y, 1, 1) if box.size.x == 0 else box.expand(Vector2i(x, y)).expand(Vector2i(x + 1, y + 1))
+	if box.size.x < 60 or box.size.y < 12:
+		_log("Game Over letters not found (box %s)" % str(box))
+		return null
+	box = box.grow(1)
+	var out := Image.create(box.size.x, box.size.y, false, Image.FORMAT_RGBA8)
+	for y in box.size.y:
+		for x in box.size.x:
+			var c := img.get_pixel(box.position.x + x, box.position.y + y)
+			if c.a > 0.0 and c.get_luminance() > 0.12:
+				out.set_pixel(x, y, c)
+	_log("Game Over letters %s" % str(box))
+	return out
 
 
 ## the table letters the labels lack, put together from the font's own strokes: d (o + the stem of l), H (two l stems +
@@ -715,6 +871,28 @@ func _make_table_glyphs() -> void:
 		f.add("-", _template(["766667", "411114", "766667"]), 5)
 	if not _wfont.has("-"):
 		_wfont.add("-", _template(["bccccb", "dffffd", "2dddd2"]), 5)
+	if _wfont.has("O") and _wfont.has("L") and not _wfont.has("D"):   # part 38 (tab "ENDLESS")
+		_wfont.add("D", _make_d(_wfont), int(_wfont.glyphs["O"][1]))
+
+
+## part 38: a capital D for a font that has O and L: L's stem on the left, O's right half, and between them O's
+## middle column carried across (the top and bottom bars; the inside stays empty)
+static func _make_d(f: GFont) -> Canvas:
+	var o: Canvas = f.glyphs["O"][0]
+	var l: Canvas = f.glyphs["L"][0]
+	var dy := int(f.glyphs["L"][1]) - int(f.glyphs["O"][1])
+	var mid := l.h / 2                                  # L's stem width: its strong columns half way down
+	var stem := 0
+	while stem < l.w and f.rank[l.g(stem, mid)] == 0:
+		stem += 1
+	while stem < l.w and f.rank[l.g(stem, mid)] > 0:
+		stem += 1
+	var c := o.copy()
+	var half := o.w / 2
+	for y in o.h:
+		for x in half:
+			c.s(x, y, l.g(x, y - dy) if x < stem else o.g(half, y))
+	return c
 
 
 ## a small glyph from hex digits (palette indices; "." = none)
@@ -1122,7 +1300,8 @@ func _build_page() -> void:
 		for x in range(86, 175):
 			if u.g(x, y) != 0:
 				u.s(x, y, 1)
-	_wfont.draw(u, 251 - _wfont.width("ALL-STAR"), 10, "ALL-STAR")
+	var tab := "ENDLESS" if endless and _wfont.missing("ENDLESS") == "" else "ALL-STAR"
+	_wfont.draw(u, 251 - _wfont.width(tab), 10, tab)
 	var lines := _table_lines()
 	for k in lines.size():
 		var ln: Array = lines[k]
@@ -1131,7 +1310,18 @@ func _build_page() -> void:
 			_value(u, VALUE_RIGHT, k, ln[1])
 	_wfont.draw(u, 172 - _wfont.width("TIME"), 111, "TIME")
 	_orange(u, VALUE_RIGHT, 112, time_text(entry.frames))
-	_upper = ImageTexture.create_from_image(u.image(_pal16))
+	var band := _banner_rows(u) if endless and _gover != null else Vector2i(-1, -1)
+	if band.x >= 0:                                    # part 38: "WINNER" -> the Game Over screen's title
+		var black := u.g(2, (band.x + band.y) / 2)
+		for y in range(band.x, band.y + 1):
+			for x in range(1, 255):
+				if u.g(x, y) != black and RANK_WHITE[u.g(x, y)] > 0:
+					u.s(x, y, black)
+	var ui := u.image(_pal16)
+	if band.x >= 0:
+		var gp := Vector2i((256 - _gover.get_width()) / 2, (band.x + band.y + 1 - _gover.get_height()) / 2)
+		ui.blend_rect(_gover, Rect2i(Vector2i.ZERO, _gover.get_size()), gp)
+	_upper = ImageTexture.create_from_image(ui)
 	var ids: Array = entry.get("ids", [])
 	for k in 3:
 		var id: int = ids[k] if k < ids.size() else -1
@@ -1140,7 +1330,9 @@ func _build_page() -> void:
 	# --- lower: per row the time in the ranking digits + the hearts word
 	for i in MAX:
 		var c := Canvas.new(256, 32)
-		if i < table.size():
+		if endless:                                    # part 38: enemies beaten + KO, the time in the word slot
+			_row_endless(c, table[i] if i < table.size() else {})
+		elif i < table.size():
 			var e: Dictionary = table[i]
 			_no_time(c, DIG_RIGHT, 8, time_text(e.frames))
 			_heart_word(c, int(e.hearts))
@@ -1149,8 +1341,33 @@ func _build_page() -> void:
 		_row_info.append(ImageTexture.create_from_image(c.image(_pal16)))
 
 
+## part 38: the WINNER band of e_res_bg: [first, last] row between its two white border lines (rows 125-191), or -1
+static func _banner_rows(u: Canvas) -> Vector2i:
+	var borders: Array = []
+	for y in range(125, 192):
+		var n := 0
+		for x in 256:
+			if RANK_WHITE[u.g(x, y)] > 0:
+				n += 1
+		if n > 200:
+			borders.append(y)
+	if borders.is_empty():
+		return Vector2i(-1, -1)
+	var top: int = borders[0]
+	while borders.has(top + 1):
+		top += 1
+	var bottom := 191
+	for b in borders:
+		if b > top + 1:
+			bottom = b - 1
+			break
+	return Vector2i(top + 1, bottom) if bottom - top > 20 else Vector2i(-1, -1)
+
+
 ## the table rows: [label, value]
 func _table_lines() -> Array:
+	if endless:
+		return _table_lines_e()
 	var best := "--:--"
 	if not table.is_empty():
 		best = time_text(table[0].frames)
@@ -1178,6 +1395,29 @@ func _table_lines() -> Array:
 			status = "File Error"
 			value = "Not Recorded"
 	return [["Enemies", "%d/%d" % [beaten, total]], ["Hearts Used", str(entry.get("hearts", 0))], ["Rank", rank],
+		["Best", best], [status, value]]
+
+
+## part 38: the ENDLESS table: enemies beaten in this run, hearts, rank, the best run's enemies, status
+func _table_lines_e() -> Array:
+	var rank := "-"
+	if new_rank >= 0:
+		rank = "%d%s" % [new_rank + 1, ORD[new_rank]]
+	var best := str(int(table[0].get("beaten", 0))) if not table.is_empty() else "-"
+	var status := ""
+	var value := ""
+	match note:
+		"":
+			status = "New Record!"
+		"out":
+			status = "Not Ranked"
+		"cheats":
+			status = "Cheats On"
+			value = "Not Recorded"
+		"nofile":
+			status = "File Error"
+			value = "Not Recorded"
+	return [["Enemies", str(int(entry.get("beaten", 0)))], ["Hearts Used", str(entry.get("hearts", 0))], ["Rank", rank],
 		["Best", best], [status, value]]
 
 
@@ -1245,6 +1485,49 @@ func _no_time(c: Canvas, xr: int, y: int, s: String) -> void:
 				".111111.", ".111111."]), x, y)
 
 
+## part 38: an ENDLESS ranking row ({} = empty): the enemies beaten in the ranking digits ending KO_RIGHT, "KO" after
+## them in the table's letters (bottoms on the digits' last ink row), the time in the difficulty word's slot (the
+## words' digits + a drawn colon, right-aligned, with the word underline)
+const KO_RIGHT := 101
+func _row_endless(c: Canvas, e: Dictionary) -> void:
+	var n := "--" if e.is_empty() else str(mini(int(e.get("beaten", 0)), BEATEN_MAX))
+	_no_time(c, KO_RIGHT, 8, n)
+	var ko_bottom := 8 + 11                            # the no digits' last ink row (rows 4..11 of their 16)
+	var x := KO_RIGHT + 3
+	for ch in ("" if e.is_empty() else "KO"):          # (an empty row: "--" only)
+		if _tfont.has(ch):
+			var cv: Canvas = _tfont.glyphs[ch][0]
+			c.blit(cv, x - int(_tfont.glyphs[ch][2]), ko_bottom - _core_rows(cv).y, _tfont.rank)
+			x += _tfont._adv(ch) + _tfont.gap + 1
+	var t := "--:--" if e.is_empty() else time_text(int(e.frames))
+	var dt := 17                                       # the words' digits: ink rows top..bottom
+	var db := 24
+	if _rfont.has("0"):
+		dt = 12 + int(_rfont.glyphs["0"][1])
+		db = dt + (_rfont.glyphs["0"][0] as Canvas).h - 1
+	var adv := func(ch: String) -> int:
+		return 2 if ch == ":" else (5 if ch == "-" else _rfont._adv(ch))
+	var w := -1
+	for ch in t:
+		w += adv.call(ch) + 1
+	var xx := WORD_RIGHT - w
+	var x0 := xx
+	for ch in t:
+		if ch == ":":
+			for yy in [dt + 1, dt + 2, db - 2, db - 1]:
+				c.s(xx, yy, 1)
+				c.s(xx + 1, yy, 1)
+		elif ch == "-":
+			for k in 5:
+				c.s(xx + k, (dt + db) / 2, 1)
+				c.s(xx + k, (dt + db) / 2 + 1, 1)
+		else:
+			_rfont.draw(c, xx, 12, ch)
+		xx += adv.call(ch) + 1
+	for x2 in range(x0 - 2, 203):                       # the word's underline joins the row's (x >= 202)
+		c.s(x2, 27, 1)
+
+
 ## the hearts used, lettered like the game's difficulty word (right end of the row, word rows 12-26, underline 27)
 func _heart_word(c: Canvas, h: int) -> void:
 	var opts: Array = HEART_WORDS[clampi(h, 0, 3)]
@@ -1287,8 +1570,9 @@ func _draw() -> void:
 		_draw_top()
 		_draw_low()
 	else:
-		font.draw(self, Vector2(18, 80), "ALL-STAR RECORDS", WHITE, QoLFont.HEAVY, Color.BLACK)
-		font.draw(self, Vector2(18, 100), "Clear time " + time_text(entry.get("frames", 1)), WHITE, QoLFont.BOLD, Color.BLACK)
+		font.draw(self, Vector2(18, 80), "ENDLESS RECORDS" if endless else "ALL-STAR RECORDS", WHITE, QoLFont.HEAVY, Color.BLACK)
+		font.draw(self, Vector2(18, 100), ("Enemies %d  Time " % int(entry.get("beaten", 0)) if endless else "Clear time ") \
+			+ time_text(entry.get("frames", 1)), WHITE, QoLFont.BOLD, Color.BLACK)
 		font.draw(self, Vector2(18, 192 + 160), "Press A", YELLOW, QoLFont.BOLD, Color.BLACK)
 	if a > 0.0:
 		draw_rect(Rect2(0, 0, 256, 384), Color(0, 0, 0, a))
@@ -1308,8 +1592,9 @@ func _draw_top() -> void:
 
 func _draw_low() -> void:
 	var o := 192
-	if _plate_top != null:
-		draw_texture(_plate_top, Vector2(0, o + TITLE_Y))
+	var pt = _plate_top_e if endless else _plate_top
+	if pt != null:
+		draw_texture(pt, Vector2(0, o + TITLE_Y))
 	for i in MAX:
 		var y := o + ROW_Y0 + ROW_STEP * i
 		var flash := i == new_rank and _blink_on() and _phase == 1

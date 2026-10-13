@@ -87,7 +87,7 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 ## Weird stuff
 | Flag | Meaning |
 |---|---|
-| `weird=bevel,fuzzy,epic,fiddle,blood,after,gameboy,mirror,flashy,shake,confetti,dmgnum,rainbow,bombs,inputs,crt` | turn these on (`dmgnum` / `inputs` = DAMAGE NUMBERS / INPUT DISPLAY, settings page 3) |
+| `weird=bevel,fuzzy,epic,fiddle,blood,after,gameboy,mirror,flashy,shake,confetti,dmgnum,rainbow,bombs,inputs,crt` | turn these on (`dmgnum` / `inputs` = DAMAGE NUMBERS / INPUT DISPLAY, settings page 3; `bombs` = BOMB RAIN, a cheat since part 38, also `cheats=bomb_rain`) |
 | `epicdbg` · `blooddbg` · `flashydbg` | EPIC MODE / BLOOD / FLASHY KI + CONFETTI debug |
 | `w3dbg` · `w3merge=0` | damage numbers / rainbow debug; no merging (stacking test) |
 | `bombdbg` `bombseed=N` `bombrate=F` `bombfx=V` `bombfxcycle` `bombkind=K` `bombpos` `bombvram` | BOMB RAIN |
@@ -133,6 +133,11 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 | `asfakewin=M:SS[:hearts]` | the next All-Star win (or `asrecdemo`) counts as a cheat-free run of the whole roster with that clear time / hearts used (records tests with `cheats=one_hit_ko asstart=25`) |
 | `asrecdemo=F` | open the ALL-STAR RECORDS page at port frame F without a battle (team from `asp1=`, else 0,5,6; time 12:34 unless `asfakewin=`; cheats rule kept unless `asfakewin=`); `asdbg` logs `AS f… records open: … rank … saved … table …` / `OK by …` / `closed` |
 | `asmusic=F,…` · `asmseek=F:S,…` · `asmseed=N` · `asmlog` | All-Star music (phase 3): force a switch to a random other stage BGM at port frame F · restart the playing track S seconds before its end at F (natural-end tests) · rotation picks seed · `AS f… music: id … pos … / [samples, loop, rate] step … since … A2 … state …` every 30 frames (with `asdbg`; switches log `AS f… music switch #n: a -> b (why) state …`) |
+| `endless=1` (with `allstar=1`) | part 38: that btnrun Free Battle is an ENDLESS battle (random enemies with no end; dying -> ENDLESS RECORDS -> All-Star select) |
+| `esseed=N` | ENDLESS enemy list seed (N + the session's battle number; default random) |
+| `esrec=PATH` | ENDLESS records file for the run (default `endless_records.cfg` next to the exe / user://; capture runs without it read / write none) |
+| `esfake=N[:M:SS[:hearts]]` | the next ENDLESS records page counts as a cheat-free run with N enemies beaten (and that time / hearts) |
+| `esrecdemo=F` | open the ENDLESS RECORDS page at port frame F without a battle (12 enemies, 08:21 unless `esfake=`; cheats rule kept unless `esfake=`) |
 | `assky=0` · `asrays=1` | All-Star battle without the space sky (comparisons) · keep the Time Chamber's light-ray curtain (3D objects 5 / 6) |
 | `asskypng=FILE` · `asskylog` | All-Star sky (part 35): write the built 256x256 BG3 sky (twinkle at t = 0) as a PNG when it is built · with `asdbg`, `AS f… skylog: st … BG3CNT … ofs … BG2 ofs … DISPCNT … BLDCNT … BLDALPHA … BLDY … MB …` every 10 frames (`asdbg` alone logs `sky: built N tiles (… dropped), ramp …, palette 32..188, … stars + … glints, … us`) |
 
@@ -140,4 +145,4 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 `cmp_gx.gd gx=DIR/gx.bin` · `dump_gx.gd gx=… frame=K` · `bench_gx.gd gx=… [native] [reps]` · `dbg_gx.gd` (`dump`, `show`,
 `tris`, `texdump`, `hookval`, `frames`) · `dbg_snd.gd` / `dsstats.gd` (`frames`, `every`) · `lockstep.gd` (`ref`, `out`,
 `rom`, `frames`, `break=ADDR[:N]`, `cardlog`, `pxilog`, `hang_ms`, `trace`) · `check_rom.gd file=PATH` ·
-`qol_preview.tscn -- rom=ROM bg=CAPTURE.png out=DIR [mp fakepads=2 | lan | asrec [asdbg]]` (`asrec`: the ALL-STAR RECORDS page in 11 table states, part 35) · `assets=DIR` (converted-asset folder of the legacy scenes, `scripts/core/assets.gd`).
+`qol_preview.tscn -- rom=ROM bg=CAPTURE.png out=DIR [mp fakepads=2 | lan | asrec [asdbg]]` (`asrec`: the ALL-STAR RECORDS page in 11 table states, part 35, + the ENDLESS RECORDS page `es_*`, part 38) · `assets=DIR` (converted-asset folder of the legacy scenes, `scripts/core/assets.gd`).

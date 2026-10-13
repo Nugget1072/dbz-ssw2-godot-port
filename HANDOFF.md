@@ -1,7 +1,7 @@
 # HANDOFF — state of the port
 
-_Last updated: 2026-10-13 (part 36 — first Claude Code sessions on the user's PC: sanity check, then the GREEN DEMON
-cheat; part 35 was the last Cowork part: `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
+_Last updated: 2026-10-13 (part 38 — ENDLESS mode, BOMB RAIN became a cheat; parts 36-37 were the first Claude Code
+sessions on the user's PC; part 35 was the last Cowork part: `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
 Per-part history: `docs/HISTORY.md`.
 
 ## Current state
@@ -10,8 +10,9 @@ Z-Battle series, Maximum, Free Battle, Practice, Data File, Options, VS host scr
 original sound driver. The user plays it on Windows (RTX 4070 laptop) from `finished/` ("almost perfect visually and
 plays very well") and on a Steam Deck under Proton. The exported folder is portable and contains no game data (the exe
 finds the player's ROM in its own folder under any name). On top: the QoL layer behind Mode Select's centre (PORT) tile —
-12 menu pages (settings 1-3, BIG CHANGES = MULTIPLAYER + PERFORMANCE, cheats 5-9, WEIRD STUFF 10-12), LOCAL MULTIPLAYER
-(parts 27-29), LAN MULTIPLAYER (parts 30-32, lockstep), PERFORMANCE MODE (part 32). Map of all of it:
+12 menu pages (settings 1-3, BIG CHANGES = MULTIPLAYER + PERFORMANCE + NEW GAMEMODES, cheats 5-9, WEIRD STUFF 10-12),
+LOCAL MULTIPLAYER (parts 27-29), LAN MULTIPLAYER (parts 30-32, lockstep), PERFORMANCE MODE (part 32), NEW GAMEMODES
+ALL-STAR (parts 34-35) and ENDLESS (part 38). Map of all of it:
 `docs/QOL_ARCHITECTURE.md`.
 
 ## How it works (details: decomp/notes/transpiler.md, decomp/DATA_NOTES.md via DATA_NOTES_INDEX.md)
@@ -73,7 +74,8 @@ functions (off = `super`), `QoLController` + `QoLMenu` etc. (`docs/QOL_ARCHITECT
 4. Z-Battle course end / Maximum end / Dragon Balls screens: play through (or `poke=` the progress) and compare
    with melonDS.
 5. 3D exactness: per-span attribute interpolation (pass the polygon's vertices/planes to the shader).
-6. Fill the three EMPTY Gamemode slots when the user asks (the menu, routing and session classes are reusable).
+6. Fill the two EMPTY Gamemode slots when the user asks (the menu, routing and session classes are reusable; ENDLESS
+   shows how a mode reuses them: a flag on QoLAllStar + a few branches, ALLSTAR_DESIGN 7).
 
 ## All-Star (parts 34-35) — DONE
 NEW GAMEMODES setting, GAMEMODE tile, 4-slot Gamemode menu ("GAMEMODE SELECT"), All-Star team select + routing,
@@ -148,3 +150,22 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
   port_button.png documented as the user's art). The BIOS volume table is melonDS FreeBIOS (BSD).
   V: a clone from GitHub, built per README "Building from a git clone", gives an exe frame-identical to the editor
   baseline (21/21). Pushing: command-line git has no GitHub login on this PC: push / fetch with GitHub Desktop.
+
+## Part 38: ENDLESS mode, BOMB RAIN = cheat (2026-10-13) — DONE
+- **ENDLESS** (Gamemode menu slot 2, the bar relabelled like ALL-STAR's; design + status docs/ALLSTAR_DESIGN.md 7): the
+  All-Star session with `QoLAllStar.endless`: team select → Time Chamber battle against random enemies with no end
+  (`QoLAllStar.at()`: never one of the two before; `esseed=`), same sky / music / hearts / CPU rules, HUD = clock +
+  enemies beaten. Death (Game Over, scene 0x14) → **ENDLESS RECORDS** page (QoLAllStarRecords `endless`: tab ENDLESS,
+  the Game Over screen's own "Game Over" title over the WINNER band, enemies / hearts / rank / best, rows "n KO" + faces +
+  time) → A / START / B / tap → team select. `endless_records.cfg` next to the exe, most enemies first; nothing written
+  with cheats on; a run that beat nobody is not ranked. HI-SCORES RESET (settings page 2) now also clears both records
+  files (confirm text updated).
+- **BOMB RAIN** moved from WEIRD STUFF 3 to cheats page 9 CHALLENGES under GREEN DEMON: `QoLSettings.bomb_rain` is a
+  property over `cheats["bomb_rain"]` ([cheats]; an old [weird] value is carried over once), so it counts in
+  `cheats_on()` (no Z-Battle ranking, no ALL-STAR / ENDLESS record) and travels in the LAN snapshot as a cheat.
+- V (TESTING 29): 47 random swaps headless (heap flat), death → page → select captures, ranked file write, Gamemode menu
+  by keys and taps, records layouts in the preview (`es_*`), ALL-STAR battle + records log identical to the part-37 code
+  (git worktree A/B), menu pages, offcheck PASS. Facts: DATA_NOTES "part 38 findings (Endless)".
+- Open: the Game Over title is the English emblem's (the port's records pages are English throughout); ENDLESS keeps
+  ALL-STAR's 99:59 clock cap (enemy count ranks first); no real-play tuning yet (enemy level = the Option difficulty,
+  as ALL-STAR).

@@ -360,6 +360,12 @@ func _asrec_states(rom: PackedByteArray, root2: Node, font: QoLFont) -> void:
 		return {"frames": int((m * 60 + s) * QoLAllStarRecords.FPS) + 1, "hearts": h, "ids": ids, "date": "2026-10-12T10:00:00"}
 	var full := [E.call(8, 21, 0, [6, 7, 33]), E.call(9, 2, 1, [0]), E.call(12, 32, 2, [15, 25]), E.call(13, 55, 3, [20, 27]),
 		E.call(16, 42, 1, [1, 2, 3])]
+	X = func(b: int, m: int, s: int, h: int, ids: Array) -> Dictionary:
+		var d: Dictionary = E.call(m, s, h, ids)
+		d["beaten"] = b
+		return d
+	efull = [X.call(48, 30, 2, 1, [6, 7, 33]), X.call(31, 19, 45, 3, [0]), X.call(27, 14, 3, 0, [15, 25]),
+		X.call(9, 4, 12, 2, [20, 27]), X.call(4, 1, 58, 0, [1, 2, 3])]
 	var S := func(tab: Array, e: Dictionary, r: int, nt: String, t: int, p1: Array = []) -> void:
 		page.table = tab
 		page.entry = e
@@ -394,4 +400,26 @@ func _asrec_states(rom: PackedByteArray, root2: Node, font: QoLFont) -> void:
 			var e: Dictionary = E.call(10, 5, 2, [0])
 			S.call([e], e, 0, "nofile", 16)],
 		["as_fade", func(): page._phase = 0; page._t = 8; page.queue_redraw()],
+		# part 38: the ENDLESS RECORDS page (enemies beaten, minutes, seconds, hearts, team)
+		["es_empty_new", func():
+			page.endless = true
+			var e: Dictionary = X.call(12, 8, 21, 1, [0, 5, 6])
+			S.call([e], e, 0, "", 16)],
+		["es_full_1st", func():
+			var e: Dictionary = X.call(131, 61, 7, 0, [9, 12, 30])
+			S.call([e] + efull.slice(0, 4), e, 0, "", 16)],
+		["es_full_1st_off", func(): page._t = 24; page.queue_redraw()],
+		["es_full_3rd", func():
+			var e: Dictionary = X.call(29, 9, 40, 2, [36])
+			S.call(efull.slice(0, 2) + [e] + efull.slice(2, 4), e, 2, "", 16)],
+		["es_out", func(): S.call(efull, X.call(3, 1, 2, 3, [17, 18]), -1, "out", 16)],
+		["es_zero", func(): S.call([], X.call(0, 0, 41, 0, [0]), -1, "out", 16)],
+		["es_cheats", func(): S.call(efull.slice(0, 2), X.call(40, 12, 0, 0, [10, 11, 34]), -1, "cheats", 16)],
+		["es_long", func():
+			var e: Dictionary = X.call(99999, 99, 59, 3, [26, 4])
+			S.call([e] + efull.slice(0, 1), e, 0, "", 16)],
 	]
+
+
+var X: Callable                                ## part 38: ENDLESS entry (beaten, m, s, hearts, ids)
+var efull: Array = []
