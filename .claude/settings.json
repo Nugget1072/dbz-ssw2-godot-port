@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python tools/test/ssw2.py *)",
+      "Bash(python3 tools/test/ssw2.py *)",
+      "Bash(tools/Python3.14.8/python.exe tools/test/ssw2.py *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ],
+    "deny": [
+      "Edit(**/scripts/gen/ds_game.gd)",
+      "Edit(**/scripts/gen/ds_game7.gd)",
+      "Write(**/scripts/gen/ds_game.gd)",
+      "Write(**/scripts/gen/ds_game7.gd)",
+      "Read(**/*.nds)"
+    ]
+  }
+}

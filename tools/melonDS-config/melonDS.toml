@@ -1,0 +1,25 @@
+LimitFPS = true
+TargetFPS = 60.0
+FastForwardFPS = 1000.0
+PauseLostFocus = false
+
+[Instance0.Keyboard]
+A = 88
+B = 90
+X = 83
+Y = 65
+L = 81
+R = 87
+Select = 16777219
+Start = 16777220
+Right = 16777236
+Left = 16777234
+Up = 16777235
+Down = 16777237
+HK_FastForward = 16777217
+HK_Pause = 80
+
+[Instance0.Window0]
+ShowOSD = false
+IntegerScaling = true
+ScreenFilter = false

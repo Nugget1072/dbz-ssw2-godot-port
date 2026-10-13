@@ -1,0 +1,241 @@
+DBZ SUPERSONIC WARRIORS 2 PORT - BUGS FIXED
+===========================================
+
+PART 35
+
+AC. All-Star: life bars looked empty after a heart, a revive or a new enemy
+   From the third enemy on (after Krillin) the enemy's life bar looked empty although its health still counted, a
+   fighter brought back with a heart came back with an empty-looking bar, and a fighter healed while waiting on the
+   bench showed the healed part as empty. The game keeps a separate set of bar colours for every team member and only
+   repaints the colours of the fighter who is on screen when its health changes; health gained while a fighter is
+   off screen (hearts, the All-Star mode reusing a defeated enemy's slot for the next enemy) was never painted. In
+   All-Star the port now repaints a fighter's bar from its real health whenever it comes in, after every heart and
+   when the next enemy is loaded. Checked with captures: every incoming enemy and every healed / revived team member
+   shows a full bar in its own colour (the two small bars under the big one too).
+
+AD. All-Star: records screen and space sky redesigned
+   The records screen now looks like the game's own results screen (portraits, score table, WINNER banner, ranking
+   rows, all in the game's own lettering and digits). The space sky has a gradient, a faint Milky Way and coloured,
+   twinkling stars.
+
+PART 32
+
+AA. LAN: the guest saw the host's touch screen while the battle was paused
+   When either player paused a LAN battle, the joining player's lower screen switched to the host's team with the
+   red Touch! button, and the PING disappeared. The game's pause menu is on the top screen and leaves the bottom
+   screen showing player 1's panel; the port drew the guest's own panel in every battle state except the pause. It
+   now does, and the PING stays visible; the guest's panel also stays while a battle is being left after the other
+   player quit. (Pausing was measured not to slow the game or raise the ping in our tests.)
+
+AB. Faster on slow PCs / Steam Deck (always on)
+   The emulated machine now does less bookkeeping per frame (display register capture only when the picture needs
+   it, a short path for the 3D command writes, a lighter scanline loop, faster texture-memory copies, reused 3D
+   materials): about 10-20 % less CPU per battle frame, with exactly the same output. The new PERFORMANCE option
+   (settings page 4) goes further for slow machines.
+
+PART 31
+
+Y. LAN: menus and sprites invisible after the LAN pages
+   After opening the LAN multiplayer HOST / JOIN pages and going back, the LOCAL / LAN screen and Mode Select showed
+   only their hexagon background, with no menu options or sprites. The port hides the game's other lower-screen
+   layers while its LAN pages are open, but nothing turned them back on when the pages were closed with BACK / B
+   and no session was running. All the port's pages now share one rule that undoes the hiding whenever no page is
+   open, on every exit path, and it is checked every frame as a safety net.
+
+Z. LAN: rejoining a room could start a broken battle and soft-lock the host
+   After a player left a room and joined again, information from the previous session was reused: the rejoined
+   player could skip the character select, pick a stage on their own and load into a broken battle while the host
+   waited in the stage select forever. Every message now carries a session and round id, old information is
+   thrown away when a session starts or ends, and a battle only starts on the host's stage result for the current
+   round. Battles are numbered by the host (an interrupted battle could freeze every later battle of the session),
+   both games tell each other where they are once a second ("OUT OF STEP" / "BATTLE STOPPED" brings both back to
+   the room if they drift apart), and joining a host still on its way back to its room shows "HOST NOT IN ITS ROOM -
+   TRY AGAIN". Leaving, closing the window or a crash of either player at every step was tested to end with both
+   players back in their room / the LAN page with a notice.
+
+PART 29
+
+W. SAME CHARACTERS: supports could start the battle
+   With SAME CHARACTERS a team could take two or three supports, or only supports; a support could then be the
+   first fighter, and two supports could never be called from the touch screen. The game's own rules now apply
+   again to supports: a team takes at most one support and needs at least one fighter, who starts the battle.
+   Fighters can still be repeated (three Gokus).
+
+X. Local multiplayer: PLAYER 2's Touch! stayed dark / supports one at a time
+   PLAYER 2's Touch! button stayed dark at 200 % at the start of a battle even when the team had a Team Arts: the
+   game only works out the Team Arts partner for player 1 when the battle loads. It is now checked for both players,
+   so the button lights exactly when a tap would start Team Arts. And only one support could be on screen for both
+   players together (the game has a single support slot); in local play each player now has their own, so both
+   supports can fight at the same time, even the same character.
+
+PART 28
+
+U. Garbled sky for one frame when STAGE SHUFFLE changes the stage
+   At each stage change the frame right after it showed a garbled background (purple checkers or rays) over the
+   old stage. The game's stage loader switches the screen mode at once but sends the new background graphics only
+   at the next screen refresh. The mode change now waits for the graphics, so the picture goes straight from the
+   old stage to the new one.
+
+V. Local multiplayer fixes
+   - Character select: after one player picked a full team of high-cost fighters, every face went black for both
+     players. The game keeps the D.P of the current side's slots in a few bytes that were left on the full player's
+     team; each player is now checked against their own team.
+   - Shuffle cheats: when both players changed character in the same moment, a top-screen face icon showed the
+     other player's face or the right face in the wrong colours (e.g. Frieza's colours on Cell). Each player now
+     has their own buffer for the new icon.
+   - Two supports (SAME CHARACTERS) overlapped on the touch screen and could not be called; the support box is now
+     split in half, one support per half, and each half calls its own support.
+
+PART 26
+
+R. Slow on Steam Deck / Proton
+   Under Proton on a Steam Deck the game ran at about 40 fps in battles (dips to 17) and below 60 in menus, at
+   any resolution. Each displayed frame ran the game's frame and then Godot's drawing and present one after the
+   other, and on a slower CPU the catch-up made it worse. When frames come late, the game now computes the next
+   frame on its own thread while the picture is drawn and presented (fast PCs are unchanged; the game itself
+   behaves exactly as before). An unknown screen refresh rate (as under Proton) no longer adds a 60 fps limiter
+   on top of V-Sync. To measure: DBZ_PERFLOG=1 %command% in the Steam launch options writes perflog.txt.
+
+S. Bomb Rain bombs broke apart while falling (FRAME RATE above 60)
+   With smooth motion on, the falling bombs' pixels drifted apart, and for a moment a bomb could turn into a
+   grey or dark box or partly vanish. Each bomb was drawn from about 40 small rectangles that all looked the same
+   to the smooth-motion system, which then moved them with each other's motion. Each bomb and its shadow is now
+   a single textured picture like the game's own sprites, in a small piece of texture memory reserved through
+   the game's own texture manager, so it always moves as one piece.
+
+T. Damage numbers, blood, confetti and sparkles glitching with smooth motion
+   For the same reason, a damage number could break up for a moment into red and black blocks, blood drops
+   stretched into streaks and KO confetti / FLASHY KI sparkles jumped about at FRAME RATE above 60. Each piece
+   now carries its own invisible tag, so it only follows its own motion. The 60 fps picture is unchanged.
+
+PART 24
+
+N. Mirror Mode made the pause menu unreadable
+   With MIRROR MODE on, pausing a battle (Start) showed the game's pause menu flipped, so its text read backwards.
+   The mirror was applied whenever a battle was on screen, including the pause state. The picture (and the
+   LEFT/RIGHT swap) is now normal while the battle is paused and flips back when the fight goes on.
+
+O. Two sounds on B in the HI-SCORES question
+   Pressing B on the "ARE YOU SURE?" page played the back sound and the decide sound at the same moment. B (and
+   NO) now play only the back sound, like UNDO on the window-size question.
+
+P. Long gamepad names drawn over the box edges (CONTROLS)
+   Seven-letter gamepad names such as D-RIGHT, R-STICK or PADDLE1 were wider than their boxes and covered the
+   orange rims. A name too wide for the bold font is now drawn in the game's narrower regular font.
+
+Q. The PORT tile's cheat line ran out of its box
+   With cheats on, the tile's description said "Cheats on: N (pages 3-6 of the menu)", which ran past the right
+   edge of the text box and only appeared after the menu had been opened once. It now reads "Cheats on: N (menu
+   pages 4-7)." and is there from the start.
+
+PART 22
+
+H. The game went back to the opening logos (Mode Select)
+   Pressing a button in the very same moment you moved onto the middle tile (for example Right and X together on
+   MAXIMUM), or clicking the tile while pressing X, let the game "select" the hidden middle tile, which in the
+   original code restarts from the Bandai/Cavia logos. Presses that come with the move or the click are now kept
+   from the game, so the cursor just lands on the tile or the settings open.
+
+I. The game stopped after the PC was asleep
+   A safety check stops the game when it seems stuck for 10 seconds; it also counted the time the PC was asleep or
+   frozen, so waking the PC in the middle of a game could leave a frozen picture. Only time the game could really
+   run is counted now (tested by freezing the game for 12 seconds: it carries on).
+
+J. settings.cfg edited by hand
+   A value written in quotes ("true") stopped the loading half way and the remaining settings went back to their
+   defaults. Every setting now loads on its own; a value that makes no sense is replaced by its default.
+
+K. TOUCH FUZZY did not work in Practice (and in the battles' KO / time-up sequences)
+   It looked for Free Battle's own scene numbers. It now checks that a battle is on screen (the battle's own
+   picture routine is running), which is the same in every mode: Practice, Story, Z-Battle, Maximum, Free Battle.
+
+L. BEVEL EMBOSS outlines stayed visible during fades to black / white
+   The emboss was added after the screen fade, so a black screen still showed outlines. The fade is now applied
+   after the emboss, so a black screen is black and a half fade shows a half-faded emboss.
+
+M. Menu texts
+   The Dragon Ball tile now says the cheats are on pages 3-6 (not 3-5), and the CONTROLS page arrows show
+   "PAGE 1 / 2" instead of "/ 7".
+
+PART 21
+
+G. Stage pieces vanished too early when zoomed out (ZOOM 70 / 85)
+   Some stage objects only appear while the camera is inside a range the game picked for its normal view (Roshi's
+   house on the island), repeating props jump to the other side half a stage away, and the long background strips
+   (destroyed city buildings, ruins skyline) are drawn only a few pieces around the view. Zoomed out, the edges of
+   the bigger view showed these gaps. While drawing (not for the game itself) the ranges are now widened by the
+   zoom and the missing copies / pieces are added; at ZOOM 100 nothing changes. Checked on all 15 stages by
+   sweeping the camera across each one at 70 and 85.
+
+PART 20
+
+E. Dash lines stayed on the fighter for a second (NO COOLDOWN cheat)
+   With NO COOLDOWN on, the speed lines of a quick double-tap dash stayed on your fighter for about a second after
+   the dash ended; the R-dash lines and the glow from charging ki (R) did the same. The cheat lets a beam or super
+   keep firing when you cut it short with a new attack, but it was also keeping every other effect that normally
+   ends with its move. Now only the beams and shots of the attack you actually cut short keep going; dash lines and
+   charge glows disappear the moment the move ends, as in the original (checked frame by frame against the
+   original game: 17 frames). With the cheat on and no attack cut short the picture is identical to playing
+   without it; a cut-short super (Goku's Spirit Bomb) still flies on.
+
+F. Frame rate at high FPS
+   Measured: the game's own work per frame did not get slower in the recent parts (5600 battle frames: 57 s now vs
+   61-63 s for the part-17 build and the port without its extras, same machine). The extra cost at very high
+   frame rates was in drawing the in-between frames: every 3D material and both screens got their "in-between"
+   value set separately on every picture, the window drew a full-size black rectangle under the game every picture,
+   and the sharp-scaling shader also ran for whole-number window sizes where it does nothing. Now one shared value
+   is set once per picture (only when it changes), the black borders come from the window's own background, and
+   whole-number window sizes use plain pixel scaling. The pictures are identical; only the work is less.
+
+PART 19
+
+C. No sounds on the settings tile and in the settings / cheat menus
+   The Dragon Ball tile on Mode Select is not a tile the game uses, so the port moved the cursor onto it and
+   opened the menu itself, without the game's sounds, and the port's menus had no sounds at all. Now the port
+   plays the game's own Mode Select sounds through the game's sound function: cursor move (moving onto the tile,
+   moving in the menus, page flips), select (opening the menu, pressing a button) and back (B, EXIT, BACK). They
+   follow SOUND FX on/off and VOLUME like every other game sound. Checked by watching the sound chip start a new
+   effect channel right after each action.
+
+D. CHAOS SHUFFLE broke grabs, throws and summons
+   A swap could happen while you were caught in an attack (Kid Buu's ball super made you invisible and free,
+   throws ended at once, some grab supers broke) or while your own super summoned helpers (Ginyu's and Cooler's
+   teams vanished). The game marks throws and grabs (both fighters get a "held" flag and special victim states)
+   and spawns summoned fighters as objects of the super. CHAOS SHUFFLE now waits while you are held, thrown,
+   grabbed or hidden, while either fighter is in a throw or super, and while objects of your super / throw /
+   summon are still alive, then swaps the moment it is over. Checked against Kid Buu's ball, a throw, Broly's grab
+   super, your own throw, and Ginyu's / Cooler's summons, plus a run through ten characters' supers.
+
+PART 18
+
+A. Boss characters flew backwards after a dash (BOSS CHARACTERS cheat)
+   When a dash runs without a direction held, the game sets the speed to (dash value x speed scale), computed in
+   32 bits. The strongest boss settings (level 3: Broly, SSJ Goku, Cell, ...) make that product too big; it wraps
+   around to a huge NEGATIVE speed, so the fighter shot off backwards across the stage. The original game has the
+   same overflow (proven in the melonDS emulator by giving player 1 the boss settings); it just never lets a player
+   be a boss. Fix: for cheat bosses only, that one speed is computed with the normal character's scale. Bosses keep
+   their HP, boss moves, cheaper supers and faster movement; their dash now goes forward (9960 vs 3984 for normal
+   Broly) and slows down normally.
+
+B. Rare freeze during fast character changes (found while building CHAOS SHUFFLE)
+   While a character is loaded from the ROM, the port could start the screen-refresh routine in the middle of the
+   read; that routine waited for the ROM transfer to finish, which could not happen until it returned, so the game
+   froze (seen once in a stress test, at the 16th change). During character and stage changes the refresh now
+   leaves its uploads for the next frame. Tested with 100+ character changes and 38 stage changes without a freeze.
+
+PART 17
+
+1. Gap at the screen edge while dashing (smooth motion)
+   With FRAME RATE above 60 (your setting: MAX) the port draws extra pictures between the DS's frames by moving
+   every 3D point part of the way back to where it was a frame earlier. The DS cuts 3D shapes off at the screen
+   edge, and those cut-off corners were moved inward too, so during fast camera moves (dash attacks, knock-backs) a
+   thin strip at the edge showed the sky / empty space behind the stage. Now a point that lies on the screen's
+   edge is never moved away from it; the shape is just stretched to the edge. Checked with frame-exact captures of
+   a dash: the edge strip is gone (stray edge pixels 3836 -> 485, the rest are normal in-between pixels), motion is
+   still smooth, and the 60 fps picture is unchanged.
+
+2. Boss skull stayed after CHARACTER SHUFFLE (BOSS CHARACTERS + CHARACTER SHUFFLE)
+   A boss you picked with L kept its skull marker after the shuffle turned it into another character, even though
+   the new character was a normal one. Now a shuffled boss becomes the boss version of the new character when that
+   character has one (boss stats and boss-only moves), and otherwise loses the skull. Checked in a battle:
+   Broly (boss) -> Majin Buu showed the skull on a normal Buu before; now the marker follows the real boss state.

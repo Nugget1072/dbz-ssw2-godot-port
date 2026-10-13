@@ -1,0 +1,24 @@
+# Never commit the dump or anything extracted/converted from it (keep it personal)
+baseroms/
+decomp/extract/
+GodotGame/new-game-project/assets/
+GodotGame/new-game-project/.godot/
+reference/**/*.png
+build/
+# tool binaries
+tools/Godot_v4.7.2-stable_win64.exe/
+tools/Python3.14.8/
+tools/melonDS-1.1-windows-x86_64/
+__pycache__/
+*.pyc
+reference/states/
+GodotGame/new-game-project/data/*.sav
+GodotGame/new-game-project/data/*.nds
+finished/
+# native CMake object trees (native/build.sh recreates them)
+GodotGame/new-game-project/native/build-linux/
+GodotGame/new-game-project/native/build-windows/
+# local test output + baselines (ROM-derived pictures/logs; tools/test/ssw2.py writes here)
+local/
+# Claude Code personal settings
+.claude/settings.local.json

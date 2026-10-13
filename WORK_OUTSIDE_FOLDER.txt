@@ -1,0 +1,85 @@
+Work done outside the project folder (SupersonicMain)
+=========================================================
+
+1. Claude's private cloud sandbox (Anthropic-hosted Linux session workspace, deleted when the session ends)
+   Why: your PC's Linux shell (used by Claude to edit this folder) has no internet and cannot run the
+   Windows .exe tools, so automated emulator screenshots and headless Godot runs happen in the sandbox.
+   What was put there:
+     - a copy of the ROM and .sav from baseroms/ (for melonDS reference captures; never shared anywhere)
+     - Godot 4.7.2 Linux build   (github.com/godotengine/godot release 4.7.2-stable, same version as tools/)
+     - melonDS 1.1 Linux AppImage (github.com/melonDS-emu/melonDS release 1.1, same version as tools/)
+     - a tiny libOpenGL.so.0 shim (links to the system libGL) so the melonDS AppImage starts under Xvfb
+     - melonDS savestates (rom.ml1..ml4: mode select, character select, stage select, battle start)
+   Everything produced there that matters (scripts, notes, reference screenshots, converted assets)
+   is copied back into this folder.
+
+2. melonDS on Windows (tools/melonDS-1.1-windows-x86_64)
+   melonDS keeps its config (melonDS.toml) next to melonDS.exe, inside this folder. Nothing outside.
+   NOTE: melonDS writes in-game saves next to the ROM, i.e. baseroms/*.sav (your existing save file).
+
+3. Godot on Windows
+   The Godot editor stores editor settings in %APPDATA%\Godot\ and the game's user:// data in
+   %APPDATA%\Godot\app_userdata\<project name>\ . That is standard Godot behaviour, outside this folder.
+   The project is configured with a custom user dir name "DBZSSW2Port" so it is easy to find/delete.
+
+Session 1, part 2 (cloud sandbox, Linux) — same rule as above, nothing written outside the project on the user's PC:
+- Ghidra project + decompiler output used by the transpiler: /home/claude/work/ghidra (cloud only). The repo copy of the
+  pipeline is decomp/tools/transpile/ and decomp/tools/ghidra_DecompAll.java; outputs go to decomp/extract/transpile/
+  when run from the repo.
+- Lockstep references (melonDS RAM dumps per frame, derived from the user's ROM): /home/claude/work/lockstep (cloud only,
+  large; regenerate with tools/melonds-headless/lockstep_ref.py).
+- Godot headless runs import the project and write .godot/ (git-ignored) inside the project, and user:// data to the
+  Godot app-data folder "DBZSSW2Port" (as noted above).
+
+2026-10-03 (session 1, part 3) - cloud sandbox only, nothing on your PC outside SupersonicMain:
+- melonDS headless core rebuilt with one extra function (mh_set_rtc, frozen clock for deterministic references)
+  in the cloud copy of the melonDS 1.1 source (/home/claude/tools/melonds-src); the rebuilt library is in
+  tools/melonds-headless/.
+- Ghidra projects for the ARM7 binary and frame captures were made in the cloud scratch folders only.
+
+2026-10-04 (session 1, part 6) - cloud sandbox only, nothing on your PC outside SupersonicMain:
+- Native extension toolchain (cloud only): godot-cpp (github.com/godotengine/godot-cpp, master) with the API JSON
+  dumped from Godot 4.7.2, CMake + Ninja, and llvm-mingw 20260922 (github.com/mstorsjo/llvm-mingw) to build the
+  Windows DLL. The sources and build script are in GodotGame/new-game-project/native/, the built libraries in
+  GodotGame/new-game-project/bin/.
+- Godot 4.7.2 export templates (Windows + Linux, from the official 4.7.2-stable release on GitHub) were placed
+  in the cloud's /root/.local/share/godot/export_templates/4.7.2.stable/ to export finished/DBZ_SSW2_Port.exe.
+  To export on your PC, Godot's "Manage Export Templates" downloads them to %APPDATA%\Godot\export_templates\.
+- (Superseded in part 7: the finished game now keeps its save next to the exe, finished\DBZ_SSW2_Port.sav.
+  An older build may have left %APPDATA%\DBZSSW2Port\save100.sav; it is no longer used and can be deleted.)
+
+2026-10-04 (session 1, part 7):
+- Nothing new outside SupersonicMain. The game's save is finished\DBZ_SSW2_Port.sav (inside the folder); only
+  if that folder were read-only would it fall back to %APPDATA%\DBZSSW2Port\save100.sav. Godot itself may still
+  create %APPDATA%\DBZSSW2Port\ for logs/shader cache (standard Godot behaviour).
+
+2026-10-04 (session 1, part 8):
+- Nothing new outside SupersonicMain. The portable test ran in the cloud sandbox (a copy of the Linux export in an
+  empty temporary folder). The exe now carries the ROM inside it, so it needs nothing outside finished\.
+
+2026-10-04 (session 1, part 9):
+- Nothing new outside SupersonicMain on your PC. GPU tests ran the exported game from SupersonicMain\_gputest\
+  (deleted afterwards). Cloud sandbox: a temporary copy of the ROM in /tmp test folders (portable-build tests).
+
+2026-10-05 (session 1, parts 10-11):
+- Nothing new outside SupersonicMain on your PC. The new settings menu saves finished\settings.cfg next to the exe;
+  only if that folder were read-only would it fall back to %APPDATA%\DBZSSW2Port\settings.cfg. Editor runs of
+  the project keep their settings in Godot's user data folder (%APPDATA%\Godot\app_userdata\...\settings.cfg).
+- Cloud sandbox only: test captures in /tmp/ssw2 (temporary).
+
+2026-10-06 (session 1, part 16):
+- Nothing new outside SupersonicMain on your PC. Your controls are saved in finished\settings.cfg ([controls]),
+  same file as the other settings. The window icon is read from your ROM at every start (not stored anywhere).
+- Cloud sandbox only: test captures in /tmp/ssw2 (temporary).
+
+2026-10-07 (session 1, part 21):
+- You removed baseroms/ and 100Save/. The tools now use the ROM in finished/ and the completed save that is
+  already inside the project (GodotGame/new-game-project/data/save100.sav). Nothing outside SupersonicMain.
+
+2026-10-12 (session 1, parts 34-35):
+- Nothing new outside SupersonicMain on your PC. All-Star records are saved in finished\allstar_records.cfg.
+- Part 35 moves the work to Claude Code on your PC. Things Claude Code may need outside the folder (write them here
+  when they happen): Godot's export templates 4.7.2 (%APPDATA%\Godot\export_templates\4.7.2.stable\), Godot's
+  editor settings / shader cache (%APPDATA%\Godot\), and Claude Code's own data (%USERPROFILE%\.claude\).
+- Cloud sandbox only: test captures in /tmp/ssw2 (temporary); the baselines worth keeping were copied into
+  local\baselines\ (git-ignored).

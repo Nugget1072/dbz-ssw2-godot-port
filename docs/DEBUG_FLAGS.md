@@ -1,0 +1,142 @@
+# Debug / test flags (command line, after `--`)
+
+Parsed by the `Game` autoload (`scripts/core/game.gd`): every `key=value` (or bare `key` = "1") after `--` lands in
+`Game.args`; code reads them with `Game.args.has("x")` / `Game.flag("x", default)`. All flags are inert unless given.
+Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `docs/TESTING.md`; LAN details
+`docs/LAN_DESIGN.md` 8; MP inputs `docs/MULTIPLAYER_DESIGN.md` 5.
+
+## Capture, scripted input, test setup
+| Flag | Meaning |
+|---|---|
+| `capture=DIR cap_every=N cap_to=M [cap_from=A]` | frame-exact screenshots `DIR/p<frame>.png` (relative DIR = next to the exe); RTC frozen, settings.cfg ignored |
+| `cap_fast` | captures draw only the captured frames (not every emulated frame) |
+| `capinterp=A` | captures drawn as in-between frames at A (0..1) — smooth-motion checks |
+| `layersweep=F` | capture the lower screen one layer at a time at frame F |
+| `snap=DIR snap_every=N` | real-time screenshots (no capture mode) |
+| `inputs=F:Key:N,F:T<x>/<y>:N` | scripted pad / touch input; `F:F3` = function keys (F3 / F11); `F:K<name>:N` = a raw key through Godot's Input (CONTROLS mapping applies, e.g. `Kspace`) |
+| `nds=PATH` `sav=PATH` `save=PATH` | ROM, save to load, save to write |
+| `quit_at=F` | quit at game frame F (release stdout is only flushed on a clean exit: always pass it) |
+| `rtc=YYYY-MM-DDTHH:MM:SS` | fixed RTC (repeatable runs) |
+| `poke=F:ADDR:VAL16[:N]` · `clamp=ADDR:LO:HI` | write RAM at frame F / keep a value in range (e.g. `clamp=021080FA:-32000:200`) |
+| `probe=EXPR;EXPR` `probe_every=N` | print RAM expressions every N frames (default 10) |
+| `dumpram=F1,F2` · `dumpvram=F` · `dump3d` | RAM / VRAM / 3D dumps |
+| `iohook=ADDR+LEN` (`iohook_all`, `iohook_from`, `iohook_val`) | log IO writes |
+| `watch=ADDR+LEN` (`watch_from=F`) | store watch points (WATCH=1 build) |
+| `trace=F1-F2` | call trace (TRACE=1 build) |
+| `profslow=N` | slow-function report (PROFILE=1 build) |
+| `qolcfg=PATH` | settings file to use (captures otherwise ignore settings.cfg) |
+| `noqol` | no QoL layer at all (plain `DSGame`) |
+| `qoldbg` | Mode Select / sound masks every 20 frames; "QOL se", banner icon |
+| `qoldump=F` | sound-driver state at frame F |
+| `sndlog` · `sndstat` · `sndcnt=F` | sound logs (sndstat / sndcnt force the GDScript mixer) |
+| `nocache` | rebuild every VRAM texture every frame |
+| `scene=…` (`scripts/core/boot.gd`), `p1=` `p2=` `p2_cpu=` `stage=` `single_screen=1` (`Game`), `pilot` `shots` `mute` | legacy pre-translation scenes / pilot (unused by the game) |
+
+## Pacing, performance, profiling
+| Flag | Meaning |
+|---|---|
+| `perf` | timings every 600 frames (step, scanlines, sound, 3D, refresh) |
+| `perflog` (or env `DBZ_PERFLOG=1`) | `perflog.txt` next to the exe; fields in `scripts/game/ds_perflog.gd`, docs/TOOLING.md parts 26/32 |
+| `noprof` | perflog / perf without the scanline timers |
+| `perfmark=F1,F2` | process CPU time at those frames |
+| `pacelog` | `PACE game <frames/s>` every 5 s |
+| `pacedbg` | `PACE d=… steps=… acc=…` per frame (accumulator) |
+| `fakehz=N` | pretend display rate |
+| `maxfps=N` | Engine.max_fps (0 = uncapped; default 240) |
+| `vsync=0` | V-Sync off |
+| `smooth=0/1` | smooth motion (in-between frames) off / on |
+| `turbo` | one game frame per Godot frame; with `--headless --fixed-fps 60` = CPU benchmark of the game step |
+| `pipeline=0\|1\|auto` · `pipedbg` · `fakerender=MS` | frame pipelining (part 26) / print auto switches / simulated driver+present time |
+| `perfmode=1` | PERFORMANCE MODE on (part 32) |
+| `perfhalf=0\|1\|auto` | 30-fps cadence experiment (off by default) |
+| `fakeslow=MS` | every game frame MS longer (slow-CPU simulation) |
+
+## Renderer / native
+| Flag | Meaning |
+|---|---|
+| `gxdump=FROM:N` | capture/gx.bin for `tools/dump_gx.gd`, `cmp_gx.gd`, `bench_gx.gd` |
+| `gxthread=0` · `gxdbg` | geometry engine not on its worker thread / print what GPU textures were built from |
+| `gxnative=0` `sndnative=0` `fsnative=0` | GDScript versions of the geometry engine / mixer / FS path lookup |
+| `present=0` | no SubViewport / DSPresenter (old root-stretch path) |
+| `presentfit` | full-screen fit scaling in a window (start with `--resolution WxH`; Xvfb has no window manager) |
+| `fxdump` · `fxdbg` | picture effects (dump / debug, SHAKE lines) |
+| `shadows=1/0` · `shadowdbg` `shadowk=` `shadowc=` `shadowflip=0` | DETAILED SHADOWS; silhouette debug / squash / shear / direction |
+| `zoom=0..4` · `zoomcycle` · `zoomk=F` · `zoomdbg` · `zoomcull=0` | CAMERA ZOOM (2 = the game's own); culling fix off |
+
+## QoL / menu / controls
+| Flag | Meaning |
+|---|---|
+| `autoskip=1` · `skipdbg` | AUTO SKIP |
+| `fakepad` · `vcursor=X,Y` · `vcurmove=F:SX:SY:N,…` · `vcurclick=F:N,…` · `curspeed=1..5` · `curdbg` | gamepad mouse cursor (QoLCursor) |
+| `btndbg` · `nobutton` | PORT tile art (QoLButton) |
+| `lbdbg` · `lbreset=F` | HI-SCORE ranking / reset at frame F |
+| `inpdbg` | INPUT DISPLAY |
+| `noloadskip` · `dmaread` | shuffle card-DMA freeze repro (`cheats=chaos_shuffle shufseed=49 noloadskip dmaread`) |
+
+## Cheats
+| Flag | Meaning |
+|---|---|
+| `cheats=a,b` | turn cheats on (names in `QoLSettings.CHEATS`) |
+| `cheatdbg` | party ids, HP / ki / action / live projectiles every 10 frames; boss setup |
+| `shufseed=N` | CHARACTER / CHAOS SHUFFLE picks |
+| `stgseed=N` · `stglist=a,b,…` | STAGE SHUFFLE picks |
+| `chaosat=F1,F2` | chaos swaps only at these frames |
+| `dashdbg` · `nodashfix` | motion / stun trace ("SPAM", "DSH fix"); boss dash fix off (A/B) |
+| `p2keys=F:MASK:N` | scripted P2 fighter input |
+
+## Weird stuff
+| Flag | Meaning |
+|---|---|
+| `weird=bevel,fuzzy,epic,fiddle,blood,after,gameboy,mirror,flashy,shake,confetti,dmgnum,rainbow,bombs,inputs,crt` | turn these on (`dmgnum` / `inputs` = DAMAGE NUMBERS / INPUT DISPLAY, settings page 3) |
+| `epicdbg` · `blooddbg` · `flashydbg` | EPIC MODE / BLOOD / FLASHY KI + CONFETTI debug |
+| `w3dbg` · `w3merge=0` | damage numbers / rainbow debug; no merging (stacking test) |
+| `bombdbg` `bombseed=N` `bombrate=F` `bombfx=V` `bombfxcycle` `bombkind=K` `bombpos` `bombvram` | BOMB RAIN |
+
+## Local multiplayer (part 27)
+| Flag | Meaning |
+|---|---|
+| `mp=1` | MULTIPLAYER on |
+| `mpseed=N` | stage 50/50 pick |
+| `mpdbg` | "MP f… stage scene state cur …" every 10 frames (+ heap / archives with `landbg`) |
+| `mpbattle=1` | Free Battle as an MP battle (shortcut) |
+| `fakepads=N` · `mpdev=k,0` · `mppad=F:DEV:b<n>\|a<n>±:N` | fake gamepads / devices per player / scripted pad input |
+| `p2inputs=` | P2 input (same syntax as `inputs=`) |
+| `vcursor2` · `vcur2move` · `vcur2click` | P2 pad cursor |
+
+## LAN (parts 30-32; semantics: docs/LAN_DESIGN.md 8)
+| Flag | Meaning |
+|---|---|
+| `lan=host\|join:IP[:PORT]` · `lanport=N` · `lanname=S` · `lanauto` | start hosting / joining at scene 0x11 without menu pages; auto propose / accept |
+| `lanbattle=1` (+ **always** `lanteams=a.b.c/d.e.f lanbstage=HEX`) | lockstep test from the btnrun Free Battle (without them each side keeps its own stage → correct DESYNC at L277) |
+| `laninputs=L:Btn[+Btn\|T<x>/<y>]:N` · `lanpicks=a.b.c[@D]` · `lanstage=ICON[@D]` · `lanrounds=N` · `lanleave=K` | scripted LAN input / picks / stage / rounds / leave |
+| `landelay=N` · `lanlag=MS` · `lanjitter=MS` · `lanloss=PCT` · `lanimpseed=N` | input delay / network impairment |
+| `landbg` · `lanmenudbg` · `pingdbg` · `lanpace` | protocol + lockstep log (`POINT <name>`) / menu debug / one line per pong / `LANP` pace line per 60 lockstep frames |
+| `lanhash=FILE` | per-lockstep-frame hashes for `tools/linux/lan_cmp.py` |
+| `lanquit=L` · `landesync=L` | quit / corrupt one HP at lockstep frame L |
+| `lanbuild=S` · `lanrom=S` | fake build id / ROM MD5 (reject tests) |
+| `lanpanel=0` · `lanthread=0` | no guest panel / no network thread |
+| `lanrejoin=N[@C]` · `lanquitat=WHAT[@N]` · `lanoos=room\|noresult\|silent[@L]` | part 31 rejoin / window-close / forced divergence |
+| `lanwd=K` | watchdog limits × K (default 4 in capture runs) |
+
+## NEW GAMEMODES / ALL-STAR (part 34; docs/ALLSTAR_DESIGN.md)
+| Flag | Meaning |
+|---|---|
+| `newmodes=1` / `0` | NEW GAMEMODES on / off for the run (FREE BATTLE tile -> GAMEMODE -> Gamemode menu -> ALL-STAR) |
+| `allstar=1` | the btnrun Free Battle becomes an All-Star battle (session starts when the Free Battle path asks for scene 0x13 / 0 in mode 5; no menus needed, NEW GAMEMODES not needed); afterwards the battle exits lead to the All-Star select (scene 4, mode 5) |
+| `asstart=N` · `asorder=a,b,c` | first enemy = roster index N / custom enemy order (ids 0-25) |
+| `asdbg` | `AS …` lines: tile / bar relabels, Gamemode menu choices, session start / end, scene routing (`AS scene cur -> new (asked x) mode stage active result`), battle events (phase 2) |
+| `asp1=a,b,c` | All-Star battle: P1's party for the battle (e.g. 3 members for heart tests; phase 2) |
+| `asheart=F[:i],…` · `ashp=F:k:HP,…` | use heart i (default: the first lit one) at port frame F · set P1 record k's HP at frame F (heart / lose tests) |
+| `asclock=S` | the All-Star clock starts at S seconds (cap test: `asclock=5990` → 99:59 after 9 s) |
+| `asrec=PATH` | ALL-STAR records file for the run (default `allstar_records.cfg` next to the exe / user://; capture runs without it read / write none) |
+| `asfakewin=M:SS[:hearts]` | the next All-Star win (or `asrecdemo`) counts as a cheat-free run of the whole roster with that clear time / hearts used (records tests with `cheats=one_hit_ko asstart=25`) |
+| `asrecdemo=F` | open the ALL-STAR RECORDS page at port frame F without a battle (team from `asp1=`, else 0,5,6; time 12:34 unless `asfakewin=`; cheats rule kept unless `asfakewin=`); `asdbg` logs `AS f… records open: … rank … saved … table …` / `OK by …` / `closed` |
+| `asmusic=F,…` · `asmseek=F:S,…` · `asmseed=N` · `asmlog` | All-Star music (phase 3): force a switch to a random other stage BGM at port frame F · restart the playing track S seconds before its end at F (natural-end tests) · rotation picks seed · `AS f… music: id … pos … / [samples, loop, rate] step … since … A2 … state …` every 30 frames (with `asdbg`; switches log `AS f… music switch #n: a -> b (why) state …`) |
+| `assky=0` · `asrays=1` | All-Star battle without the space sky (comparisons) · keep the Time Chamber's light-ray curtain (3D objects 5 / 6) |
+| `asskypng=FILE` · `asskylog` | All-Star sky (part 35): write the built 256x256 BG3 sky (twinkle at t = 0) as a PNG when it is built · with `asdbg`, `AS f… skylog: st … BG3CNT … ofs … BG2 ofs … DISPCNT … BLDCNT … BLDALPHA … BLDY … MB …` every 10 frames (`asdbg` alone logs `sky: built N tiles (… dropped), ramp …, palette 32..188, … stars + … glints, … us`) |
+
+## Godot tool scripts (`tools/*.gd`, args after `--`)
+`cmp_gx.gd gx=DIR/gx.bin` · `dump_gx.gd gx=… frame=K` · `bench_gx.gd gx=… [native] [reps]` · `dbg_gx.gd` (`dump`, `show`,
+`tris`, `texdump`, `hookval`, `frames`) · `dbg_snd.gd` / `dsstats.gd` (`frames`, `every`) · `lockstep.gd` (`ref`, `out`,
+`rom`, `frames`, `break=ADDR[:N]`, `cardlog`, `pxilog`, `hang_ms`, `trace`) · `check_rom.gd file=PATH` ·
+`qol_preview.tscn -- rom=ROM bg=CAPTURE.png out=DIR [mp fakepads=2 | lan | asrec [asdbg]]` (`asrec`: the ALL-STAR RECORDS page in 11 table states, part 35) · `assets=DIR` (converted-asset folder of the legacy scenes, `scripts/core/assets.gd`).

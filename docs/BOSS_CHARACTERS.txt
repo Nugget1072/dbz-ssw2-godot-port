@@ -1,0 +1,44 @@
+DRAGON BALL Z: SUPERSONIC WARRIORS 2 - Godot port
+BOSS CHARACTERS (cheat on settings page 3)
+==========================================
+
+How to use
+  1. Turn on BOSS CHARACTERS (settings menu, page 3: CHEATS 2).
+  2. In a character select screen (Free Battle - both teams -, Z-Battle, Maximum), hold L (A key on the
+     keyboard) while you pick a character from the list below (X key = A button, or tap the portrait).
+  3. A small skull appears on the portrait. In battle the skull is on the fighter's panel (lower screen).
+  Characters that are not in the list are picked normally.
+
+What a boss is
+  The game has no separate boss characters: a boss is the normal fighter with a "boss level" (1-3) that the
+  game gives to computer opponents in Z-Battle and Maximum mode. The level selects a stronger parameter
+  block from the character's own data:
+    Level 1 ... 21000 HP (normal fighters have about 13000-18500), other stats unchanged
+    Level 2 ... 21000 HP, stronger stats, super attacks cost 25% ki instead of 50%
+    Level 3 ... 26000 HP (SSJ Goku and Cell: 32000), stronger stats, ki costs halved, super attacks free
+  Three level-3 bosses also have their own boss-only moves (special ki blasts, e.g. "15 RUSH", and boss
+  versions of their super attacks): Final Boss SSJ Goku, Boss Cell and Boss Broly.
+  The cheat gives each character the highest boss level the original game uses for it.
+
+Boss characters added (character id, boss level, where the original game uses this boss)
+  Final Boss SSJ Goku .... id  1  level 3  boss moves   Maximum (Expert course, solo final battle), Z-Battle
+  Boss Cell .............. id 15  level 3  boss moves   Maximum (Expert course, solo), Z-Battle round 8
+  Boss Broly ............. id 20  level 3  boss moves   Maximum (Expert course, solo), Z-Battle round 8
+  Boss Gohan (SSJ2) ...... id  2  level 2               Z-Battle round 8
+  Boss SSJ Vegeta ........ id  7  level 2               Maximum (Expert course), Z-Battle round 8
+  Boss Trunks ............ id  8  level 2               Maximum (Expert course)
+  Boss Gotenks ........... id  9  level 2               Maximum (Expert course), Z-Battle round 8
+  Boss Frieza ............ id 10  level 2               Maximum (Intermediate course), Z-Battle round 8
+  Boss Majin Buu ......... id 16  level 2               Maximum (Intermediate course), Z-Battle round 8
+  Boss Kid Buu ........... id 17  level 2               Maximum (Intermediate / Expert course), Z-Battle round 8
+  Boss Cooler ............ id 18  level 2               Maximum (Intermediate course), Z-Battle round 8
+  Boss Majin Vegeta ...... id 21  level 2               Z-Battle round 8
+  Boss Goku .............. id  0  level 1               Maximum (Novice course, last battle)
+  Boss Vegeta ............ id  6  level 1               Maximum (Novice course, last battle)
+  Boss Mecha Frieza ...... id 11  level 1               Maximum (Intermediate course)
+  Boss Ginyu ............. id 12  level 1               Maximum (Intermediate course)
+  Boss Dr. Gero .......... id 13  level 1               Maximum (Intermediate course)
+  Boss Imperfect Cell .... id 25  level 1               Maximum (Intermediate course)
+
+  (Support characters such as Bardock have no boss version. Course names: Maximum's three course tables,
+  scene/maptables.bin max_maptable_a/b/c = Novice / Intermediate / Expert in course order.)
