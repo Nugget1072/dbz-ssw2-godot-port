@@ -3165,9 +3165,17 @@ KO swap, pause, WIN; zoom 0 + mirror; zoom 4), `sky_built.png` = the built BG3 p
   groups 5-7 = the Game Over emblem (32x24 maps): 5 = "Game Over" (English), 6 = "PARTIE TERMINEE", 7 = another
   language. Emblem 5: round logo + black plate; title white letters (palette brightness > 0.5) at x 102-229, y 119-144
   (128 x 26), underline at y 147, small print y 150-166, plate borders as white columns / the top edge above y 118. | H |
-- **Results panel banner** (V e_res_bg, all five languages): the WINNER band = rows between two full-width white lines
-  (y ≈ 134 and ≈ 180 of e_res_bg); its word is per language (WINNER / VAINQUEUR / SIEGER / VINCITORE / GANADOR, two
-  font widths), so no "Game Over" can be built from it. | H |
+- **Results panel banner** (V e_res_bg index dump, all five languages; corrects an earlier note here): the WINNER band
+  = black rows 138-185 with full-width white (index 15) lines at rows 139 and 184; the word's letters fill rows 144-178
+  (35 rows), core index 15 with edge shades 11-14 and 2, on black 1. The word is per language (WINNER / VAINQUEUR /
+  SIEGER / VINCITORE / GANADOR) but **one typeface**: the English word is only letter-spaced wider. Letters touch in
+  VAINQUEUR (A-I; its V stands alone) and everywhere in VINCITORE; WINNER, SIEGER and GANADOR split into separate
+  4-connected shapes of index 15. So the set W I N E R + G A D O + S + V exists; M does not (the port builds it from
+  N's 10-px stem + V). GAME OVER at full size is ≈ 270 px wide (band 256). | H |
+- **Digit strips** (V result.bin no0..no9, e_res_bg y 192 / 208): 8-px cells, ink rows 4-11; the "1" sits at the cell's
+  right (yellow strip: columns 5-6), so fixed cells show "13 1". e_charasele: plate index 0xA, outer frame x 254-255,
+  an inner frame line at x 250 (rows 5-27) + row 27; the label's last "t" ends at x 248. cursol is the frame only (no
+  letters). | H |
 - **Bar textures of scene 0xB in the Gamemode menu** (V esm): rewriting texture +0x6000 (the Mania bar) while the
   Gamemode menu runs and drawing the third bar object (q+0x1C) at slot 1 with bar 0's palette byte shows the relabelled
   bar with the game's cursor frame; MAXIMUM's own course select reloads its textures on entry (unchanged). | H |

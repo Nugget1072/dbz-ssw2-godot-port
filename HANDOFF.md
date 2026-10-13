@@ -156,7 +156,7 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
   All-Star session with `QoLAllStar.endless`: team select → Time Chamber battle against random enemies with no end
   (`QoLAllStar.at()`: never one of the two before; `esseed=`), same sky / music / hearts / CPU rules, HUD = clock +
   enemies beaten. Death (Game Over, scene 0x14) → **ENDLESS RECORDS** page (QoLAllStarRecords `endless`: tab ENDLESS,
-  the Game Over screen's own "Game Over" title over the WINNER band, enemies / hearts / rank / best, rows "n KO" + faces +
+  the WINNER band re-lettered GAME OVER in its own typeface, enemies / hearts / rank / best, rows "n KO" + faces +
   time) → A / START / B / tap → team select. `endless_records.cfg` next to the exe, most enemies first; nothing written
   with cheats on; a run that beat nobody is not ranked. HI-SCORES RESET (settings page 2) now also clears both records
   files (confirm text updated).
@@ -166,6 +166,12 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
 - V (TESTING 29): 47 random swaps headless (heap flat), death → page → select captures, ranked file write, Gamemode menu
   by keys and taps, records layouts in the preview (`es_*`), ALL-STAR battle + records log identical to the part-37 code
   (git worktree A/B), menu pages, offcheck PASS. Facts: DATA_NOTES "part 38 findings (Endless)".
-- Open: the Game Over title is the English emblem's (the port's records pages are English throughout); ENDLESS keeps
+- Records page clean-up (user: text cut off, pasted, misaligned): GAME OVER is now set in the WINNER banner's own
+  typeface (letters cut at runtime from the five languages' banner words, M = N's stem + V + stem, the word shrunk
+  as a whole by area averaging into the banner's shades to fit); all numbers on both records pages packed from the
+  digits' ink 1 px apart ("13 1" / "6 1:07" were the game's 8-px cells); "KO" drawn like the ranking digits; the
+  ranking titles spaced by letter outlines ("ENDLES S" fixed, ALL-STAR RECORDS too); "Character Select" given 3 px
+  before the plate's inner frame line. The emblem paste (`_gameover_letters`) is gone.
+- Open: ENDLESS keeps
   ALL-STAR's 99:59 clock cap (enemy count ranks first); no real-play tuning yet (enemy level = the Option difficulty,
   as ALL-STAR).

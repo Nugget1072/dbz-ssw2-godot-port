@@ -29,10 +29,12 @@ extends Node2D
 ## the All-Star select); runs on the main thread (QoLController.after_step / filter_input).
 ## Part 38 ENDLESS RECORDS (`endless`, set at open from QoLAllStar.endless): the same page after an ENDLESS battle was
 ## lost (Game Over, scene 0x14, rerouted to the select): tab "ENDLESS" (its D put together from the tab font's O and L),
-## the "WINNER" banner's letters replaced by the "Game Over" title of the game's own Game Over screen
-## (`game/gameover_dat.arc`), table Enemies n / Hearts Used / Rank / Best (most enemies) / status, Total bar = the
-## time; ranking "ENDLESS RECORDS" with per row the enemies beaten in the ranking digits + "KO" (table letters) and the
-## time in the difficulty word's slot. File `endless_records.cfg` (`esrec=PATH`), [records] r1..r5 = {"beaten",
+## the "WINNER" banner re-lettered "GAME OVER" in the banner's own typeface (letters cut from the five languages'
+## WINNER words, M put together from N's stem + V; `_banner_word`), table Enemies n / Hearts Used / Rank / Best (most
+## enemies) / status, Total bar = the time; ranking "ENDLESS RECORDS" with per row the enemies beaten + "KO" in the
+## ranking digits' own drawing and the time in the difficulty word's slot. All numbers on both pages are set from the
+## digits' ink 1 px apart (`_packed`), the ranking titles are spaced by their outlines (GFont.contour), and the
+## "Character Select" label has 3 px room before the plate's inner frame (`_label_room`). File `endless_records.cfg` (`esrec=PATH`), [records] r1..r5 = {"beaten",
 ## "frames", "ids", "hearts", "date"}, sorted by most enemies, then shorter time, fewer hearts, older entry; a run that
 ## beat nobody is not ranked; nothing is written while cheats are on.
 
@@ -82,6 +84,16 @@ const WHITE_SRC := [["e", 10, 140, 252, "SCORE", [12, 14, 15]], ["e", 111, 86, 1
 	["i", 10, 140, 252, "PUNTEGGIO", [14, 15]], ["i", 111, 86, 174, "TOTALE", [14, 15]], ["s", 10, 140, 252, "PUNTUACIÓN", [14, 15]]]
 ## the ranking title plates (italic capitals): [prefix, text]
 const PLATE_SRC := [["e", "HI-SCORE RANKING"], ["f", "CLASSEMENT"], ["s", "RÉCORDS"], ["g", "HIGHSCORE-RANG"], ["i", "CLASSIFICA"]]
+## part 38: the WINNER band of each language's e_res_bg (same heavy typeface): [prefix, word, leading letters to take
+## when the word's letters touch (0 = all)]; the first source of a letter wins. VINCITORE's letters touch everywhere.
+const BANNER_SRC := [["e", "WINNER", 0], ["s", "GANADOR", 0], ["g", "SIEGER", 0], ["f", "VAINQUEUR", 1]]
+const BANNER_TEXT := "GAME OVER"
+const PLATE_GAP := 1                         ## part 38: ranking title: columns between two letters' nearest strokes
+const PLATE_SPACE := 5                       ## and extra columns for a space
+const BANNER_W := 244                        ## the word's widest extent (the band is 256 wide)
+## part 38: "KO" after the ENDLESS ranking's enemy count, in the ranking digits' own drawing (8 rows, core 1 + the
+## digits' shades; O = the digit 0)
+const KO_K := ["61...41", "61..417", "61.417.", "61417..", "6114...", "61.41..", "61..417", "74...74"]
 ## the difficulty words (64 x 16, word rows 0-14, underline row 15)
 const WORD_SRC := [["f_noaml", "NORMAL"], ["g_easy", "LEICHT"], ["g_hard", "SCHWER"], ["f_easy", "FACILE"],
 	["e_easy", "Easy"], ["e_noaml", "Normal"], ["e_hard", "Hard"], ["f_hard", "DIFFICILE"]]
@@ -119,7 +131,6 @@ var _rows_hi: Array = []
 var _row_info: Array = []                    ## per row: content texture (time + hearts word) or null
 var _plate_top                               ## the ranking's title plate, re-lettered (Image until _textures())
 var _plate_top_e                             ## part 38: the same plate lettered "ENDLESS RECORDS"
-var _gover: Image                            ## part 38: the Game Over screen's "Game Over" letters (white / greys only)
 var _button                                  ## OK plate (compact e_charasele)
 var _cursor                                  ## the results' cursor (compact cursol)
 var _faces := {}                             ## id -> 24 x 24 texture
@@ -139,6 +150,10 @@ var _tfont: GFont                            ## the table's black letters
 var _wfont: GFont                            ## the tab's / Total bar's white letters
 var _rfont: GFont                            ## the difficulty words' letters (+ the ranking digits)
 var _pfont: GFont                            ## the ranking title plate's italic capitals
+var _bfont: GFont                            ## part 38: the WINNER banner's capitals (ENDLESS: "GAME OVER")
+var _ydig: Array = []                        ## part 38: digit ink [Canvas, top row] of the table's yellow cells,
+var _odig: Array = []                        ## the Total bar's orange cells
+var _ndig: Array = []                        ## and the ranking's no0..no9
 var _face_pal: Array = []                    ## CharFace256 256-colour palette
 var _face_px := {}                           ## id -> 80 x 40 index canvas (-1 = empty slot)
 
@@ -241,7 +256,68 @@ class GFont:
 	func _adv(c: String) -> int:
 		return int(glyphs[c][3]) - int(glyphs[c][2]) + 1 if glyphs.has(c) else 4
 
+	## part 38 `contour`: letters spaced by their outlines (in every row, +-1 row for the slant, the nearest strokes of
+	## two neighbours are `gap` px apart) instead of by fixed columns: the italic plate capitals' S / R / C stood too
+	## far from or too close to their neighbours ("ENDLES S")
+	var contour := false
+	var _prof := {}
+
+	func _profile(c: String) -> Dictionary:
+		if not _prof.has(c):
+			var cv: Canvas = glyphs[c][0]
+			var dy := int(glyphs[c][1])
+			var p := {}
+			for y in cv.h:
+				var l := -1
+				var r := -1
+				for x in cv.w:
+					if rank[cv.g(x, y)] >= 3:
+						if l < 0:
+							l = x
+						r = x
+				if l >= 0:
+					p[dy + y] = Vector2i(l, r)
+			_prof[c] = p
+		return _prof[c]
+
+	## canvas-left of b minus canvas-left of a when their closest strokes touch (+1 = one empty column between)
+	func _pair(a: String, b: String) -> int:
+		var pa := _profile(a)
+		var pb := _profile(b)
+		var best := -99999
+		for row in pa:
+			for dr in [-1, 0, 1]:
+				if pb.has(row + dr):
+					best = maxi(best, (pa[row] as Vector2i).y - (pb[row + dr] as Vector2i).x + 1)
+		if best == -99999:
+			best = int(glyphs[a][3]) + 1 - int(glyphs[b][2])
+		return best
+
+	## [[char, canvas-left], ...] and the end x of `t` drawn with its first stroke at x
+	func _layout(t: String, x: int, extra: int) -> Array:
+		var out: Array = []
+		var prev := ""
+		var left := 0
+		var sp := 0
+		for c in t:
+			if c == " ":
+				sp += space
+				continue
+			if not glyphs.has(c):
+				continue
+			if prev == "":
+				left = x - int(glyphs[c][2])
+			else:
+				left += _pair(prev, c) + gap + extra + sp
+			out.append([c, left])
+			prev = c
+			sp = 0
+		var end := x if prev == "" else left + int(glyphs[prev][3]) + 1
+		return [out, end]
+
 	func width(t: String, extra := 0) -> int:
+		if contour:
+			return int(_layout(t, 0, extra)[1])
 		var x := 0
 		var any := false
 		for c in t:
@@ -261,6 +337,11 @@ class GFont:
 
 	## draws `t` from x (y = the line's reference row); returns the end x
 	func draw(cv: Canvas, x: int, y: int, t: String, extra := 0) -> int:
+		if contour:
+			var lay := _layout(t, x, extra)
+			for p in lay[0]:
+				cv.blit(glyphs[p[0]][0], int(p[1]), y + int(glyphs[p[0]][1]), rank)
+			return int(lay[1])
 		for c in t:
 			if c == " ":
 				x += space - gap - extra
@@ -700,6 +781,27 @@ func _load_art() -> void:
 	_tfont.finish(0, 5)
 	_wfont.finish(0, 5)
 	_make_table_glyphs()
+	# part 38: the WINNER banner's heavy capitals (one typeface in all five languages, the English just set wider)
+	_bfont = GFont.new(RANK_WHITE)
+	for s in BANNER_SRC:
+		if res.has(s[0]):
+			var bb := _banner_rows(res[s[0]])
+			if bb.x < 0 or not harvest_cc(_bfont, res[s[0]], bb.x, bb.y - bb.x + 1, s[1], int(s[2])):
+				_log("banner letters: '%s' (%s) not split" % [s[1], s[0]])
+	_bfont.contour = true                              # (spaced by outlines like the kerned originals)
+	_bfont.gap = 3
+	_bfont.space = 10
+	if not _bfont.has("M") and _bfont.has("N") and _bfont.has("V"):
+		var mm := _make_m(_bfont)
+		_bfont.add("M", mm[0], int(_bfont.glyphs["N"][1]) + int(mm[1]))
+	# part 38: the digit strips as ink (packed 1 px apart instead of in 8-px cells: a "1" left gaps)
+	_ydig = []
+	_odig = []
+	_ndig = []
+	for d in 10:
+		_ydig.append(_ink(_res.crop(d * 8, 192, 8, 16), 8) if _res != null else [Canvas.new(1, 1), 0])
+		_odig.append(_ink(_res.crop(d * 8, 208, 8, 12), 10) if _res != null else [Canvas.new(1, 1), 0])
+		_ndig.append(_ink(_no[d], 8))
 	# the difficulty words' letters (+ the ranking digits for "1 HEART")
 	_rfont = GFont.new(RANK_DARK)
 	for s in WORD_SRC:
@@ -725,6 +827,9 @@ func _load_art() -> void:
 		elif s[0] == "e":
 			base_y = b
 	_pfont.finish(0, 6)
+	_pfont.contour = true                              # part 38: outline spacing (see GFont.contour)
+	_pfont.gap = PLATE_GAP
+	_pfont.space = PLATE_SPACE
 	var top := plate.copy()
 	if base_y < 0 or not plate_title(top, _pfont, base_y, "ALL-STAR RECORDS"):
 		_log("plate title: the port's capitals (fallback)")
@@ -738,10 +843,9 @@ func _load_art() -> void:
 		retitle(raw, 256, 5, 1, [1, 0xB, 0xD, 0xC, 0xF], "ENDLESS RECORDS")
 		top_e = lin4(raw, 256)
 	_plate_top_e = top_e.image(ppal)
-	_gover = _gameover_letters()                       # part 38: the Game Over screen's title letters
 	# OK plate + the results' cursor (frame + triangle), rows 2-7 left out (plain plate yellow)
 	var cpal := _pal(_member(pk, "e_continue.ntfp"))
-	_button = lin4(_member(pk, "e_charasele.ntft"), 256).rows(BTN_ROWS).image(cpal)
+	_button = _label_room(lin4(_member(pk, "e_charasele.ntft"), 256).rows(BTN_ROWS), 3).image(cpal)
 	_cursor = lin4(_member(pk, "cursol.ntft"), 256).rows(BTN_ROWS).image(cpal)
 	# face icons: GARC entries 2*id (32 x 32 4-bit, icon at 0..23) and 2*id+1 (palette)
 	var n := rom.decode_u32(fi.x + 8)
@@ -777,53 +881,9 @@ func _load_art() -> void:
 		_log("letters: table '%s' gap %d space %d | white '%s' | words '%s' | plate '%s'" % [
 			"".join(_tfont.glyphs.keys()), _tfont.gap, _tfont.space, "".join(_wfont.glyphs.keys()),
 			"".join(_rfont.glyphs.keys()), "".join(_pfont.glyphs.keys())])
+		_log("banner letters '%s'" % "".join(_bfont.glyphs.keys()))
 		_log("art built in %d ms" % (Time.get_ticks_msec() - t0))
 		_log("word gap %d space %d widths %s" % [_rfont.gap, _rfont.space, str(HEART_WORDS.map(func(o): return o.map(func(t): return _rfont.width(t))))])
-
-
-## part 38: the "Game Over" title of the game's Game Over screen (scene 0x14; `game/gameover_dat.arc`, a GARC whose
-## entries 18 / 19 / 20 are the English emblem's characters / palette / 32x24 map: a round logo + a black plate with
-## the white title at x ~100-234, y ~118-146, its underline at y 147, small print below): the title's white and grey
-## pixels only (the plate's black left out), as an Image; null when it does not look like that
-func _gameover_letters() -> Image:
-	var fo := QoLFont.nitro_file(rom, "romdata/game/gameover_dat.arc")
-	if fo.x < 0 or rom.decode_u32(fo.x + 8) < 21:
-		return null
-	var gb := fo.x + rom.decode_u32(fo.x + 12)
-	var ent := func(i: int) -> PackedByteArray:
-		var o := rom.decode_u32(fo.x + 0x10 + 8 * i)
-		return rom.slice(gb + o, gb + o + rom.decode_u32(fo.x + 0x14 + 8 * i))
-	var mp: PackedByteArray = ent.call(20)
-	if mp.size() < 1536:
-		return null
-	var img := tiles(ent.call(18), mp, 32, 24).image(_pal(ent.call(19)))
-	var bright := func(x: int, y: int) -> bool:
-		return img.get_pixel(x, y).get_luminance() > 0.5
-	var box := Rect2i()
-	for y in range(118, 147):                          # (the plate's top edge / the logo's ring end above row 118)
-		var n := 0                                     # (the title's underline: a long white row)
-		for x in range(96, 241):
-			n += 1 if bright.call(x, y) else 0
-		if n > 80:
-			continue
-		for x in range(96, 241):
-			var col := 0                               # (its left / right borders: white columns as high as the plate)
-			for yy in range(112, 147):
-				col += 1 if bright.call(x, yy) else 0
-			if col < 28 and bright.call(x, y):
-				box = Rect2i(x, y, 1, 1) if box.size.x == 0 else box.expand(Vector2i(x, y)).expand(Vector2i(x + 1, y + 1))
-	if box.size.x < 60 or box.size.y < 12:
-		_log("Game Over letters not found (box %s)" % str(box))
-		return null
-	box = box.grow(1)
-	var out := Image.create(box.size.x, box.size.y, false, Image.FORMAT_RGBA8)
-	for y in box.size.y:
-		for x in box.size.x:
-			var c := img.get_pixel(box.position.x + x, box.position.y + y)
-			if c.a > 0.0 and c.get_luminance() > 0.12:
-				out.set_pixel(x, y, c)
-	_log("Game Over letters %s" % str(box))
-	return out
 
 
 ## the table letters the labels lack, put together from the font's own strokes: d (o + the stem of l), H (two l stems +
@@ -873,6 +933,79 @@ func _make_table_glyphs() -> void:
 		_wfont.add("-", _template(["bccccb", "dffffd", "2dddd2"]), 5)
 	if _wfont.has("O") and _wfont.has("L") and not _wfont.has("D"):   # part 38 (tab "ENDLESS")
 		_wfont.add("D", _make_d(_wfont), int(_wfont.glyphs["O"][1]))
+
+
+## part 38: the "Character Select" plate's label moved `dx` px left inside the plate: in the game's art (V e_charasele:
+## plate 0xA, outer frame x 254-255, an inner frame line at x 250 rows 5-27 + row 27) the last "t" ends at x 248, one
+## column from the inner line, and reads as cut off. Frame columns / rows (mostly not plate colour) stay; only the
+## label's pixels (columns 48 .. its last column, rows that are not frame rows) move.
+static func _label_room(c: Canvas, dx: int) -> Canvas:
+	var fill := c.g(150, 3)                             # plate colour (top rows under the frame)
+	var fcol: Array = []                                # frame column: not plate colour in >= 85 % of the rows
+	for x in c.w:
+		var n := 0
+		for y in c.h:
+			if c.g(x, y) != fill:
+				n += 1
+		fcol.append(n * 20 >= c.h * 17)
+	var frow: Array = []                                # frame row: not plate colour in > 80 % of x 48..
+	for y in c.h:
+		var n := 0
+		for x in range(48, c.w):
+			if c.g(x, y) != fill:
+				n += 1
+		frow.append(n * 5 > (c.w - 48) * 4)
+	var last := -1                                      # the label's last column
+	for x in range(c.w - 1, 47, -1):
+		if fcol[x]:
+			continue
+		for y in c.h:
+			if not frow[y] and c.g(x, y) != fill:
+				last = x
+				break
+		if last >= 0:
+			break
+	if last < 0:
+		return c
+	var out := c.copy()
+	for y in c.h:
+		if frow[y]:
+			continue
+		for x in range(48, last + 1):
+			if not fcol[x]:
+				out.s(x, y, fill)
+		for x in range(48 + dx, last + 1):
+			if not fcol[x] and c.g(x, y) != fill:
+				out.s(x - dx, y, c.g(x, y))
+	return out
+
+
+## part 38: a capital M for the banner typeface (none of its five words has one): N's upright left stem, the V
+## between, and the same stem mirrored on the right (|V|, the V's arms joining the stems' tops, its point on the
+## baseline, as the typeface's heavy upright capitals)
+static func _make_m(f: GFont) -> Array:
+	var n: Canvas = f.glyphs["N"][0]
+	var v: Canvas = f.glyphs["V"][0]
+	var stem := 0                                       # N's left stem: columns full of core (15) pixels
+	for x in n.w:
+		var full := 0
+		for y in n.h:
+			if n.g(x, y) == 15:
+				full += 1
+		if full * 10 < n.h * 9:
+			if stem > 0:
+				break
+			continue
+		stem = x + 1
+	stem = maxi(stem, 4)
+	var left := n.crop(0, 0, stem, n.h)
+	var right := Canvas.new(stem, n.h)
+	for y in n.h:
+		for x in stem:
+			right.s(stem - 1 - x, y, left.g(x, y))
+	var ov := 2                                         # the V's arms overlap the stems a little
+	var dv := int(f.glyphs["V"][1]) - int(f.glyphs["N"][1])
+	return _union([[left, 0, 0], [v, stem - ov, dv], [right, stem - ov + v.w - ov, 0]], f.rank)
 
 
 ## part 38: a capital D for a font that has O and L: L's stem on the left, O's right half, and between them O's
@@ -1062,6 +1195,82 @@ static func harvest(f: GFont, cv: Canvas, y0: int, h: int, x0: int, x1: int, dar
 	for i in n - 1:
 		var gp: int = boxes[i + 1].position.x - boxes[i].end.x
 		(f.gaps if words[i] == words[i + 1] else f.spaces).append(gp)
+	return true
+
+
+## part 38: the letters of `text` in rows y0..y0+h-1 as connected shapes of core pixels (index 15, 8-connected; pieces
+## under 20 px dropped), left to right; every other glyph pixel (font rank > 0) goes to the shape it touches within
+## 2 px. For kerned words (VAINQUEUR's V-A share columns, which harvest() cannot split). Glyph dy = top - y0. False
+## when the shapes are not exactly the letters -- unless `lead` > 0: then only the first `lead` letters are taken from
+## the first `lead` shapes (V: VAINQUEUR's A and I touch, its V stands alone).
+static func harvest_cc(f: GFont, cv: Canvas, y0: int, h: int, text: String, lead := 0) -> bool:
+	var chars := text.replace(" ", "")
+	var lab := Canvas.new(cv.w, h)
+	var comps: Array = []
+	for y in h:
+		for x in cv.w:
+			if lab.g(x, y) != 0 or cv.g(x, y0 + y) != 15:
+				continue
+			var id := comps.size() + 1
+			var st: Array = [Vector2i(x, y)]
+			lab.s(x, y, id)
+			var px: Array = []
+			while not st.is_empty():
+				var q: Vector2i = st.pop_back()
+				px.append(q)
+				for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+					var r: Vector2i = q + d
+					if r.y >= 0 and r.y < h and r.x >= 0 and r.x < cv.w and lab.g(r.x, r.y) == 0 \
+							and cv.g(r.x, y0 + r.y) == 15:
+						lab.s(r.x, r.y, id)
+						st.append(r)
+			comps.append(px)
+	var keep: Array = []
+	for i in comps.size():
+		if comps[i].size() >= 20:
+			keep.append(i)
+	var minx := func(i: int) -> int:
+		var m := 9999
+		for p in comps[i]:
+			m = mini(m, p.x)
+		return m
+	keep.sort_custom(func(a, b): return minx.call(a) < minx.call(b))
+	if keep.size() != chars.length():
+		if lead <= 0 or keep.size() < lead:
+			return false
+		keep.resize(lead)
+		chars = chars.left(lead)
+	var slot := {}
+	for k in keep.size():
+		slot[keep[k] + 1] = k
+	var pix: Array = []
+	for k in keep.size():
+		pix.append([])
+		for p in comps[keep[k]]:
+			pix[k].append(Vector3i(p.x, p.y, 15))
+	for y in h:
+		for x in cv.w:
+			var v := cv.g(x, y0 + y)
+			if v == 15 or f.rank[v] == 0:
+				continue
+			var best := -1
+			var bd := 3
+			for dy in range(-2, 3):
+				for dx in range(-2, 3):
+					var id := lab.g(x + dx, y + dy)
+					if slot.has(id) and maxi(absi(dx), absi(dy)) < bd:
+						bd = maxi(absi(dx), absi(dy))
+						best = slot[id]
+			if best >= 0:
+				pix[best].append(Vector3i(x, y, v))
+	for k in keep.size():
+		var bx := Rect2i(pix[k][0].x, pix[k][0].y, 1, 1)
+		for p in pix[k]:
+			bx = bx.expand(Vector2i(p.x, p.y)).expand(Vector2i(p.x + 1, p.y + 1))
+		var g := Canvas.new(bx.size.x, bx.size.y)
+		for p in pix[k]:
+			g.s(p.x - bx.position.x, p.y - bx.position.y, p.z)
+		f.add(chars[k], g, bx.position.y)
 	return true
 
 
@@ -1310,18 +1519,9 @@ func _build_page() -> void:
 			_value(u, VALUE_RIGHT, k, ln[1])
 	_wfont.draw(u, 172 - _wfont.width("TIME"), 111, "TIME")
 	_orange(u, VALUE_RIGHT, 112, time_text(entry.frames))
-	var band := _banner_rows(u) if endless and _gover != null else Vector2i(-1, -1)
-	if band.x >= 0:                                    # part 38: "WINNER" -> the Game Over screen's title
-		var black := u.g(2, (band.x + band.y) / 2)
-		for y in range(band.x, band.y + 1):
-			for x in range(1, 255):
-				if u.g(x, y) != black and RANK_WHITE[u.g(x, y)] > 0:
-					u.s(x, y, black)
-	var ui := u.image(_pal16)
-	if band.x >= 0:
-		var gp := Vector2i((256 - _gover.get_width()) / 2, (band.x + band.y + 1 - _gover.get_height()) / 2)
-		ui.blend_rect(_gover, Rect2i(Vector2i.ZERO, _gover.get_size()), gp)
-	_upper = ImageTexture.create_from_image(ui)
+	if endless:
+		_banner_word(u, BANNER_TEXT)                   # part 38: "WINNER" -> "GAME OVER" in the banner's own letters
+	_upper = ImageTexture.create_from_image(u.image(_pal16))
 	var ids: Array = entry.get("ids", [])
 	for k in 3:
 		var id: int = ids[k] if k < ids.size() else -1
@@ -1341,27 +1541,88 @@ func _build_page() -> void:
 		_row_info.append(ImageTexture.create_from_image(c.image(_pal16)))
 
 
-## part 38: the WINNER band of e_res_bg: [first, last] row between its two white border lines (rows 125-191), or -1
+## part 38: the banner's word replaced: its letters erased (band black), `text` set in the banner typeface (outline
+## spacing, gap 3 like the kerned originals), scaled down as a whole when wider than BANNER_W (GAME OVER is 8
+## letters, WINNER 6) and centred in the band. Nothing is drawn when a letter is missing (an empty band rather than a
+## wrong word).
+func _banner_word(u: Canvas, text: String) -> void:
+	var band := _banner_rows(u)
+	if band.x < 0 or _bfont == null:
+		return
+	for y in range(band.x, band.y + 1):
+		for x in 256:
+			if u.g(x, y) != 1:
+				u.s(x, y, 1)
+	if _bfont.missing(text) != "":
+		_log("banner: letters '%s' missing" % _bfont.missing(text))
+		return
+	var h := band.y - band.x + 1
+	var word := Canvas.new(_bfont.width(text) + 8, h)   # the word at the typeface's own size ...
+	_bfont.draw(word, 4, 0, text)
+	var box := Rect2i(word.w, word.h, 0, 0)
+	for y in word.h:
+		for x in word.w:
+			if word.g(x, y) != 0:
+				box = Rect2i(x, y, 1, 1) if box.size.x == 0 else box.expand(Vector2i(x, y)).expand(Vector2i(x + 1, y + 1))
+	word = word.crop(box.position.x, box.position.y, box.size.x, box.size.y)
+	var k := minf(1.0, float(BANNER_W) / word.w)        # ... then scaled down to fit the band (area average)
+	if k < 1.0:
+		word = _shrink(word, int(round(word.w * k)), int(round(word.h * k)))
+	u.blit(word, (256 - word.w) / 2, band.x + (h - word.h) / 2, RANK_WHITE)
+
+
+## part 38: a white-on-black glyph canvas resized to nw x nh by area averaging; each pixel's coverage (its palette
+## brightness between the band's black 1 and white 15) mapped back to the nearest of the banner's own shades
+func _shrink(c: Canvas, nw: int, nh: int) -> Canvas:
+	var shades := [1, 2, 11, 12, 13, 14, 15]
+	var lum := {}
+	for v in shades:
+		lum[v] = (_pal16[v] as Color).get_luminance() if v < _pal16.size() else 0.0
+	var lo: float = lum[1]
+	var hi: float = maxf(lum[15], lo + 0.01)
+	var cov := func(v: int) -> float:
+		return 0.0 if v == 0 else clampf((float(lum.get(v, lo)) - lo) / (hi - lo), 0.0, 1.0)
+	var sx := float(c.w) / nw
+	var sy := float(c.h) / nh
+	var out := Canvas.new(nw, nh)
+	for ty in nh:
+		var y0 := ty * sy
+		var y1 := y0 + sy
+		for tx in nw:
+			var x0 := tx * sx
+			var x1 := x0 + sx
+			var acc := 0.0
+			for y in range(int(y0), mini(int(ceil(y1)), c.h)):
+				var wy := minf(y1, y + 1.0) - maxf(y0, float(y))
+				for x in range(int(x0), mini(int(ceil(x1)), c.w)):
+					var wx := minf(x1, x + 1.0) - maxf(x0, float(x))
+					acc += wx * wy * float(cov.call(c.g(x, y)))
+			var a := acc / (sx * sy)
+			if a < 0.08:
+				continue
+			var best := 1
+			for v in shades:
+				if absf((float(lum[v]) - lo) / (hi - lo) - a) < absf((float(lum[best]) - lo) / (hi - lo) - a):
+					best = v
+			if best != 1:
+				out.s(tx, ty, best)
+	return out
+
+
+## part 38: the WINNER band of e_res_bg: [first, last] row between its two full-width white lines (V: rows 139 / 184
+## in all five languages -> 140..183; the letters fill rows 144-178), or -1
 static func _banner_rows(u: Canvas) -> Vector2i:
 	var borders: Array = []
-	for y in range(125, 192):
+	for y in range(120, mini(u.h, 200)):
 		var n := 0
 		for x in 256:
-			if RANK_WHITE[u.g(x, y)] > 0:
+			if u.g(x, y) == 15:
 				n += 1
-		if n > 200:
+		if n >= 250:
 			borders.append(y)
-	if borders.is_empty():
+	if borders.size() < 2 or int(borders[-1]) - int(borders[0]) < 24:
 		return Vector2i(-1, -1)
-	var top: int = borders[0]
-	while borders.has(top + 1):
-		top += 1
-	var bottom := 191
-	for b in borders:
-		if b > top + 1:
-			bottom = b - 1
-			break
-	return Vector2i(top + 1, bottom) if bottom - top > 20 else Vector2i(-1, -1)
+	return Vector2i(int(borders[0]) + 1, int(borders[-1]) - 1)
 
 
 ## the table rows: [label, value]
@@ -1436,94 +1697,59 @@ func _value(c: Canvas, xr: int, k: int, s: String) -> void:
 		x -= _tfont.width(letters)
 		_tfont.draw(c, x, LINE_Y0 + 16 * k, letters)
 		x -= 1
-	var y := 24 + 16 * k
-	for i in range(s.length() - 1, -1, -1):
-		var ch := s[i]
-		if ch >= "0" and ch <= "9":
-			x -= 8
-			c.blit(_res.crop(int(ch) * 8, 192, 8, 16), x, y, [], 8)
-		elif ch == ":":
-			x -= 4
-			c.blit(_template(["....", "....", "....", "....", "....", ".31.", ".14.", "....", "....", ".31.", ".14."]), x, y)
-		elif ch == "/":
-			x -= 7
-			c.blit(_template(["......", "......", "......", "......", ".....4", "....41", "....1.", "...41.",
-				"..41..", "..1...", ".41...", "41...."]), x, y)
-		elif ch == "-":
-			x -= 7
-			c.blit(_template(["......", "......", "......", "......", "......", "......", ".7667.", ".4114.", ".7667."]), x, y)
+	_packed(c, x, 24 + 16 * k, s, _ydig, {":": [5, ["31", "14", "..", "..", "31", "14"]],
+		"/": [4, [".....4", "....41", "....1.", "...41.", "..41..", "..1...", ".41...", "41...."]],
+		"-": [6, ["7667", "4114", "7667"]]})
 
 
 ## a time right-aligned to `xr` in the Total bar's orange digit cells (8 x 12)
 func _orange(c: Canvas, xr: int, y: int, s: String) -> void:
-	var x := xr
-	for i in range(s.length() - 1, -1, -1):
-		var ch := s[i]
-		if ch >= "0" and ch <= "9":
-			x -= 8
-			c.blit(_res.crop(int(ch) * 8, 208, 8, 12), x, y, [], 10)
-		elif ch == ":":
-			x -= 4
-			c.blit(_template(["....", "....", "....", ".31.", ".15.", "....", "....", ".31.", ".15."]), x, y)
+	_packed(c, xr, y, s, _odig, {":": [3, ["31", "15", "..", "..", "31", "15"]]})
 
 
 ## a time right-aligned to `xr` in the ranking's digits no0..no9 (ink only: the row's own yellow shows, also when the
 ## row flashes), colon and dashes drawn in their style
-func _no_time(c: Canvas, xr: int, y: int, s: String) -> void:
+func _no_time(c: Canvas, xr: int, y: int, s: String) -> int:
+	return _packed(c, xr, y, s, _ndig, {":": [5, ["11", "11", "..", "..", "11", "11"]], "-": [7, ["111111", "111111"]]})
+
+
+## part 38: `s` right-aligned to `xr` (a cell row starting at y): digits = their ink from `dig` ([Canvas, top row]),
+## the other characters from `marks` {char: [top row, template rows]}, everything 1 px apart (the game's 8-px cells
+## left a gap around every narrow "1": "13 1", "6 1:07")
+func _packed(c: Canvas, xr: int, y: int, s: String, dig: Array, marks: Dictionary) -> int:
 	var x := xr
 	for i in range(s.length() - 1, -1, -1):
 		var ch := s[i]
-		if ch >= "0" and ch <= "9":
-			x -= 8
-			c.blit(_no[int(ch)], x, y, [], 8)
-		elif ch == ":":
-			x -= 4
-			c.blit(_template(["....", "....", "....", "....", "....", ".11.", ".11.", "....", "....", ".11.", ".11."]), x, y)
-		elif ch == "-":
-			x -= 8
-			c.blit(_template(["........", "........", "........", "........", "........", "........", "........",
-				".111111.", ".111111."]), x, y)
+		var g: Canvas = null
+		var top := 0
+		if ch >= "0" and ch <= "9" and dig.size() == 10:
+			g = dig[int(ch)][0]
+			top = int(dig[int(ch)][1])
+		elif marks.has(ch):
+			g = _template(marks[ch][1])
+			top = int(marks[ch][0])
+		if g == null:
+			continue
+		x -= g.w
+		c.blit(g, x, y + top)
+		x -= 1
+	return x + 1
 
 
-## part 38: an ENDLESS ranking row ({} = empty): the enemies beaten in the ranking digits ending KO_RIGHT, "KO" after
-## them in the table's letters (bottoms on the digits' last ink row), the time in the difficulty word's slot (the
-## words' digits + a drawn colon, right-aligned, with the word underline)
-const KO_RIGHT := 101
+## part 38: an ENDLESS ranking row ({} = empty): the enemies beaten + "KO" in the ranking digits' own drawing (K =
+## KO_K, O = the digit 0; same rows, same 1-px spacing) ending at KO_RIGHT where the game's score digits end, the
+## time in the difficulty word's slot (the same digits, bottom on the words' baseline, with the word underline)
+const KO_RIGHT := 122
 func _row_endless(c: Canvas, e: Dictionary) -> void:
-	var n := "--" if e.is_empty() else str(mini(int(e.get("beaten", 0)), BEATEN_MAX))
-	_no_time(c, KO_RIGHT, 8, n)
-	var ko_bottom := 8 + 11                            # the no digits' last ink row (rows 4..11 of their 16)
-	var x := KO_RIGHT + 3
-	for ch in ("" if e.is_empty() else "KO"):          # (an empty row: "--" only)
-		if _tfont.has(ch):
-			var cv: Canvas = _tfont.glyphs[ch][0]
-			c.blit(cv, x - int(_tfont.glyphs[ch][2]), ko_bottom - _core_rows(cv).y, _tfont.rank)
-			x += _tfont._adv(ch) + _tfont.gap + 1
-	var t := "--:--" if e.is_empty() else time_text(int(e.frames))
-	var dt := 17                                       # the words' digits: ink rows top..bottom
-	var db := 24
-	if _rfont.has("0"):
-		dt = 12 + int(_rfont.glyphs["0"][1])
-		db = dt + (_rfont.glyphs["0"][0] as Canvas).h - 1
-	var adv := func(ch: String) -> int:
-		return 2 if ch == ":" else (5 if ch == "-" else _rfont._adv(ch))
-	var w := -1
-	for ch in t:
-		w += adv.call(ch) + 1
-	var xx := WORD_RIGHT - w
-	var x0 := xx
-	for ch in t:
-		if ch == ":":
-			for yy in [dt + 1, dt + 2, db - 2, db - 1]:
-				c.s(xx, yy, 1)
-				c.s(xx + 1, yy, 1)
-		elif ch == "-":
-			for k in 5:
-				c.s(xx + k, (dt + db) / 2, 1)
-				c.s(xx + k, (dt + db) / 2 + 1, 1)
-		else:
-			_rfont.draw(c, xx, 12, ch)
-		xx += adv.call(ch) + 1
+	if e.is_empty():
+		_no_time(c, KO_RIGHT, 8, "--")
+	else:
+		var x := _packed(c, KO_RIGHT, 8, "0", _ndig, {}) - 1          # O
+		var k := _template(KO_K)
+		x -= k.w
+		c.blit(k, x, 8 + 4)                                         # K (digit ink rows 4..11)
+		_no_time(c, x - 4, 8, str(mini(int(e.get("beaten", 0)), BEATEN_MAX)))
+	var x0 := _no_time(c, WORD_RIGHT, 13, "--:--" if e.is_empty() else time_text(int(e.frames)))
 	for x2 in range(x0 - 2, 203):                       # the word's underline joins the row's (x >= 202)
 		c.s(x2, 27, 1)
 

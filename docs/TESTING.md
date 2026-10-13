@@ -300,7 +300,10 @@ The release build stdout is only flushed on a clean exit: always pass `quit_at=`
   lines with random ids (never one of the two before), heap free ≈1 MB without a trend, no SCRIPT ERROR (47 swaps).
 - Death → records → select: `ssw2.py run es2 --battle --every 50 --from 4500 --to 6400 --inputs "5800:A:4" allstar=1
   endless=1 esseed=3 ashp=4700:0:0 asdbg esrec=<abs>\es2_rec.cfg` → p4650 HUD (MM:SS + "0" plate, hearts), `battle end
-  … result lose`, `scene 0 -> 4 (asked 14)`, p5200 ENDLESS RECORDS ("Game Over", Not Ranked), A → p6000 team select.
+  … result lose`, `scene 0 -> 4 (asked 14)`, p5200 ENDLESS RECORDS (GAME OVER banner, Not Ranked), A → p6000 team select.
+- Records page lettering (part 38 clean-up): zoom the preview PNGs 4-8x (scratch `zoom.gd`: Image.get_region + resize
+  NEAREST) — GAME OVER in the banner's typeface inside the band, numbers without cell gaps ("131", "61:07"), "KO" the
+  digits' size, even title spacing, "Character Select" clear of the inner frame; `asdbg` logs `banner letters 'WINERGADOSVM'`.
 - Ranked: same with `esfake=7:2:15:1 --headless --to 5300` → `rank 1 saved true`, the cfg holds r1 with "beaten": 7.
 - Gamemode menu: `ssw2.py run esm --every 25 --from 2650 --to 3500 --inputs "<BATTLE_PATH to 2660:A:4>,2900:Down:4,
   2950:Down:4,3000:A:4,3050:Up:4,3100:T200/44:4,3150:T149/85:4,3200:T149/85:4" newmodes=1 asdbg` → bars ALL-STAR /

@@ -465,12 +465,15 @@ QoLAllStarMenu (ENDLESS bar), QoLAllStarRecords (`endless`), QoLController `AS_T
   -> `_gm_route` sends it to the select (4) and `_asr_win` raises `records_req` (ENDLESS: only on 0x14 + "lose";
   pause exits 3 / 0xD = no page). Pause "Return to Menu" ends the session as in ALL-STAR.
 - **ENDLESS RECORDS page** (QoLAllStarRecords with `endless`): the ALL-STAR page's layout and art with: tab "ENDLESS"
-  (white tab font; D = L's stem + O's right half, `_make_d`), the WINNER band's white letters erased and the "Game Over"
-  title of the game's Game Over screen (gameover_dat.arc entries 18-20, the English emblem; only its white / grey
-  pixels, 128 x 26 at (102,119)) centred in the band; table Enemies n / Hearts Used / Rank / Best (most enemies) /
-  status; Total bar = TIME. Ranking plate "ENDLESS RECORDS" (the plate's own capitals); rows: enemies beaten in the
-  `no` digits right-aligned to x 101 + "KO" (table letters, bottoms on the digits' last ink row), faces, the time in the
-  difficulty word's slot (word digits + drawn colon, underline); empty rows "--" / "--:--".
+  (white tab font; D = L's stem + O's right half, `_make_d`), the WINNER band's letters erased and GAME OVER set in
+  the band's own typeface (`_bfont`: letters cut with `harvest_cc` from WINNER / GANADOR / SIEGER and VAINQUEUR's V,
+  M = N's stem + V + mirrored stem `_make_m`; outline spacing gap 3; the word, wider than the band at full size, is
+  scaled down as a whole by area averaging into the band's shades, `_shrink`) centred in the band (rows 140-183); table Enemies n / Hearts Used / Rank / Best (most enemies) /
+  status; Total bar = TIME. Ranking plate "ENDLESS RECORDS" (the plate's own capitals, outline spacing); rows: enemies
+  beaten + "KO" in the `no` digits' drawing (K = `KO_K`, O = digit 0) ending at x 122 like the game's score digits,
+  faces, the time in the difficulty word's slot (same digits, underline); empty rows "--" / "--:--". Both pages: every
+  number set from the digits' ink 1 px apart (`_packed`; the game's 8-px cells put a "1" in a gap), "Character Select"
+  label 3 px off the plate's inner frame (`_label_room`).
 - **File** `endless_records.cfg` (next to the exe; editor user://; `esrec=PATH`; capture runs without it: none):
   `[records] r1..r5 = {"beaten", "date", "frames", "hearts", "ids"}`; load needs beaten 1..99999 + the ALL-STAR
   checks; order `before_e` = more beaten, then shorter time, fewer hearts, older. beaten 0 -> "Not Ranked"; cheats on

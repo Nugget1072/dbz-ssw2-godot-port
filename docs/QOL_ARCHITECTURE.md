@@ -178,5 +178,6 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
   BATTLE` unchanged except: enemies from `QoLAllStar.at(i)` (random list growing on demand, never one of the two
   before), `total()` = no end, HUD tracker = enemies beaten. Death (0 -> 0x14) -> `_asr_win` asks for the records page;
   `QoLAllStarRecords.endless` = the ENDLESS RECORDS layout (`_open_endless`, `_table_lines_e`, `_row_endless`,
-  `_gameover_letters` = the Game Over screen's title from `game/gameover_dat.arc` over the WINNER band, `_make_d`) and
+  `_banner_word` = GAME OVER in the WINNER band's own typeface (`harvest_cc`, `_make_m`, `_shrink`), `_make_d`; shared:
+  `_packed` digits, GFont.contour title spacing, `_label_room`) and
   `endless_records.cfg` (`path(true)`, `before_e`). Preview: `tools/qol_preview.gd asrec` states `es_*`.

@@ -256,7 +256,7 @@ NEW GAMEMODES / ALL-STAR / ENDLESS (settings page 4, BIG CHANGES -> NEW GAMEMODE
   clock (MM:SS) at the top; under it the number of enemies beaten so far. When your whole team is knocked out
   (Game Over) the ENDLESS RECORDS screen opens: top = your team, the ENDLESS table (enemies beaten, hearts used,
   rank, best run, New Record! / Not Ranked / not recorded with cheats), your TIME in the orange bar and the game's
-  own "Game Over" title; bottom = the top 5 runs (most enemies first; equal: faster, then fewer hearts) with the
+  GAME OVER banner; bottom = the top 5 runs (most enemies first; equal: faster, then fewer hearts) with the
   enemies beaten (n KO), each team's faces and the time, your new row lit. A run that beat nobody is not ranked.
   Records are kept in endless_records.cfg next to the exe; nothing is recorded while cheats are on. A / START / B
   or Character Select returns to the team select (the pause menu's Return to Character Select does too, without a
