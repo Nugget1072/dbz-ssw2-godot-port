@@ -140,4 +140,11 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
   settings file could not be loaded — also for a test's fresh `qolcfg=` file — so exe test runs played with the
   player's own cheats / weird options. Fix: the user:// fallback (load and save) only without `qolcfg=`; normal play
   unchanged. V: exe standard battle run 21/21 PNGs identical to the editor baseline; offcheck PASS.
-- Private GitHub repository `dbz-ssw2-godot-port` (see the GitHub section below / README "Building from a git clone").
+- **Private GitHub repository** https://github.com/Nugget1072/dbz-ssw2-godot-port (published with GitHub Desktop,
+  "Keep this code private"; V: the GitHub API answers an anonymous request with 404, the owner's profile with 200).
+  Audit before publishing (every file in the tree and in every commit): the only ROM-derived file was the mockup
+  (purged). Kept by the user's decision: the translated game code `scripts/gen/` and `decomp/notes/charvm_ops_disasm.md`
+  (program code, no assets). Other images: the user's own art (bomb / 1-UP = Nintendo characters but not from this ROM;
+  port_button.png documented as the user's art). The BIOS volume table is melonDS FreeBIOS (BSD).
+  V: a clone from GitHub, built per README "Building from a git clone", gives an exe frame-identical to the editor
+  baseline (21/21). Pushing: command-line git has no GitHub login on this PC: push / fetch with GitHub Desktop.

@@ -89,3 +89,8 @@ Session 1, part 2 (cloud sandbox, Linux) — same rule as above, nothing written
   %APPDATA%\Godot\app_userdata\..., %USERPROFILE%\.claude\, temp files under %LOCALAPPDATA%\Temp\claude\).
 - Used, not changed: the Godot 4.7.2 export templates (already in %APPDATA%\Godot\export_templates\4.7.2.stable\)
   and GitHub Desktop's bundled git (%LOCALAPPDATA%\GitHubDesktop\app-3.6.6\..., git is not on PATH).
+
+2026-10-13 (part 37):
+- The project is now also on GitHub as a PRIVATE repository: https://github.com/Nugget1072/dbz-ssw2-godot-port
+  (published with GitHub Desktop, which also lists it). It holds no ROM, save or anything taken from the game.
+- Nothing else written outside SupersonicMain (test clones are in local\clonetest and local\clonegh, git-ignored).
