@@ -32,8 +32,9 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
 - Pages (`QoLMenu.PAGES`, 12): 1 SETTINGS (`main`: WINDOW SIZE 1X/2X/4X/8X/FULL with 10-s KEEP/UNDO `confirm` page, FRAME
   RATE 60/120/240/MAX, FPS COUNTER, MUSIC, SOUND FX, JUKEBOX) · 2 SETTINGS 2 (`main2`: CONTROLS, VOLUME, AUTO PAUSE,
   DETAILED SHADOWS, ZOOM, HI-SCORES RESET → `lbconfirm` page) · 3 SETTINGS 3 (`main3`: AUTO SKIP, DAMAGE NUMBERS, INPUT
-  DISPLAY) · 4 BIG CHANGES (`mpset`: MULTIPLAYER, PERFORMANCE) · 5-9 cheats (`QoLMenu.CHEAT_PAGES`: FIGHTING, KI &
-  ASSISTS, CHARACTERS, STAGE & MUSIC, CHALLENGES (part 36: GREEN DEMON; part 38: + BOMB RAIN)) · 10-12 WEIRD STUFF
+  DISPLAY) · 4 BIG CHANGES (`mpset`: MULTIPLAYER, PERFORMANCE) · 5-9 cheats (`QoLMenu.CHEAT_PAGES`: FIGHTING (part 39: +
+  ULTRA INSTINCT), KI & ASSISTS, CHARACTERS (part 39: + RANDOMIZER), STAGE & MUSIC, CHALLENGES (part 36: GREEN DEMON;
+  part 38: + BOMB RAIN; part 39: + FLIGHTLESS, SMASH KNOCKBACK)) · 10-12 WEIRD STUFF
   (`QoLMenu.WEIRD_PAGES`: 10 bevel / fuzzy / game boy / mirror / shake / crt, 11 blood / afterimages / 2nd fiddle / epic /
   flashy / confetti, 12 rainbow). HI-SCORES RESET (`lbyes`) also calls `QoLAllStarRecords.reset_files()` (part 38). The header's help text (`QoLMenu` page-row description) lists the page numbers. Sub-pages:
   `controls1`-`controls3` (`QoLMenu.CPAGES`), `jukebox`, `confirm`, `lbconfirm`.
@@ -95,6 +96,10 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
 | RANDOM MUSIC | see Sound |
 | GREEN DEMON (part 36, page 9 CHALLENGES) | `scripts/qol/qol_green_demon.gd` (no class_name) owned by QoLGame `# ---- GREEN DEMON (part 36)`: tick from f_0202954C, reset at f_0202A40C, drawn in `_fx_draw`, f_02021DD4 override (wrap-around / STAGE SHUFFLE move it), `_gd_kill` (KO through f_020293A4 with `_gd_killing` = damage cheats skipped). Art assets_qol/greendemon.png (16x16, from greendemon_src.png); texels in the shared port texture block `scripts/qol/qol_texblock.gd` (QoLGame `_tex_block()`, also BOMB RAIN's). Hunts P1 (both players in local / LAN MP: `_mp_on()`); LAN-safe (own RNG, game camera) |
 | BOMB RAIN (part 38: a cheat, page 9 under GREEN DEMON) | see "Weird stuff" below for the code; `QoLSettings.bomb_rain` is now a property over `cheats["bomb_rain"]` ([cheats] in settings.cfg; an old [weird] value is read once when [cheats] has none) |
+| ULTRA INSTINCT (part 39, page 5 FIGHTING) | `scripts/qol/qol_ultra.gd` (no class_name) owned by QoLGame `# ---- ULTRA INSTINCT (part 39)`: `tick` from f_0202954C (`_c39_tick`: a fresh B press opens a 5-pass parry window), `before` / `after` around the collision pass (QoLGame override f_0201E5BC: its own copy of the box test finds enemy attack boxes on the parrier, who is left out of that pass with +4 = 0; then stun 0x11 / reflect / ignore + hit stop + guard spark 0xB + SE 0x21), drawn in `_fx_draw` (silhouettes through two palettes it allocates with the game's FUN_02010B6C; `_spr_copy` / `_spr_emit` got a `pal` argument) |
+| RANDOMIZER (part 39, page 7 CHARACTERS) | QoLGame `# ---- RANDOMIZER (part 39)`: override f_0202AEB4 (the action dispatcher: a super / ultimate started → record bytes put back, `_rz_load` = CHARACTER SHUFFLE's loader with a random id, dispatcher again), `_rz_tick` (back on a hit / win pose / when the super and its objects are over), `_rz_back`; shuffles wait (`_shuffle_tick`); LAN seed with the battle seed |
+| FLIGHTLESS (part 39, page 9) | QoLGame `# ---- FLIGHTLESS (part 39)` `_fl_tick` (from `_c39_tick`, both teams' active fighters): own fall speed added to y; the game's ground test FUN_020214C4 lands them |
+| SMASH KNOCKBACK (part 39, page 9) | QoLGame `# ---- SMASH KNOCKBACK (part 39)`: f_020293A4 notes victims while `_kb_on` (inside the f_0201E5BC override), `_kb_apply` scales their push after the pass |
 | Leaderboard rule | f_02002560 returns 0 while `QoLSettings.cheats_on() > 0`; `reset_leaderboards()` (`# ---- LEADERBOARD`); the ALL-STAR / ENDLESS records pages write nothing either |
 
 ## Weird stuff (pages 10-12) and other picture effects

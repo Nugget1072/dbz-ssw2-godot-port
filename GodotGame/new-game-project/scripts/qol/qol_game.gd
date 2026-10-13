@@ -46,6 +46,8 @@ func _on(name: String) -> bool:
 # ------------------------------------------------------------------------------------------------ damage
 ## FUN_020293A4(fighter, damage, type): the only place fighters lose HP from hits
 func f_020293a4(param_1: int = 0, param_2: int = 0, param_3: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	if _kb_on and param_2 > 0:
+		_kb_hit[param_1] = true                         # part 39 SMASH KNOCKBACK: scaled after the collision pass
 	if cheats != null and cheats.blood and param_2 > 0:
 		_blood_hit(param_1, param_2)                    # part 22 BLOOD: droplets (drawing only)
 	if cheats != null and cheats.screen_shake and param_2 > 0:
@@ -90,6 +92,8 @@ func f_0202954c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 		_br_tick()                                     # part 25 BOMB RAIN (once per battle frame)
 	if cheats != null and _on("green_demon"):
 		_gd_tick()                                     # part 36 GREEN DEMON (once per battle frame)
+	if cheats != null:
+		_c39_tick(param_1)                             # part 39 FLIGHTLESS / ULTRA INSTINCT / RANDOMIZER (active fighters)
 	if cheats != null and _helped(param_1):            # part 27: side 0, and side 1 in an MP battle
 		var side: int = _ld(param_1 + 0x1A, 1, false)
 		if _on("character_shuffle") or _on("chaos_shuffle"):
@@ -133,7 +137,7 @@ func _cancel_attack(f: int) -> void:
 	if act == 0x24 and (pressed & 1) != 0 and (held & 0x400) == 0 and st[1] < 10:
 		return                                          # plain ki blast before its first shot
 	_nc_keep(f, act)                                    # part 20: the cut attack's beams keep going (GFX FIXES)
-	f_02021b4c(f, 5 if (_ld(f + 0x10, 2, false) & 1) != 0 else 0)   # back to neutral (5 = in the air)
+	f_02021b4c(f, 5 if (_ld(f + 0x10, 2, false) & 1) != 0 else 0)   # back to neutral (5 = on the ground, part 39 correction)
 	_act_frames[f] = [-1, 0]
 
 
@@ -289,6 +293,10 @@ func f_0202a40c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 		_gd.reset()                                    # part 36 GREEN DEMON: new battle, not spawned, RNG reseeded
 	if _texblk != null:
 		_texblk.reset()                                # part 36: the shared texture block is checked again
+	if _ui != null:
+		_ui.reset()                                    # part 39 ULTRA INSTINCT: no windows / flashes left
+	_rz.clear()                                        # part 39 RANDOMIZER: the records are built anew
+	_fl_v.clear()                                      # part 39 FLIGHTLESS
 	if cheats == null:
 		return r
 	var teams: int = _ld(TEAMS, 4, false)
@@ -669,6 +677,8 @@ func _shuf_dbg() -> bool:
 ## once per battle frame for player 1's fighters (called from f_0202954c). Part 27: in an MP battle also for
 ## player 2's, with P2's own timer / wait state (_shuf_p2, swapped in around the same code)
 func _shuffle_tick(f: int) -> void:
+	if _rz.has(f):
+		return                                         # part 39 RANDOMIZER: transformed for a super, swaps wait
 	if (_ld(f + 0x1A, 1, false) & 1) == 1:
 		if f != f_02027c00(1):
 			return
@@ -1059,6 +1069,8 @@ func f_0200077e(a0: int = 0, a1: int = 0, a2: int = 0, a3: int = 0, a4: int = 0,
 		return a0
 	if _lb_at != -1:
 		_lb_debug_tick()                               # LEADERBOARD (part 23): debug flag lbreset=F only
+	if _setest:
+		_se_test()                                     # part 39 debug `setest`: every battle sound in turn
 	return super.f_0200077e(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
 
 
@@ -1840,7 +1852,7 @@ func _sil_draw(p: int, sx: int, sy: int, z: int, g: int) -> void:
 
 ## sprite object p's own textured quad (texture, palette, texcoord flip, texture matrix as FUN_02011384 sets them)
 ## under the position matrix m (MTX_MULT_4x3 rows), with POLYGON_ATTR `attr` and vertex colour `col`
-func _spr_emit(p: int, m: Array, attr: int, col: int) -> void:
+func _spr_emit(p: int, m: Array, attr: int, col: int, pal: int = -1) -> void:
 	var fl: int = _ld(p + 0x3E, 2, false)
 	io_write(0x4000440, 4, 2)                         # MTX_MODE position
 	io_write(0x4000444, 4, 0)                         # MTX_PUSH
@@ -1858,7 +1870,7 @@ func _spr_emit(p: int, m: Array, attr: int, col: int) -> void:
 	var tp: int = (_ld(_ld(p, 4, false), 4, false) >> 3) | (fmt << 26) | 0x40000000 | (_ld(p + 0x10, 1, false) << 20) \
 		| (_ld(p + 0x11, 1, false) << 23) | (0x20070000 if (fl & 0x20) != 0 else 0x20030000)
 	io_write(0x40004A8, 4, tp & 0xFFFFFFFF)          # TEXIMAGE_PARAM: the fighter's own texture
-	io_write(0x40004AC, 4, _ld(p + 8, 2, false) >> (3 if fmt == 2 else 4))
+	io_write(0x40004AC, 4, (_ld(p + 8, 2, false) if pal < 0 else pal) >> (3 if fmt == 2 else 4))   # (part 39: another palette)
 	io_write(0x40004A4, 4, attr)
 	io_write(0x4000480, 4, col)
 	io_write(0x4000500, 4, 1)                         # BEGIN quads
@@ -2785,6 +2797,8 @@ func _fx_draw(fx: Variant) -> void:
 		drew = _bombs.draw(cv) or drew                  # part 25 BOMB RAIN
 	if _gd != null and _on("green_demon"):
 		drew = _gd.draw(cv) or drew                     # part 36 GREEN DEMON
+	if _ui != null and _on("ultra_instinct"):
+		drew = _ui.draw(idx, cv, step) or drew          # part 39 ULTRA INSTINCT flashes
 	if cheats.damage_numbers:
 		drew = _dn_frame(cv) or drew                    # part 24 DAMAGE NUMBERS (on top of everything)
 	if drew:
@@ -2968,7 +2982,8 @@ var _fk_dbg := Game.args.has("flashydbg")
 func _fx_any() -> bool:
 	return cheats.blood or cheats.afterimages or cheats.flashy_ki or cheats.ko_confetti \
 		or cheats.damage_numbers or cheats.rainbow_ki \
-		or cheats.bomb_rain or _on("green_demon")       # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON
+		or cheats.bomb_rain or _on("green_demon") \
+		or _on("ultra_instinct")                        # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON, part 39
 
 
 ## the fighter records that can be on screen (both teams, ASSIST SPAM copies)
@@ -2983,7 +2998,7 @@ func _fx_recs() -> Array:
 
 
 ## a copy of sprite object p: its quad scaled by (kx, ky) in its own axes around its centre, moved by (dx, dy) px
-func _spr_copy(p: int, g: int, kx: float, ky: float, dx: float, dy: float, z: int, al: int, pid: int, col: int = 0x7FFF) -> void:
+func _spr_copy(p: int, g: int, kx: float, ky: float, dx: float, dy: float, z: int, al: int, pid: int, col: int = 0x7FFF, pal: int = -1) -> void:
 	var fl: int = _ld(p + 0x3E, 2, false)
 	var sw := float(_ld(p + 0x14, 4, true))
 	var shh := float(_ld(p + 0x18, 4, true))
@@ -2998,7 +3013,7 @@ func _spr_copy(p: int, g: int, kx: float, ky: float, dx: float, dy: float, z: in
 	var tx := float(_ld(p + 0x1C, 2, true)) + dx
 	var ty := float(_ld(p + 0x1E, 2, true)) + dy
 	var m := [cs * sw, sn * sw, 0.0, -sn * shh, cs * shh, 0.0, 0.0, 0.0, 1.0, tx, ty, float(maxi(z, 0))]
-	_spr_emit(p, m, 0x80C0 | (clampi(al, 1, 30) << 16) | (pid << 24), col)
+	_spr_emit(p, m, 0x80C0 | (clampi(al, 1, 30) << 16) | (pid << 24), col, pal)
 
 
 func _fk_frame(idx: Dictionary, cv: Array, step: bool) -> bool:
@@ -5089,6 +5104,8 @@ func _lan_battle_start() -> void:
 	_shuf_seeded = true
 	_stg_rng.seed = sd0 ^ 0x53540000
 	_stg_seeded = true
+	_rz_rng.seed = sd0 ^ 0x525A0000                    # part 39 RANDOMIZER
+	_rz_seeded = true
 	_shuf_frame = -1
 	_stg_frame = -1
 	_shuf_p2[1] = -1
@@ -6225,3 +6242,329 @@ func _asr_win(to: int) -> void:
 	allstar.p1_support = _ld(PARTY_SUPPORT, 4, false)
 	allstar.records_req = true
 	allstar._log("%s -> records page (support %d)" % [allstar.result, allstar.p1_support])
+
+
+# ---- FLIGHTLESS (part 39) -------------------------------------------------------------------------------------------
+## Cheat FLIGHTLESS (page 9 CHALLENGES, `cheats=flightless`): every active fighter (both teams) that is above the
+## floor falls: its own fall speed grows by FL_G per battle frame up to FL_MAX and is added straight to y (+0x3C, 24.8
+## px, y down). The game's ground test FUN_020214C4 (camera update, later in the same frame) clamps the feet to the
+## floor line (effect pool +0x4DEE, s16 px; feet = (y >> 8) - u8 +0x24F) and lands the fighter its own way (landing
+## sound 0xF, ground neutral 5), so Up only gives a hop. No pull during supers / ultimates / charging into a super
+## (actions 0x26-0x30), character actions >= 0x85 (specials, super parts, throws), victim states 0x34-0x66, KO 0x33,
+## intro / win poses 0x13-0x15, sequences (+0x250 & 0x420), frozen (+0x800), pause / cut-in, super / Team Arts camera,
+## or before the fight runs (battle state 7). Supports never fall (only the two active records). LAN: integers from
+## battle RAM only. DATA_NOTES "part 39 findings".
+const FL_G := 0x60                       ## fall speed gained per frame (24.8 px: 0.375 px)
+const FL_MAX := 0x700                    ## fastest fall (7 px / frame; flying is ~2.3)
+var _fl_v := {}                          ## fighter -> its fall speed (24.8 px / frame)
+
+
+func _fl_tick(f: int) -> void:
+	var y: int = _ld(f + 0x3C, 4, true)
+	var floor_y: int = _ld(_ld(0x020DE3CC, 4, false) + 0x4DEE, 2, true)
+	if (y >> 8) - _ld(f + 0x24F, 1, false) >= floor_y:
+		_fl_v.erase(f)                                 # standing (or the floor clamp's frame)
+		return
+	var act: int = _ld(f + 6, 1, false)
+	var keep := _ld(f + 0x24A, 2, true) <= 0 or act == 0x33 or (act >= 0x13 and act <= 0x15) \
+		or (act >= 0x26 and act <= 0x30) or act >= 0x85 or (act >= 0x34 and act <= 0x66) \
+		or (_ld(f + 0x250, 4, false) & 0xC20) != 0 or _ld(BATTLE_STATE, 1, false) != 7 or f_02012fd4() != 0
+	var cam: int = _ld(CAMERA, 4, false)
+	if keep or (cam != 0 and _ld(cam, 2, false) != 0):
+		_fl_v.erase(f)                                 # hovers (and starts falling slowly again afterwards)
+		return
+	var v: int = mini(int(_fl_v.get(f, 0)) + FL_G, FL_MAX)
+	_fl_v[f] = v
+	_st(f + 0x3C, 4, (y + v) & 0xFFFFFFFF)
+
+
+# ---- SMASH KNOCKBACK (part 39) --------------------------------------------------------------------------------------
+## Cheat SMASH KNOCKBACK (page 9 CHALLENGES, `cheats=smash_knockback`): after the game's collision pass FUN_0201E5BC,
+## every fighter that lost HP in it (FUN_020293A4, noted in `_kb_hit`) and was knocked back (hit reaction 0xF-0x12 or
+## KO 0x33, moving) gets its push multiplied by k = 1 + KB_K * (HP lost / max HP), so at full HP nothing changes and
+## near a KO it flies about KB_K + 1 times as far: the push is FUN_020213A8(victim, s, -0x40, 0, dir) (velocity
+## +0x28 / +0x2A, deceleration +0x30 / +0x32, speed +0x22, accel +0x26; FUN_02021264 adds velocity to the position,
+## then the deceleration, until the velocity reaches 0): velocity AND deceleration x k = same duration, k x the
+## distance. Both teams. LAN: integers from battle RAM only.
+const KB_K := 2.0
+var _kb_on := false                      ## inside the collision pass with the cheat on
+var _kb_hit := {}                        ## fighter -> true: lost HP in this pass
+
+
+func _kb_apply() -> void:
+	for v in _kb_hit:
+		var hp: int = maxi(_ld(v + 0x24A, 2, true), 0)
+		var mx: int = _ld(v + 0x24C, 2, false)
+		var act: int = _ld(v + 6, 1, false)
+		if mx <= 0 or not (act in [0xF, 0x10, 0x11, 0x12, 0x33]):
+			continue
+		var k := 1.0 + KB_K * clampf(1.0 - float(hp) / mx, 0.0, 1.0)
+		var kk := int(k * 256.0)
+		if kk <= 256 or (_ld(v + 0x28, 2, true) == 0 and _ld(v + 0x2A, 2, true) == 0):
+			continue
+		for off in [0x22, 0x26, 0x28, 0x2A, 0x30, 0x32]:
+			_st(v + off, 2, clampi((_ld(v + off, 2, true) * kk) >> 8, -0x7FFF, 0x7FFF) & 0xFFFF)
+		if Game.args.has("cheatdbg"):
+			print("CHT knockback f%d fighter %x hp %d/%d x%.2f velocity %d,%d" % [_port_frame(), v, hp, mx, k,
+				_ld(v + 0x28, 2, true), _ld(v + 0x2A, 2, true)])
+	_kb_hit.clear()
+
+
+# ---- ULTRA INSTINCT (part 39) ---------------------------------------------------------------------------------------
+## Cheat ULTRA INSTINCT (page 5 FIGHTING, `cheats=ultra_instinct`): the parry; everything is in
+## scripts/qol/qol_ultra.gd. Hooks here: f_0202954C (tick for player 1's active fighter, both players' in MP),
+## f_0201E5BC (before / after the collision pass), f_0202A40C (reset), _fx_any / _fx_draw (its flashes).
+const _ULTRA_GD := preload("res://scripts/qol/qol_ultra.gd")
+var _ui = null                           ## created the first time a battle frame runs with the cheat on
+
+
+## FUN_0201E5BC: the battle's collision pass (attack boxes against hurt boxes -> the attackers' hit handlers)
+func f_0201e5bc(_x0: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	if cheats == null:
+		return super.f_0201e5bc(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	var ui: bool = _ui != null and _on("ultra_instinct") and _ui.busy()
+	var kb := _on("smash_knockback")
+	if not ui and not kb:
+		return super.f_0201e5bc(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	if ui:
+		_ui.before()
+	_kb_hit.clear()
+	_kb_on = kb
+	var r := super.f_0201e5bc(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	_kb_on = false
+	if ui:
+		_ui.after()
+	if kb:
+		_kb_apply()
+	return r
+
+
+## once per battle frame per fighter (f_0202954C, before its action handler): the part 39 cheats
+func _c39_tick(f: int) -> void:
+	var side: int = _ld(f + 0x1A, 1, false) & 1
+	if f != f_02027c00(side):
+		return
+	if _on("flightless"):
+		_fl_tick(f)
+	if not _helped(f):
+		return
+	if _on("ultra_instinct"):
+		if _ui == null:
+			_ui = _ULTRA_GD.new(self)
+		_ui.tick(f)
+	if not _rz.is_empty():
+		for r in _rz.keys():                           # a transformed fighter benched after its KO: back now
+			if r != f and r != f_02027c00(_ld(r + 0x1A, 1, false) & 1):
+				_rz_back(r)
+		if _rz.has(f):
+			_rz_tick(f)
+
+
+# ---- RANDOMIZER (part 39) -------------------------------------------------------------------------------------------
+## Cheat RANDOMIZER (page 7 CHARACTERS, `cheats=randomizer`): player 1's super attacks (both players' in MP) are done
+## by a random fighter. The action dispatcher FUN_0202AEB4 (neutral / move handlers) starts a super (0x2C) or an
+## ultimate (0x2E) for X+A held; when it did, the record is put back as it was before the call (a byte copy of the
+## 0x2D8-byte record, the common effects the call spawned are killed), the record is reloaded as a random other
+## fighter (0-25) with CHARACTER SHUFFLE's loader (`_shuffle_load`: chunks, images, palettes, voices, face icon,
+## lower-screen portrait; HP and max HP kept) and the dispatcher runs again: the new character starts ITS super
+## (its own cost, script, direction variant; ultimate if it has one and the ki is there). If it starts none, the
+## original comes back at once and does its own. `_rz_tick` (every battle frame while transformed) turns the fighter
+## back with the same loader: at once when it is hit (generic hit reactions 0xE-0x12, restarted for the original as
+## CHAOS SHUFFLE does), else when the super, its sequence / camera and the objects made from the random fighter's
+## chunks are over (at most RZ_WAIT frames after the super, then the objects are killed). A KO waits until the KO
+## sequence lets go of the record. A super started while still transformed picks another fighter. Boss picks
+## (BOSS CHARACTERS) are no boss while transformed and get their boss level back. CHARACTER / CHAOS SHUFFLE wait while
+## transformed. LAN: the seeded `_rz_rng` (battle seed). Debug: `rzseed=N`, `rzto=ID` (always that fighter), `cheatdbg`.
+const RZ_SUPERS := [0x2C, 0x2E]
+const RZ_HIT := [0x0E, 0x0F, 0x10, 0x11, 0x12]
+const RZ_WAIT := 240
+var _rz := {}                            ## fighter -> {"orig": id, "boss": level (0 none), "t": frames, "wait": frames}
+var _rz_rng := RandomNumberGenerator.new()
+var _rz_seeded := false
+var _rz_busy := false
+
+
+func f_0202aeb4(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	if cheats == null or _rz_busy or not _on("randomizer") or not _helped(param_1):
+		return super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	var held: int = _ld(param_1 + 0x270, 2, false)
+	if (held & 0x401) != 0x401 or (held & 0x100) != 0 or (held & 0x802) == 0x802 \
+			or param_1 != f_02027c00(_ld(param_1 + 0x1A, 1, false) & 1) or _ld(param_1 + 5, 1, false) > 25:
+		return super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	var snap := M.slice(param_1 - BASE, param_1 - BASE + 0x2D8)
+	var alive := _rz_alive()
+	var act0: int = _ld(param_1 + 6, 1, false)
+	var r := super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	var act: int = _ld(param_1 + 6, 1, false)
+	if not act in RZ_SUPERS:
+		return r
+	_rz_busy = true
+	var cur: int = _ld(param_1 + 5, 1, false)
+	var st: Dictionary = _rz.get(param_1, {})
+	var orig: int = st.get("orig", cur)
+	_rz_kill_new(alive)                                # the super's start effects (common effects 0xD / 0xF)
+	_put(param_1, snap)                                # the record as before the call (old chunks still loaded)
+	var n := _rz_pick(cur, orig)
+	if st.is_empty():
+		st = {"orig": orig, "boss": _rz_unboss(param_1), "t": 0, "wait": 0}
+	_rz_load(param_1, n, act0, false)
+	_rz[param_1] = st
+	st["t"] = 0
+	st["wait"] = 0
+	alive = _rz_alive()
+	r = super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	var act2: int = _ld(param_1 + 6, 1, false)
+	if Game.args.has("cheatdbg"):
+		print("CHT randomizer f%d fighter %x: super %x as %d -> %d starts %x (original %d)" % [_port_frame(), param_1, act, cur, n, act2, orig])
+	if not act2 in RZ_SUPERS:                         # this fighter has no super here: the original does its own
+		_rz_kill_new(alive)
+		_rz_back(param_1, false)
+		r = super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	_rz_busy = false
+	return r
+
+
+## a random fighter id 0-25, not the current one, nor the original (`rzto=ID`: that one)
+func _rz_pick(cur: int, orig: int) -> int:
+	if Game.args.has("rzto"):
+		return clampi(int(Game.flag("rzto")), 0, 25)
+	if not _rz_seeded:
+		_rz_seeded = true
+		if Game.args.has("rzseed"):
+			_rz_rng.seed = int(Game.flag("rzseed"))
+		else:
+			_rz_rng.randomize()
+	var n := cur
+	while n == cur or n == orig:
+		n = _rz_rng.randi_range(0, 25)
+	return n
+
+
+## status bytes (+4) of the effect pool's 56 slots
+func _rz_alive() -> PackedByteArray:
+	var pool: int = _ld(0x020DE3CC, 4, false)
+	var a := PackedByteArray()
+	a.resize(56)
+	for i in 56:
+		a[i] = _ld(pool + i * 0x164 + 4, 1, false)
+	return a
+
+
+## kill the objects spawned since `alive` was taken (the game's way: +4 = 2)
+func _rz_kill_new(alive: PackedByteArray) -> void:
+	var pool: int = _ld(0x020DE3CC, 4, false)
+	for i in 56:
+		var o := pool + i * 0x164
+		if alive[i] == 0 and (_ld(o + 4, 1, false) & 1) != 0:
+			_st(o + 4, 1, 2)
+
+
+## a BOSS CHARACTERS boss stops being one while transformed: its level (0 = not a boss)
+func _rz_unboss(f: int) -> int:
+	for i in battle_bosses.size():
+		if battle_bosses[i][0] == f:
+			var lv: int = battle_bosses[i][1]
+			battle_bosses.remove_at(i)
+			return lv
+	return 0
+
+
+## reload record f as character n (CHARACTER SHUFFLE's loader), HP kept; then action `act` restarts with the new
+## script (chaos: CHAOS SHUFFLE's rule, which keeps reactions and ends attacks)
+func _rz_load(f: int, n: int, act: int, chaos: bool) -> void:
+	var old: int = _ld(f + 5, 1, false)
+	var hp: int = _ld(f + 0x24A, 2, true)
+	var mx: int = _ld(f + 0x24C, 2, false)
+	_shuf_loading = true
+	_chaos_prepare(f)
+	if not _shuffle_load(f, n):
+		print("CHT randomizer: loading character %d failed (heap %s); reloading %d" % [n, str(_heap_free()), old])
+		n = old
+		_shuffle_load(f, old)
+	_st(f + 0x24A, 2, hp)
+	_st(f + 0x24C, 2, mx)
+	if chaos:
+		_chaos_again = -1
+		_chaos_restart(f, act)
+	else:
+		f_02021b4c(f, act)
+	f_02026548(f)
+	_shuffle_voices(f_02027c00(_ld(f + 0x1A, 1, false) & 1))   # (the side's ACTIVE fighter: f may be benched)
+	_shuffle_icon(f, n)
+	_shuffle_panel(f)
+	_shuf_loading = false
+
+
+## back to the original character (boss level back), the current action kept the CHAOS SHUFFLE way
+func _rz_back(f: int, chaos := true) -> void:
+	var st: Dictionary = _rz.get(f, {})
+	if st.is_empty():
+		return
+	_rz.erase(f)
+	var was_busy := _rz_busy
+	_rz_busy = true
+	_rz_load(f, st["orig"], _ld(f + 6, 1, false), chaos)
+	if st["boss"] > 0:
+		var hp: int = _ld(f + 0x24A, 2, true)
+		var mx: int = _ld(f + 0x24C, 2, false)
+		_make_boss(f, st["boss"])
+		battle_bosses.append([f, st["boss"]])
+		_st(f + 0x24A, 2, hp)
+		_st(f + 0x24C, 2, mx)
+	_rz_busy = was_busy
+	if Game.args.has("cheatdbg"):
+		print("CHT randomizer f%d fighter %x back to %d (act %x, %d frames)" % [_port_frame(), f, st["orig"], _ld(f + 6, 1, false), st["t"]])
+
+
+## every battle frame while transformed: back when hit, or when the super and what it left are over
+func _rz_tick(f: int) -> void:
+	var st: Dictionary = _rz[f]
+	st["t"] += 1
+	if _ld(f + 6, 1, false) >= 0x13 and _ld(f + 6, 1, false) <= 0x15:
+		_rz_back(f)                                    # the fight is won: the win pose is the original's
+		return
+	if f_02012fd4() != 0 or _ld(_ld(TEAMS, 4, false) + 0x11DC, 4, false) != 0 or (_ld(f + 0x250, 4, false) & 0x800) != 0:
+		return                                         # pause / cut-in, tag, frozen: later
+	var act: int = _ld(f + 6, 1, false)
+	if _ld(f + 0x24A, 2, true) <= 0 or act == 0x33:
+		if act != 0x33 and (_ld(f + 0x250, 4, false) & 0x420) == 0:
+			_rz_back(f)                                # KO over (benched / the next member is in)
+		return
+	if (_ld(f + 0x250, 4, false) & 0x420) != 0 or act >= 0x85 or (act >= 0x26 and act <= 0x30) or (act >= 0x34 and act <= 0x66):
+		return                                         # the super / a throw / a sequence still runs
+	if act in RZ_HIT:
+		_rz_back(f)                                    # hit during (or after) the super: back at once
+		return
+	var cam: int = _ld(CAMERA, 4, false)
+	if cam != 0 and _ld(cam, 2, false) != 0:
+		return
+	if _shuffle_objects(f) > 0 and st["wait"] < RZ_WAIT:
+		st["wait"] += 1                                # its shots / summons are still out
+		return
+	_rz_back(f)
+
+
+## part 39 debug `setest` (choosing ULTRA INSTINCT's sound): from port frame 4150 the fight is held in hit stop
+## (silent), and from 4200 every 60 frames battle sound k = 0, 1, ... 0x31 plays (FUN_02029E3C on P1's fighter);
+## `setest=A,B,...` plays only those. The capture's audio.wav is cut into 60-frame windows by the analysis script.
+var _setest := Game.args.has("setest")
+var _setest_ids: Array = []
+
+
+func _se_test() -> void:
+	var fr := _port_frame()
+	if fr < 4150 or _ld(BATTLE_STATE, 1, false) != 7:
+		return
+	if _setest_ids.is_empty():
+		var s: String = Game.flag("setest")
+		if s == "" or s == "1":
+			_setest_ids = range(0, 0x32)
+		else:
+			for v in s.split(",", false):
+				_setest_ids.append(v.hex_to_int() if v.begins_with("0x") else int(v))
+	f_02012f9c(4)
+	if fr >= 4200 and (fr - 4200) % 60 == 0:
+		var k := (fr - 4200) / 60
+		if k < _setest_ids.size():
+			f_02029e3c(f_02027c00(0), _setest_ids[k])
+			print("SETEST f%d se %x" % [fr, _setest_ids[k]])

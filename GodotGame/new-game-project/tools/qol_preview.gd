@@ -142,6 +142,12 @@ func _ready() -> void:
 		["challenges", func(): _menu.open(); for i in 4: _press(512)],                        # part 36: L x4 = page 9 CHALLENGES
 		["challenges_on", func(): _press(32); _press(1)],                                  # (cursor stays on row 1) ON pressed
 		["challenges_hdr", func(): _press(64)],                                            # up: the header (page help)
+		# part 39: the four new cheats (page 5 row 6, page 7 row 6, page 9 rows 3-4)
+		["p39_fighting", func(): _menu.open(); _presses(256, 4); _presses(128, 5)],
+		["p39_fighting_on", func(): _press(32); _press(1)],
+		["p39_characters", func(): _menu.open(); _presses(256, 6); _presses(128, 5)],
+		["p39_challenges", func(): _menu.open(); _presses(512, 4); _presses(128, 2)],
+		["p39_challenges_kb", func(): _press(128); _press(32); _press(1)],
 		["weird_on", func(): _press(128); _press(32); _press(1); _press(128); _press(128)],                                    # L from page 1: CHEATS 3
 		["cheats3_on", func(): _press(128); _press(32); _press(1); _press(128); _press(128); _press(128); _press(128)],
 		["cheats3_header", func(): _press(128); _press(64); _press(64); _press(64); _press(64); _press(64); _press(64)],
@@ -321,6 +327,11 @@ func _lan_states(stub, root2: Node, font: QoLFont) -> void:
 func _press(bit: int) -> void:
 	_menu.frame_input(bit, bit, Vector2i(-1, -1))
 	_menu.frame_input(0, 0, Vector2i(-1, -1))
+
+
+func _presses(bit: int, n: int) -> void:
+	for k in n:
+		_press(bit)
 
 
 func _process(_d: float) -> void:

@@ -314,3 +314,33 @@ The release build stdout is only flushed on a clean exit: always pass `quit_at=`
   white-letter list gains "D").
 - BOMB RAIN: settings page 9 shows GREEN DEMON + BOMB RAIN, page 12 RAINBOW KI only (preview `challenges*`, `weird3`).
 - Off: `offcheck` PASS (21/21 + 1382 CHT, 221/221).
+
+## 30. Part 39 (ULTRA INSTINCT, RANDOMIZER, FLIGHTLESS, SMASH KNOCKBACK)
+Contact sheets: a scratch Godot script (Image.get_region + blit_rect, NEAREST zoom) over the capture PNGs.
+- FLIGHTLESS: `ssw2.py run fl1 --battle --every 10 --from 4250 --to 4650 --inputs "4300:Up:80" cheats=flightless` →
+  P1 holding Up only hops, both fighters back on the floor at once (CPU too); `fl2` (+ `infinite_ki`, X+A) → supers
+  fired from the ground, knocked-back fighters arc down to the floor.
+- SMASH KNOCKBACK: `kb1 --battle --headless --to 5300 --inputs <Y every 8 frames> cheats=smash_knockback cheatdbg` →
+  "CHT knockback … xK velocity" lines, K = 1 + 2 × HP lost / max (x1.03 near full HP … x2.06 at 47 %).
+- ULTRA INSTINCT effects: `ui2 --battle --every 2 --from 4116 --to 4176 cheats=ultra_instinct uiauto uidbg` → p4122
+  "PARRY … stun", hit stop, P1 a silver-blue silhouette (blue hair) during the freeze, the game's guard spark, expanding
+  silver silhouettes + sparkle ring, the attacker staggers (0x11). Taps: `ui4 --headless --to 5100 --inputs <B:3 every
+  37 frames from 4150>` → windows open only in neutral / move / guard (not in hit stun 0xF / thrown 0x34), empty taps →
+  "MISS" + lock 30, a real parry at f4631; `ui5` captures the red miss silhouette. Shots: `ui6 --headless --to 6500 uiauto`
+  → "reflect" (ki blasts sent back: `ui7` shows the blast exploding on the CPU) and "ignore" (beams / super parts).
+- Parry sound: `ssw2.py run se2 --battle --every 1000 --from 4000 --to 7320 --cfg <ABS path of a cfg with [sound]
+  music=false> setest` → audio.wav, cut into 60-frame windows from port 4200 (32768 Hz): loudness / length / attack /
+  spectral centroid / flatness per sound (DATA_NOTES part 39); 0x21 chosen.
+- RANDOMIZER: `rz1 --battle --headless --to 6500 --inputs <X+A every 200 frames> cheats=randomizer,infinite_ki,
+  infinite_health cheatdbg rzseed=5` → "super 2c as 0 -> N starts 2c" / "back to 0" pairs; `rz2` captures: portrait,
+  face icon and sprite turn into Metal Cooler for the super, Goku again after. `rz4` (All-Star team `allstar=1 asp1=0,5,6`,
+  X+A every 80 frames, `boss_characters`, no infinite health): 40+ supers, back on hits (act f / 0x11), a random
+  ultimate (2e), the second member after a tag, no SCRIPT ERROR. `rz3` (+ `chaos_shuffle`, a won fight): back to the
+  original at the win pose (fixed: it stayed the random fighter through the KO sequence).
+- MP: `mp39 --battle --headless --to 5800 mp=1 mpbattle=1 p2inputs=… cheats=randomizer,ultra_instinct,infinite_ki,
+  flightless,smash_knockback` → both players' supers randomized. LAN: `lan_pair.ps1 -tag p39_lan -cheats "randomizer,
+  ultra_instinct,flightless,smash_knockback,infinite_ki" -hin/-gin <supers, B taps> -quit 2000 -extra "cheatdbg uidbg"`
+  → lan_cmp exit 0, the same MISS / randomizer lines on both sides.
+- Menu: `tools/qol_preview.tscn` states `p39_fighting(_on)`, `p39_characters`, `p39_challenges(_kb)` → 6 rows on pages
+  5 and 7, 4 on page 9, descriptions fit the upper box.
+- Off: `offcheck` PASS (21/21 + 1382 CHT, 221/221).

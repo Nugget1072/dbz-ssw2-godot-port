@@ -3182,3 +3182,49 @@ KO swap, pause, WIN; zoom 0 + mirror; zoom 4), `sky_built.png` = the built BG3 p
 - **ENDLESS swaps** (V es1, 47 swaps of random pairs incl. Kid Buu / Broly / Gotenks SSJ3 pairs): heap free 0.98-1.23 MB,
   file cache 24 entries, open archives 7-9, no trend; mirror palette applied when the incoming enemy is P1's
   character. | H |
+
+## Session 2, part 39 findings (parry, randomizer, flightless, knockback) — V = port verified, C = code read
+- **Ground / air** (H, C + asm, research agent): fighter u16 +0x10 bit 0 = ON THE GROUND (correction: earlier comments
+  said "in the air"); action 5 = ground neutral, 0 = air neutral (FUN_0202B630 picks 0 / 5 by that bit).
+  FUN_020214C4 (called for the two ACTIVE fighters by the camera update FUN_02019980, after both FUN_0202954C calls and
+  the effect loop): ceiling y0 = s16 effect pool +0x4DEA, floor line y1 = s16 pool +0x4DEE (0x1000 on stages 0/2/7/12,
+  else 0x2000; y0 0xAF0 on 7/12, 0xED8 on 8); grounded when (y >> 8) - u8 +0x24F >= y1: y clamped to (y1 + +0x24F) << 8,
+  +0xC |= 4; on the first landing frame vertical motion cleared, SE 0xF + action 5 when (+0x250 & 0x1402) == 0, then
+  bit 0 set; feet above the floor in action 5 / 6 → action 0 and bit 0 cleared; actions 0xA / 0x26-0x30 are clamped but
+  never marked landed; bounce mode +0xE & 0x20 (KO 0x33). Air neutral has no gravity (hovers). | H |
+- **Motion** (H, C + asm): FUN_020213A8(o, speed, accel, max, dir) writes +0x22 speed, +0x24 max, +0x26 accel, +0x21
+  dir, velocity +0x28/+0x2A = speed·(cos, -sin) >> 8, target +0x2C/+0x2E = max·…, accel +0x30/+0x32 = accel·… (sine
+  table 0x020B64D4, 256 steps, ×256). FUN_02021264: position += velocity (24.8 px, y down), velocity += accel, per axis
+  when |target - v| <= |accel|: v = target, accel = 0, target += 1 (asm 0x020212E0). Flying: air neutral Up / Down /
+  Left / Right → actions 1-4 with constant v = blk+4 · blk+2 >> 8 (~2.3 px/f); ground Up = takeoff FUN_020213A8(0x400,
+  -0x40, 0, 0x40) (~32 px over 16 f). A hit push FUN_020213A8(victim, hdr+4, -0x40, 0, attacker +7) lasts s/64 frames,
+  ~s²/32768 px; scaling velocity AND accel by k = k × the distance, same duration. | H |
+- **Input bits** (H, C): FUN_020011B4(mask, p) tests u16 [p + 4] (p = rec+0x26C → +0x270 HELD), FUN_020011C8(mask, p)
+  tests u16 [p] (PRESSED). The dispatcher FUN_0202AEB4: Y+B held → throw 0x2A; R held → R branches; X+A held → clash
+  FUN_02026994 / ultimate 0x2E FUN_02026A8C (ki > 0x95 % ·… , +0x274 & 0x40) / super 0x2C (cost blk+0x1F+i, bit i of
+  +0x274, i = direction quadrant) with common effect 0xD (ultimate: 0xF + voice 0x20); A pressed → ki blast; Y pressed →
+  melee; X pressed → dash; B held → guard 0x18 (+0x250 |= 1). | H |
+- **Collision pass** (H, C+V): FUN_0201E5BC uses the list u32 [0x020DE3C0]: u8 +0 count, u8 +1 skip flag, u32 +0x24[]
+  objects (fighters and effect objects). Boxes from the frame descriptor +0x120 (u16 +6 count, 12-byte boxes from +8:
+  s16 x, y, w, h, s32 type 1 attack / 2, 4 hurt), x scaled by u16 +0x154, y by +0x156 (>> 8), mirrored when 0x40 <= +7
+  <= 0xC0; overlap tests with <=; then the attacker's hit handler u32 [+0x34](attacker, victim) for every overlapping box
+  pair of different sides (+0x1A) with both +4 != 0. Fighters get +0x34 = 0x02020EC4 (no-op) every frame, melee sets
+  FUN_02027C2C. FUN_02027C2C's non-fighter branch (victim +0x10E >= 0x25): a dash attack (0x20 / 0x22, ki >= 10 %) hit
+  on a shot whose header [+0x118]+6 <= 2 REFLECTS it: effect 0x3A, velocities +0x28..+0x32 negated, +0x1A = attacker's
+  side, +7 / +0x21 += 0x80, sprite rotation FUN_02011F74. Guard branch: hit stop 2 / 3, push, effect 0xB (guard spark,
+  at the overlap centre from FUN_0201E210) + SE 0xA, reaction 0xE. FUN_02012F9C(n) = hit stop (globals +0x1BCAC). | H |
+- **ULTRA INSTINCT** (port cheat, V): a fighter left out of one pass (+4 = 0 during FUN_0201E5BC) gets no hit, no push,
+  no chip; the parried melee attacker in reaction 0x11 with stun 30 + push 0x300 staggers ~40 frames; a reflected blast
+  flies back and explodes on its shooter (ui7). The fighters' 4-bit textures drawn through other 16-colour palettes
+  (FUN_02010B6C(src, 0x40) once per battle: a slot of the scene's list, e.g. offset 0x11C0) give solid silhouettes
+  (modulation tints can only darken). B windows open in actions 0-6 / 0xE / 0x18 only. | H |
+- **Battle sounds** (V se2: each id 0-0x31 played every 60 frames in a fight held in hit stop, music off, 32768 Hz):
+  loudest / shortest / brightest: 0x21 (tag sequence) 0.33 s, attack < 0.05 s, centroid ~5.9 kHz, the most tonal with
+  0x0A (guard) and 0x31; 0x0C step-dash burst 0.6 s whoosh; 0x11 0.37 s; 0x05 bright but slow attack; 0x12-0x2F mostly
+  ~1 s long. All are fairly noisy (spectral flatness 0.5-0.64). ULTRA INSTINCT uses 0x21. | M (sound names by context) |
+- **RANDOMIZER** (port cheat, V): CHARACTER SHUFFLE's loader inside the dispatcher (after putting the record's 0x2D8
+  bytes back) lets another fighter start its own super the same frame; ~50-110 ms per swap. Seen: random ultimates when
+  ki allows, Ginyu / Cooler summons keep the fighter transformed until they leave (<= 240 frames), the win pose holds
+  the winner frozen (+0x800, camera mode != 0) until action 0x14 (swap back there), hits 0xF / 0x11 mid-super. | H |
+- **FLIGHTLESS / SMASH KNOCKBACK** (port cheats, V): +0x60 / frame (max 0x700) added to y of airborne active fighters;
+  push × (1 + 2 · HP lost / max). | H |

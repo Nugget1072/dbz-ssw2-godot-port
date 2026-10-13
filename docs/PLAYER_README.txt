@@ -140,6 +140,13 @@ CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; th
                      attack is still firing (a beam that gets cut short keeps going for a second).
   ATTACK SPAM ...... attacks restart at once and every hit connects: spam heavy attacks, dash attacks and combos
                      (supers, throws and team attacks still play out in full).
+  ULTRA INSTINCT ... a parry, like Super Smash Bros. Ultimate and Street Fighter III: tap B (guard) just as an
+                     attack reaches you: the first 5 frames after the tap catch it. A caught hit does nothing to
+                     you, the battle freezes for a moment, your fighter flashes silver-blue and the enemy who
+                     attacked is stunned (ki blasts fly back the other way; beams and super parts pass through
+                     you). Tap B in neutral, while moving or guarding - not while you are being hit. A tap that
+                     catches nothing flashes your fighter red and you can't parry again for half a second.
+                     Holding B still guards as usual.
  Page 6 KI & ASSISTS
   INFINITE KI ...... the ki gauge stays at 200 %: ki blasts and supers cost nothing.
   KI HOMING ........ player 1's ki blasts curve toward the enemy (beams are not affected).
@@ -163,6 +170,9 @@ CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; th
   CHAOS SHUFFLE .... like CHARACTER SHUFFLE, but every second and right away. Supers, throws and grabs (yours or
                      the enemy's) and summoned helpers are let finish first. Your ki blasts in flight vanish at
                      each change. Wins over CHARACTER SHUFFLE.
+  RANDOMIZER ....... every super attack (X+A, and ultimates) is done by a random fighter: your fighter turns
+                     into another character the moment the super starts, does that character's super, and turns
+                     back when it is over (or at once if you are hit during it). HP stays the same.
  Page 8 STAGE & MUSIC
   RANDOM STAGE ..... every battle is fought on a random stage (with that stage's music).
   STAGE SHUFFLE .... every 10 seconds the battle moves to another random stage; fighters, HP and music go on.
@@ -182,6 +192,11 @@ CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; th
                      Watch the shadows on the floor and move away - they hurt both teams. Uses the game's own
                      explosion and sound. (It was a weird option before; now it is a cheat, so no scores or
                      records while it is on. A BOMB RAIN that was on in an older settings.cfg stays on.)
+  FLIGHTLESS ....... nobody can fly: fighters in the air (both teams) fall quickly back to the ground, so Up is
+                     only a short hop. Supers, ultimates and throws still play out in the air; afterwards the
+                     fighter falls again.
+  SMASH KNOCKBACK .. like Super Smash Bros.: the more HP a fighter has lost, the farther hits send them flying
+                     (no change at full HP, up to three times as far near a KO). Both teams.
 WEIRD STUFF (settings pages 10-12, after the cheats; all OFF unless you turn them on; for fun)
  Page 10: BEVEL EMBOSS, TOUCH FUZZY, GAME BOY, MIRROR MODE, SCREEN SHAKE, CRT TV. Page 11: BLOOD, AFTERIMAGES,
  2ND FIDDLE, EPIC MODE, FLASHY KI, KO CONFETTI. Page 12: RAINBOW KI.

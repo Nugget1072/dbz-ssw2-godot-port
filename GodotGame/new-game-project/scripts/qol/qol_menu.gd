@@ -57,6 +57,7 @@ const CHEAT_PAGES := {
 		["one_hit_ko", "ONE-HIT KO", "Every hit from player 1 knocks\nout the enemy fighter it hits.\n(Guarded hits do normal damage.)"],
 		["no_cooldown", "NO COOLDOWN", "Attacks can be used again at once:\nki blasts and super attacks start\neven while another attack is\nstill firing. (Player 1 only.)"],
 		["attack_spam", "ATTACK SPAM", "Attacks restart at once and\nevery hit connects: spam heavy\nattacks, dash attacks, combos.\n(Supers and throws still play\nout in full.)"],
+		["ultra_instinct", "ULTRA INSTINCT", "Tap B just as a hit comes\n(5 frames!) to PARRY it: no\ndamage, the attacker is stunned\nand ki blasts fly back. A tap\nthat parries nothing: red flash."],   # part 39
 	]],
 	"cheats2": ["KI & ASSISTS", [
 		["infinite_ki", "INFINITE KI", "Player 1's ki gauge stays full\n(200%): ki blasts and super\nattacks cost nothing."],
@@ -71,6 +72,7 @@ const CHEAT_PAGES := {
 		["random_characters", "RANDOM CHARACTERS", "Every battle, player 1's team is\nreplaced by random characters\n(same size, always at least one\nfighter). Your picks are kept."],
 		["character_shuffle", "CHARACTER SHUFFLE", "Every 10 seconds player 1's\nfighter turns into a random\ncharacter from the whole roster\n(not supports). HP stays the\nsame. Waits for a calm moment."],
 		["chaos_shuffle", "CHAOS SHUFFLE", "Like CHARACTER SHUFFLE, but\nevery second and right away.\nSupers, throws and grabs are\nlet finish first. Your shots in\nflight vanish at each change."],
+		["randomizer", "RANDOMIZER", "Every super attack (X+A) is\ndone by a random fighter: you\nturn into them for the super,\nthen back. Hit during it: back\nat once. HP stays the same."],   # part 39
 	]],
 	"cheats4": ["STAGE & MUSIC", [
 		["random_stage", "RANDOM STAGE", "Every battle is fought on a\nrandom stage, with the music\nof that stage, whatever stage\nwas picked or set by the mode."],
@@ -80,6 +82,8 @@ const CHEAT_PAGES := {
 	"cheats5": ["CHALLENGES", [   # part 36
 		["green_demon", "GREEN DEMON", "A green 1-UP slowly chases\nyour fighter. If it touches\nyou, that fighter is KO'd at\nonce! Keep moving to escape.\n(Multiplayer: it hunts both.)"],
 		["bomb_rain", "BOMB RAIN", "Little bombs rain down in\nbattle! A direct hit takes 1/4\nof max HP, a blast nearby less.\nWatch their shadows and dodge.\n(They hurt both teams.)"],   # part 38: was WEIRD STUFF 3
+		["flightless", "FLIGHTLESS", "Nobody can fly! Fighters in\nthe air fall fast to the\nground; UP is only a hop.\nSupers still work in the air.\n(Both teams.)"],   # part 39
+		["smash_knockback", "SMASH KNOCKBACK", "Hits send fighters flying\nfarther the more HP they have\nlost, like Super Smash Bros.:\nnormal at full HP, much farther\nnear a KO. (Both teams.)"],   # part 39
 	]],
 }
 ## WEIRD SETTINGS (part 21, page 7, after the cheats): [QoLSettings field, label, description]

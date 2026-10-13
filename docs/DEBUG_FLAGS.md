@@ -83,6 +83,11 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 | `chaosat=F1,F2` | chaos swaps only at these frames |
 | `dashdbg` · `nodashfix` | motion / stun trace ("SPAM", "DSH fix"); boss dash fix off (A/B) |
 | `p2keys=F:MASK:N` | scripted P2 fighter input |
+| `uidbg` | ULTRA INSTINCT (part 39): "UI f… window opens / PARRY … stun / reflect / ignore / MISS / B pressed" lines |
+| `uiauto` | ULTRA INSTINCT: every collision pass is a parry window for player 1 (parries every hit: captures of the effects) |
+| `uise=N` | ULTRA INSTINCT parry sound (FUN_02029E3C id, default 0x21; -1 = none) |
+| `rzseed=N` · `rzto=ID` | RANDOMIZER picks (seed) / always this fighter id (0-25) |
+| `setest[=A,B,…]` | sound test (part 39): from port frame 4150 the fight is held in hit stop (silent), from 4200 battle sound k plays every 60 frames (all 0-0x31, or the listed ids); "SETEST f… se …" lines; pair with a capture + `--cfg` with `[sound] music=false` (absolute path) |
 
 ## Weird stuff
 | Flag | Meaning |

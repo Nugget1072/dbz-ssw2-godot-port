@@ -12,7 +12,8 @@ var fps_counter: bool = false
 ## cheats (settings page 2), all off unless the player turns them on; saved like the other settings
 const CHEATS := ["no_cooldown", "infinite_health", "one_hit_ko", "infinite_ki", "ki_homing", "same_characters",
 	"boss_characters", "random_characters", "infinite_assists", "assist_spam", "random_music", "character_shuffle",
-	"chaos_shuffle", "stage_shuffle", "triple_ki", "attack_spam", "hard_mode", "random_stage", "green_demon", "bomb_rain"]
+	"chaos_shuffle", "stage_shuffle", "triple_ki", "attack_spam", "hard_mode", "random_stage", "green_demon", "bomb_rain",
+	"ultra_instinct", "randomizer", "flightless", "smash_knockback"]   # part 39: the last four
 var music_seed := 0                       ## RANDOM MUSIC: the current shuffle (a new one each time it is switched on)
 var cheats := {}
 var music: bool = true

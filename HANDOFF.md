@@ -1,6 +1,6 @@
 # HANDOFF — state of the port
 
-_Last updated: 2026-10-13 (part 38 — ENDLESS mode, BOMB RAIN became a cheat; parts 36-37 were the first Claude Code
+_Last updated: 2026-10-13 (part 39 — cheats ULTRA INSTINCT, RANDOMIZER, FLIGHTLESS, SMASH KNOCKBACK; part 38 ENDLESS; parts 36-37 were the first Claude Code
 sessions on the user's PC; part 35 was the last Cowork part: `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
 Per-part history: `docs/HISTORY.md`.
 
@@ -175,3 +175,25 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
 - Open: ENDLESS keeps
   ALL-STAR's 99:59 clock cap (enemy count ranks first); no real-play tuning yet (enemy level = the Option difficulty,
   as ALL-STAR).
+
+## Part 39: four new cheats (2026-10-13) — DONE
+- **ULTRA INSTINCT** (page 5 FIGHTING, row 6; `scripts/qol/qol_ultra.gd`): a Smash Ultimate / SF3-style parry. A fresh B
+  tap in neutral / moving / guarding opens a 5-frame window; an enemy attack box touching the fighter then is parried
+  (the fighter is left out of that collision pass): no damage, 12-frame hit stop, the game's guard spark, SE 0x21 (the
+  tag-in "shing", chosen by analysing all 50 battle sounds: DATA_NOTES part 39), a silver-blue silhouette of the fighter
+  + expanding silhouettes + a sparkle ring; the melee attacker staggers (0x11, stun 30), ki blasts are reflected the
+  game's own way, beams / super parts pass through; 20 frames immunity. An empty tap = red flicker + 30 frames lock.
+  Holding B = normal guard. Player 1 (both humans in MP).
+- **RANDOMIZER** (page 7 CHARACTERS, row 6): each super / ultimate (X+A) is done by a random fighter (dispatcher
+  FUN_0202AEB4 override + CHARACTER SHUFFLE's loader), back to the original when it is over, at once on a hit, at the
+  win pose, or when benched after a KO; HP kept; boss picks keep their boss level; shuffles wait. Player 1 (both in MP).
+- **FLIGHTLESS** (page 9): airborne active fighters of both teams fall (own fall speed added to y; the game lands them);
+  supers / ultimates / throws / sequences / KO / poses stay in the air.
+- **SMASH KNOCKBACK** (page 9, my extra idea): knock-back × (1 + 2 × HP lost / max), both teams.
+- All four are cheats (no rankings / records), in the LAN snapshot (RANDOMIZER seeded by the battle seed); with them off
+  every hook calls only the original. V (TESTING 30): captures of every effect, tap / miss / parry / reflect logs, 40+
+  randomized supers in an All-Star team, MP run, LAN pair lan_cmp exit 0, menu previews, offcheck PASS.
+- Code corrections found on the way: fighter +0x10 bit 0 = ON the ground (old comment said in the air); the dispatcher
+  tests HELD bits (FUN_020011B4 reads +0x270). Debug flags `uidbg uiauto uise= rzseed= rzto= setest` (DEBUG_FLAGS).
+- Open: real-play tuning (parry window 5 / stun 30 / knock-back factor 2 / fall speed) after the user tries them; the
+  parry sound can be changed in one constant (`qol_ultra.gd` PARRY_SE) if 0x21 does not feel right.

@@ -6,6 +6,11 @@ how the systems fit together now: `docs/QOL_ARCHITECTURE.md`; decoded facts per 
 page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in QOL_ARCHITECTURE.md).
 
 ## Per part (details in DATA_NOTES / transpiler notes)
+- **Part 39** — *four cheats (2026-10-13)*: ULTRA INSTINCT (B-tap parry, 5 frames: hit stop, guard spark, SE 0x21,
+  silver silhouette through a port palette; attacker stunned, blasts reflected; red flash on a missed tap; new module
+  `qol_ultra.gd`), RANDOMIZER (every super done by a random fighter via the dispatcher + CHARACTER SHUFFLE's loader),
+  FLIGHTLESS (gravity, the game's own landing), SMASH KNOCKBACK (push × HP lost). Corrections: +0x10 bit 0 = on the
+  ground, the dispatcher reads held bits. TESTING 30, DATA_NOTES "part 39 findings".
 - **Part 38** — *ENDLESS mode (2026-10-13)*: Gamemode menu slot 2 = ENDLESS (random enemies with no end on the
   All-Star machinery, `QoLAllStar.endless` / `at()`), death → ENDLESS RECORDS page (the records page with the Game Over
   screen's own title, "n KO" rows, `endless_records.cfg`); HI-SCORES RESET clears both records files; BOMB RAIN moved

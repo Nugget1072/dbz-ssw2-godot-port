@@ -98,3 +98,7 @@ Session 1, part 2 (cloud sandbox, Linux) — same rule as above, nothing written
 2026-10-13 (part 38):
 - Nothing new outside SupersonicMain. ENDLESS records are saved in finished\endless_records.cfg (next to the exe, like
   allstar_records.cfg); editor runs keep theirs in the project's user data folder (%APPDATA%\DBZSSW2Port\).
+
+2026-10-13 (part 39):
+- Nothing new outside SupersonicMain (only scratch files in Claude Code's own temp scratchpad: a contact-sheet script and
+  a sound-analysis script).
