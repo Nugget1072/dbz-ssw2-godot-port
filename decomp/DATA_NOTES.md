@@ -3095,3 +3095,48 @@ KO swap, pause, WIN; zoom 0 + mirror; zoom 4), `sky_built.png` = the built BG3 p
   KO'd, Piccolo damaged to 3000 then benched, heart, tags): thin bars and the big bar full in each member's colour
   after the heart and after tagging Piccolo / Goku in (hb2_bars.png); ko1 (one-hit KO, 6 enemies): every incoming
   enemy's bar full. | H |
+
+## Session 2, part 36 findings (green demon) — V = port verified, C = code read
+- **Battle sound effects** (H, C: every constant-id call of FUN_02029E3C(obj, se) in ds_game.gd, with its caller):
+  0 hit (FUN_0201F61C / FUN_0201F6D8 / FUN_02027C2C melee / FUN_02032E24), 1 / 0xA melee (FUN_02027C2C), 0xC step-dash
+  burst (FUN_0202C620), 0xE action 0xB (FUN_0202C3E8), 0xF / 0x10 FUN_020214C4, 0x11 KO / tag sequences
+  (FUN_02017358 / FUN_02017774, battle states 0xE / 0xD), 0x12 action 0xC FUN_0202C13C (with reaction 0xD), 0x1C
+  FUN_0201F5D8 (hit + effect 2), **0x1E** ki-blast explosion (every blast hit handler), 0x1F throw FUN_0202B698, 0x20
+  dispatcher FUN_0202AEB4, 0x21 tag sequence FUN_02017D68, 0x29 support call FUN_020277AC, **0x2B big explosion**
+  (always with common effect kind 1 size 4 = arg 0x40008: FUN_02016A5C = battle event state 0xF, FUN_020302C0), 0x30
+  hit handler FUN_0201F7E0, 0x31 pause FUN_0201546C. M for the names of 0xE-0x12 / 0x1C / 0x20 / 0x30 (context only).
+- **0x2B is loaded in every battle** (V gd5a / gd5b: two otherwise identical Free Battle runs, music off, kill with
+  SE 0x2B vs none: audio sample-identical up to the kill, then the SE adds RMS ~2500-3200 for ~1.2 s, as loud as the
+  rest of the mix together). | H |
+- **Fighter speeds** (V, gddbg, fighter +0x38/+0x3C per frame): flying / walking ~2.0-2.6 world px / frame, step
+  dash and knock-backs 7-14 px / frame; CPU combos throw fighters 800-1200 px across unbounded stages. | H |
+- **FUN_02021DD4(dx, dy)** (H, C): adds (dx, dy) (24.8 fixed, signed) to +0x38 / +0x3C of every live effect object
+  (pool [0x020DE3CC], 48 x 0x164, status +4 != 0). Called by the battle wrap-around and the port's STAGE SHUFFLE
+  (V gd9 / gd9b: (0, 0) between stages with the same centre). | H |
+- **Base Goku's size** (V captures): ~64 world px tall, ~34 wide in his stance; 16 px = 1/4 of his height.
+- **GREEN DEMON** (port cheat, page 9 CHALLENGES; scripts/qol/qol_green_demon.gd + QoLGame `# ---- GREEN DEMON (part
+  36)`): own RNG (seed `gdseed`, default 0x1F00D, reset at every battle load). Spawn 90 running frames into the fight,
+  off the picture (view edge + 24 + 16 px) and >= 320 px from every hunted fighter (hurt-box centres), side with room
+  (bounded stages: effect pool +0x4DE7 flag, x0 +0x4DE8, x1 +0x4DEC; both: random), y = their mean +-48 clamped to
+  stage top (+0x4DEA) + 24 .. floor (FUN_0201B488 ground +0xCC2 + 64) - 24. Moves straight at the target's hurt-box
+  centre at 0.9 px / frame; farther than 300 px: 0.9 + (d - 300) x 0.01, at most 3.0 (catch-up after knock-backs; V
+  gd2: 834 -> 75 px; gd7: fleeing players at 2.6 px / frame keep it ~470 px behind). Touch = its 12x12 box (16x16
+  picture minus 2 px) overlaps an active hunted fighter's hurt box FUN_0201DF20 type 2 (skipped: HP <= 0, +0x12 & 8,
+  frozen +0x250 & 0x800, actions 0x13-0x15 / 0x33). Kill (`QoLGame._gd_kill`): common effect kind 1 arg 0x10008 at
+  the 1-UP + SE 0x2B, push FUN_020213A8(0x500, -0x40, dir away), FUN_020293A4 with HP x 256 / scale (+0x1676) and the
+  damage cheats skipped (`_gd_killing`), HP forced 0, +0x250 = 0, +0x25D = side, reaction 0x11 FUN_02021B4C, stun 10,
+  +0x250 |= 2. The game's own KO follows (V gd1: "KnockOut!! LOSE"; gd4 All-Star team: state 7 -> 0xC, next member
+  tags in, All-Star bar repaint, through INFINITE HEALTH). Then warp (same rule as spawn) + rest 120 running frames.
+  Frozen in states != 7, KO, pause / cut-in (FUN_02012FD4), tag (globals +0x11DC), camera mode != 0; hidden in action
+  0x34. MP (`_mp_on`, local and LAN): random first target, switch every 600 running frames, locked within 24 px of the
+  target's hurt box (no switching), lock lost beyond 40 px -> random target, timer 600 (V gd7 / gd8: switches at
+  f4786 / f5386, lock f5902, lost f5918 at 40 px). Either player dies on touch. Drawing: one textured quad (16x16
+  direct colour at block +0xD00) + floor shadow (16x8 at +0xF00), POLYGON_ATTR 0x1F00C0 = no fog (with the sprites'
+  fog bit the ice stage's fog bleached it), polygon ids 0x24 / 0x25, PLTT_BASE keys 16 / 17, z 12 / 1, 1-px bob. | H |
+- **Shared port texture block** (V): BOMB RAIN's reserved 0x1000 bytes at texture offset 0x5F000 (key 0x7B0B0B26,
+  part 26) moved into scripts/qol/qol_texblock.gd: bombs at +0..0xD00, green demon at +0xD00..0x1000; the block is
+  compared / written whole. V: BOMB RAIN run 61/61 captures + 21 bomb event lines identical before / after; both
+  cheats on together: one reservation, both drawn.
+- **LAN** (V lan1: host GREEN DEMON, guest no cheats, other RTC, CAMERA ZOOM 4): gameplay hash identical all 1538
+  lockstep frames (G block differs from L277: drawing-only zoom fields, expected); both logs show the same spawn,
+  lock and kill frames. Logic uses the game's unzoomed camera in LAN battles (`lan_battle()`).

@@ -6,6 +6,12 @@ how the systems fit together now: `docs/QOL_ARCHITECTURE.md`; decoded facts per 
 page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in QOL_ARCHITECTURE.md).
 
 ## Per part (details in DATA_NOTES / transpiler notes)
+- **Part 36** — *first Claude Code session (2026-10-13)*: sanity check + Windows baselines + test build (HANDOFF part
+  36); then the cheat **GREEN DEMON** (new cheat page 9 CHALLENGES; weird pages now 10-12): a 1-UP (the user's art,
+  edited to 16x16) chases the player's fighter and KOs it on touch, warps away and rests; local / LAN MP: hunts both
+  players with 10-s target switches and a close-range lock (scripts/qol/qol_green_demon.gd, QoLGame `# ---- GREEN
+  DEMON (part 36)`). BOMB RAIN's texture block moved to the shared scripts/qol/qol_texblock.gd (bombs identical).
+  `tools/windows/lan_pair.ps1` = the two-instance LAN check on Windows. DATA_NOTES "part 36 findings (green demon)".
 - **Part 35** — *All-Star fixes + move to Claude Code* (2 helper agents): life bars of members healed / revived on the
   bench and of every reloaded enemy were drawn with "lost" colours (the game repaints only the active member's colour
   buffer; DATA_NOTES "part 35 findings (All-Star life bars)") → `_asb_bar_paint` + `f_0201cbbc` override; records page

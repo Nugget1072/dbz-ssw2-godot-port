@@ -262,3 +262,25 @@ The release build stdout is only flushed on a clean exit: always pass `quit_at=`
   "LAN pause").
 - PERFORMANCE MODE + exact speed-ups: docs/TOOLING.md "Session 1 part 32" **Checks** (off and on identical, LAN hashes
   identical with it on one side, pacing 59.8 incl. `perfmode=1`).
+
+## 27. Part 36 (GREEN DEMON cheat, shared texture block)
+- Behaviour (Free Battle, `cheats=green_demon gddbg`, captures `--every 20`): P1 idle → spawn off the picture ~90
+  frames into the fight, approach, KO with explosion + SE 0x2B, "KnockOut!! LOSE" (gd1); P1 fleeing
+  `--inputs "4250:Left:400,4700:Right:400"` → never caught while fleeing, KO when flying back into it (gd3).
+- Team / All-Star: `allstar=1 asp1=0,5,6 cheats=green_demon,infinite_health gddbg asdbg` → KO through INFINITE
+  HEALTH, state 7 → 0xC, next member tags in, rest 120 frames (gd4). Catch-up after knock-backs: the status lines.
+- Local MP: `mp=1 mpbattle=1 --inputs "4200:Left:1300" p2inputs=4200:Left:1300` → switches every 600 frames, lock /
+  KO (gd7); `p2inputs=4200:Left:1300,5906:Left:200` → "lock lost" then random target (gd8).
+- Stage moves: `cheats=green_demon,stage_shuffle` → `GD … shifted` at each swap, drawn on the new stage (gd9b).
+- Sound: two runs with `--cfg` (a settings file with `[sound] music=false`), `gdse=-1` vs default: the audio.wav files
+  are identical up to the kill, then the SE adds ~1.2 s (DATA_NOTES part 36).
+- LAN: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\windows\lan_pair.ps1 -tag gd_lan -cheats green_demon
+  -extra gddbg` (host cheat only, guest other RTC + zoom 4) → `gp first diff: none` over 1538 lockstep frames, same
+  GD lines on both sides.
+- Menu: `ssw2.py run menu_keys --every 30 --from 2500 --to 2900 --inputs "2141:Start:4,2396:T128/120:6,2560:T128/96:4,
+  2640:L:4,2670:L:4,2700:L:4,2730:L:4,2770:Left:4,2800:A:4"` and the same with taps (`T139/13` ×4 = ◀, `T201/44` = ON)
+  → `green_demon=true` in local/runs/NAME.cfg, page 9/12 shows ON. Preview: `tools/qol_preview.tscn` states
+  `challenges`, `challenges_on`, `challenges_hdr` (quote `"rom=…"`: the ROM path has spaces).
+- BOMB RAIN after the texture-block move: `weird=bombs bombdbg` run before / after → 61/61 captures + 21 event lines
+  identical; both cheats on together: one TEXBLOCK reservation, both drawn.
+- Off: `offcheck` PASS (21/21 + 1382 CHT, 221/221).

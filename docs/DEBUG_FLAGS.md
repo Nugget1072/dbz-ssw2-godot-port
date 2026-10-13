@@ -91,6 +91,7 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 | `epicdbg` · `blooddbg` · `flashydbg` | EPIC MODE / BLOOD / FLASHY KI + CONFETTI debug |
 | `w3dbg` · `w3merge=0` | damage numbers / rainbow debug; no merging (stacking test) |
 | `bombdbg` `bombseed=N` `bombrate=F` `bombfx=V` `bombfxcycle` `bombkind=K` `bombpos` `bombvram` | BOMB RAIN |
+| `gddbg` · `gdpos` · `gdspeed=F` · `gdseed=N` · `gdse=N` · `gdwait=N` | GREEN DEMON (part 36, `cheats=green_demon`): `GD f…` spawn / switch / lock / lock lost / KILL / warp / rest / shift lines + a status line every 60 running frames (position, target, distance, the target's top speed) · `GDPOS` every frame · speed in world px / frame (default 0.9) · RNG seed · kill sound id (`-1` = none, for sound tests) · frames to the first spawn (default 90). `gddbg` / `bombdbg` also print the shared texture block's `TEXBLOCK` lines |
 
 ## Local multiplayer (part 27)
 | Flag | Meaning |

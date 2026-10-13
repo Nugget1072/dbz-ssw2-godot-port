@@ -334,7 +334,7 @@ frame u32, count u8, records[count] (7 bytes each), ack u32, current frame u32, 
 
 ### 5.4 Cheats / weird snapshot and the restore guarantee
 - Snapshot (host → guest in WELCOME, again if the host somehow changes them — it cannot during a session): `{"v": 1,
-  "cheats": {name: bool for QoLSettings.CHEATS (18)}, "music_seed": int, "weird": {name: bool for QoLSettings.WEIRD (14:
+  "cheats": {name: bool for QoLSettings.CHEATS (19 since part 36: + green_demon)}, "music_seed": int, "weird": {name: bool for QoLSettings.WEIRD (14:
   bevel_emboss, touch_fuzzy, epic_mode, second_fiddle, blood, afterimages, game_boy, mirror_mode, flashy_ki, screen_shake,
   ko_confetti, rainbow_ki, bomb_rain, crt_tv)}}`. Not copied (settings): window / fps / music / sfx / volume / auto pause /
   detailed shadows / camera zoom / auto skip / damage numbers / input display / controls / mp devices / multiplayer.

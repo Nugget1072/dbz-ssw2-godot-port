@@ -1,7 +1,7 @@
 # HANDOFF — state of the port
 
-_Last updated: 2026-10-13 (part 36 — first Claude Code session on the user's PC; part 35 was the last Cowork part:
-`docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
+_Last updated: 2026-10-13 (part 36 — first Claude Code sessions on the user's PC: sanity check, then the GREEN DEMON
+cheat; part 35 was the last Cowork part: `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
 Per-part history: `docs/HISTORY.md`.
 
 ## Current state
@@ -10,7 +10,7 @@ Z-Battle series, Maximum, Free Battle, Practice, Data File, Options, VS host scr
 original sound driver. The user plays it on Windows (RTX 4070 laptop) from `finished/` ("almost perfect visually and
 plays very well") and on a Steam Deck under Proton. The exported folder is portable and contains no game data (the exe
 finds the player's ROM in its own folder under any name). On top: the QoL layer behind Mode Select's centre (PORT) tile —
-11 menu pages (settings 1-3, BIG CHANGES = MULTIPLAYER + PERFORMANCE, cheats 5-8, WEIRD STUFF 9-11), LOCAL MULTIPLAYER
+12 menu pages (settings 1-3, BIG CHANGES = MULTIPLAYER + PERFORMANCE, cheats 5-9, WEIRD STUFF 10-12), LOCAL MULTIPLAYER
 (parts 27-29), LAN MULTIPLAYER (parts 30-32, lockstep), PERFORMANCE MODE (part 32). Map of all of it:
 `docs/QOL_ARCHITECTURE.md`.
 
@@ -111,3 +111,23 @@ PNG baselines) and `offcheck` once to confirm; the folder is a git repository (i
   the save's time stamps (CLAUDE_CODE.md, DEBUG_FLAGS.md `capture=`), harmless "leaked at exit" log lines.
 - Open question for the user: `docs/mp_mockup.png` (the user's MP mockup) is built from the game's portraits / plates,
   i.e. ROM-derived pixels in git (rule 3); proposed: untrack + ignore it (still in the part-35 commit).
+
+## Part 36 (cont.): GREEN DEMON cheat — DONE
+New cheat page 9 **CHALLENGES** (weird pages moved to 10-12; header help text updated) with **GREEN DEMON**: a 1-UP
+(the user's art: assets_qol/greendemon_src.png → hand-made 16x16 greendemon.png, ¼ of base Goku's height, dark
+outline, no fog) spawns off the picture, creeps at 0.9 px / frame toward P1's active fighter (catch-up up to 3.0 when
+a knock-back leaves it > 300 px behind), KOs it on touch (game explosion + SE 0x2B, through guard / INFINITE HEALTH;
+the game's own KO / tag-in follows), warps ≥ 320 px away and rests 120 frames; ignores the CPU side. Local / LAN MP:
+hunts both, random target, switch every 10 s, lock within 24 px (lost beyond 40 → random target). Code:
+`scripts/qol/qol_green_demon.gd` + QoLGame `# ---- GREEN DEMON (part 36)`; BOMB RAIN's texture block is now the shared
+`scripts/qol/qol_texblock.gd`. Verified (TESTING 27): SP / team / All-Star / fleeing / stage shuffle / local MP
+switching + lock + unlock / LAN lockstep identical (`tools/windows/lan_pair.ps1`) / keys + taps menu / sound audible /
+BOMB RAIN identical / offcheck PASS. Facts: DATA_NOTES "part 36 findings (green demon)".
+**Found (pre-existing, not investigated): the editor build and the exported exe are not frame-identical in battle.**
+Same arguments (Free Battle path, frozen RTC, fresh cfg / save copy), all cheats off: captures identical to f3900,
+first difference f3950 (P2's entrance afterimage streak during "Ready", 1484 px), a different fight by f4250
+(local\div_exe vs local\runs\div_ed). So exe captures can't be compared with editor baselines in battle; LAN exe ↔
+exe was bit-identical (part 32). Next step if wanted: RAM lockstep editor vs exe from the battle start.
+Open: tuning by feel on real play (speed 0.9, catch-up, 2-s rest, lock 24/40 px are constants at the top of
+qol_green_demon.gd; `gdspeed=` for tests); the 1-UP is drawn behind the battle HUD (like the fighters' feet) when it is
+low on the screen; the preview's built-in-font fallback errors when the ROM is not found (`qol_font.gd:299`, old).

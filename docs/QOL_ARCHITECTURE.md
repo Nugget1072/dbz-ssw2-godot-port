@@ -29,12 +29,13 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
 - `QoLMenu` (`qol_menu.gd`) draws on the bottom screen in the style of the game's OPTION MODE screen (part 12) over the
   game's own Mode Select BG1 (`DSDisplay.set_layer_keep` / `layer_keep` uniform in ds_engine2d.gdshader hides the other
   layers while the menu is open). Header row = ◀ page ▶ + EXIT (L / R flip pages); every button by D-pad + A or tap.
-- Pages (`QoLMenu.PAGES`, 11): 1 SETTINGS (`main`: WINDOW SIZE 1X/2X/4X/8X/FULL with 10-s KEEP/UNDO `confirm` page, FRAME
+- Pages (`QoLMenu.PAGES`, 12): 1 SETTINGS (`main`: WINDOW SIZE 1X/2X/4X/8X/FULL with 10-s KEEP/UNDO `confirm` page, FRAME
   RATE 60/120/240/MAX, FPS COUNTER, MUSIC, SOUND FX, JUKEBOX) · 2 SETTINGS 2 (`main2`: CONTROLS, VOLUME, AUTO PAUSE,
   DETAILED SHADOWS, ZOOM, HI-SCORES RESET → `lbconfirm` page) · 3 SETTINGS 3 (`main3`: AUTO SKIP, DAMAGE NUMBERS, INPUT
-  DISPLAY) · 4 BIG CHANGES (`mpset`: MULTIPLAYER, PERFORMANCE) · 5-8 cheats (`QoLMenu.CHEAT_PAGES`: FIGHTING, KI &
-  ASSISTS, CHARACTERS, STAGE & MUSIC) · 9-11 WEIRD STUFF (`QoLMenu.WEIRD_PAGES`: 9 bevel / fuzzy / game boy / mirror /
-  shake / crt, 10 blood / afterimages / 2nd fiddle / epic / flashy / confetti, 11 rainbow / bombs). Sub-pages:
+  DISPLAY) · 4 BIG CHANGES (`mpset`: MULTIPLAYER, PERFORMANCE) · 5-9 cheats (`QoLMenu.CHEAT_PAGES`: FIGHTING, KI &
+  ASSISTS, CHARACTERS, STAGE & MUSIC, CHALLENGES (part 36: GREEN DEMON)) · 10-12 WEIRD STUFF (`QoLMenu.WEIRD_PAGES`: 10
+  bevel / fuzzy / game boy / mirror / shake / crt, 11 blood / afterimages / 2nd fiddle / epic / flashy / confetti, 12
+  rainbow / bombs). The header's help text (`QoLMenu` page-row description) lists the page numbers. Sub-pages:
   `controls1`-`controls3` (`QoLMenu.CPAGES`), `jukebox`, `confirm`, `lbconfirm`.
 - Text: the game's font `romdata/scene/font_eu.bin` read from the ROM at startup (`QoLFont`; styles REGULAR / BOLD /
   LABEL / BIG / HEAVY; HEAVY = hand-drawn title font `QoLFont.HEAVY_GLYPHS`). `QoLTopInfo` writes the upper-screen header
@@ -77,7 +78,7 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
   emulated machine. Always-on exact speed-ups in scripts/core + render (deferred per-line register capture, io_write GX
   short path, scanline loop, native VRAM view copies) — docs/TOOLING.md "part 32".
 
-## Cheats (pages 5-8; QoLGame overrides, P1 only in single player, both sides in MP)
+## Cheats (pages 5-9; QoLGame overrides, P1 only in single player, both sides in MP)
 | Cheat | Where / how |
 |---|---|
 | INFINITE HEALTH, ONE-HIT KO, HARD MODE | damage FUN_020293A4 (`f_020293a4`): P1 0 damage / enemy HP 0 unless guarding / P1 ×2, enemies ÷2 |
@@ -92,9 +93,10 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
 | CHARACTER / CHAOS SHUFFLE | `_shuffle_*` (`# ---- CHARACTER SHUFFLE`, `# ---- CHAOS SHUFFLE`, `# ---- CHAOS SHUFFLE FIXES` with `_chaos_held` waits); load uploads skipped while loading (`_shuf_loading`) — card-DMA freeze workaround |
 | RANDOM STAGE / STAGE SHUFFLE | f_020140C8 writes 0x020DD54A; `# ---- STAGE SHUFFLE` (`_stg_busy`, `_stage_regs_defer` / `_stage_regs_apply`) |
 | RANDOM MUSIC | see Sound |
+| GREEN DEMON (part 36, page 9 CHALLENGES) | `scripts/qol/qol_green_demon.gd` (no class_name) owned by QoLGame `# ---- GREEN DEMON (part 36)`: tick from f_0202954C, reset at f_0202A40C, drawn in `_fx_draw`, f_02021DD4 override (wrap-around / STAGE SHUFFLE move it), `_gd_kill` (KO through f_020293A4 with `_gd_killing` = damage cheats skipped). Art assets_qol/greendemon.png (16x16, from greendemon_src.png); texels in the shared port texture block `scripts/qol/qol_texblock.gd` (QoLGame `_tex_block()`, also BOMB RAIN's). Hunts P1 (both players in local / LAN MP: `_mp_on()`); LAN-safe (own RNG, game camera) |
 | Leaderboard rule | f_02002560 returns 0 while `QoLSettings.cheats_on() > 0`; `reset_leaderboards()` (`# ---- LEADERBOARD`) |
 
-## Weird stuff (pages 9-11) and other picture effects
+## Weird stuff (pages 10-12) and other picture effects
 - Renderer only (no game state): BEVEL EMBOSS, TOUCH FUZZY (`FX_*` shader variants in ds_engine2d / ds_poly,
   ds_fx_bevel.gdshader; global uniform `ds_fx`), GAME BOY (ds_fx_gameboy.gdshader), MIRROR MODE (`DSDisplay.mirror_active()`;
   GameDS swaps LEFT / RIGHT; off in pause), SCREEN SHAKE (`FX_SHAKE`; f_020293A4 records `shake_dmg`) — `DSDisplay`
@@ -105,8 +107,8 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
   f_020A71C8 per-sprite hook), DETAILED SHADOWS (silhouettes in the f_02011384 override, `# ---- DETAILED SHADOWS`).
 - BOMB RAIN: `scripts/qol/qol_bombs.gd` (no class_name; owned by QoLGame `# ---- BOMB RAIN`): sprite
   assets_qol/bomb.png (from the user's bomb_src.png), one direct-colour textured quad per bomb at texture VRAM 0x5F000
-  reserved through the game's texture manager 0x020DE380; hits copy FUN_0201E9EC, explosion FUN_0202247C / FUN_0202216C
-  + SE 0x1E.
+  reserved through the game's texture manager 0x020DE380 (part 36: that block is `qol_texblock.gd`, shared with GREEN
+  DEMON); hits copy FUN_0201E9EC, explosion FUN_0202247C / FUN_0202216C + SE 0x1E.
 - INPUT DISPLAY: `QoLInputDisplay` (pad word 0x020DD4E0). 2ND FIDDLE: `# ---- 2ND FIDDLE`. EPIC MODE: `QoLEpic` (text
   rewriter; story strings via FUN_0200B954), `QoLEpicImg` + `QoLEpicRefs` (Data File / credits pictures; FUN_02009B28
   override). JELLY FIGHTERS was removed in part 25.

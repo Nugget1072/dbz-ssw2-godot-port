@@ -129,7 +129,7 @@ LAN MULTIPLAYER (MULTIPLAYER ON, VS BATTLE -> LAN; two PCs / Steam Decks on the 
     "WAITING FOR PLAYER" appears when the other PC falls behind (slow Wi-Fi, a loading hitch); a dropped connection
     shows CONNECTION LOST after a few seconds and both players are back in the room / LAN page.
 
-CHEATS (settings pages 5-8, sorted by theme; all OFF unless you turn them on; they act for player 1 only)
+CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; they act for player 1 only)
   While any cheat is on, Z-Battle scores are not put in the HI-SCORE RANKING (settings and weird stuff don't count).
  Page 5 FIGHTING
   INFINITE HEALTH .. player 1's team takes no damage (hits still land, the life bar stays full).
@@ -166,9 +166,19 @@ CHEATS (settings pages 5-8, sorted by theme; all OFF unless you turn them on; th
   RANDOM STAGE ..... every battle is fought on a random stage (with that stage's music).
   STAGE SHUFFLE .... every 10 seconds the battle moves to another random stage; fighters, HP and music go on.
   RANDOM MUSIC ..... every piece of music is swapped for another; switching it on again gives a new mix.
-WEIRD STUFF (settings pages 9-11, after the cheats; all OFF unless you turn them on; for fun)
- Page 9: BEVEL EMBOSS, TOUCH FUZZY, GAME BOY, MIRROR MODE, SCREEN SHAKE, CRT TV. Page 10: BLOOD, AFTERIMAGES,
- 2ND FIDDLE, EPIC MODE, FLASHY KI, KO CONFETTI. Page 11: RAINBOW KI, BOMB RAIN.
+ Page 9 CHALLENGES
+  GREEN DEMON ...... a green 1-UP mushroom (after the Super Mario 64 fan challenge) appears off screen in every
+                     battle and slowly creeps toward your fighter. If it touches your fighter, that fighter is
+                     knocked out at once, with a big explosion (guarding and INFINITE HEALTH don't help); then
+                     it warps far away and waits a moment while your next fighter comes in. Keep moving: normal
+                     flying outruns it, and if a knock-back throws you far away it catches up quickly until it
+                     is just off screen. It ignores the enemy completely and flies through enemy fighters.
+                     Local / LAN multiplayer: it hunts both players: it picks one at random and switches to the
+                     other every 10 seconds, except while it is right next to its target; once that player gets
+                     away it picks a random target again. It knocks out either player it touches.
+WEIRD STUFF (settings pages 10-12, after the cheats; all OFF unless you turn them on; for fun)
+ Page 10: BEVEL EMBOSS, TOUCH FUZZY, GAME BOY, MIRROR MODE, SCREEN SHAKE, CRT TV. Page 11: BLOOD, AFTERIMAGES,
+ 2ND FIDDLE, EPIC MODE, FLASHY KI, KO CONFETTI. Page 12: RAINBOW KI, BOMB RAIN.
   BEVEL EMBOSS ..... every picture gets a Photoshop-style bevel & emboss (light top-left edges, shadowed
                      bottom-right), menus included (the port's own settings menu stays flat so it stays readable).
   TOUCH FUZZY ...... in every battle (Story, Z-Battle, Maximum, Practice, Free Battle...): a slow rainbow shimmer

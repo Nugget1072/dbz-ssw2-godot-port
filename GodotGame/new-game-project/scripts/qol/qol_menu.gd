@@ -5,7 +5,7 @@ extends Control
 ## a black title plate, black rows with orange trim and bold italic labels, and orange hexagon buttons (current
 ## value in red, cursor = white hexagon). Every button works with the D-pad (Up/Down row, Left/Right button, A or
 ## Start = press, B = back, L / R = page) and with a tap (touch / mouse). Pages: "main" .. "main3" (settings,
-## pages 1-3), "cheats".."cheats4" (pages 5-8, by theme: CHEAT_PAGES), "weird".."weird3" (pages 9-11, WEIRD_PAGES), "mpset" (page 4, MULTIPLAYER), "jukebox", "confirm" (window size), "controls1" + "controls2"
+## pages 1-3), "cheats".."cheats5" (pages 5-9, by theme: CHEAT_PAGES), "weird".."weird3" (pages 10-12, WEIRD_PAGES), "mpset" (page 4, MULTIPLAYER), "jukebox", "confirm" (window size), "controls1" + "controls2"
 ## (CONTROLS, part 16) + "controls3" (MOUSE CURSOR: the gamepad cursor of the touch screen, QoLCursor, part 24). Row 0 of every page but the jukebox is the header: page arrows + EXIT (controls: BACK).
 
 const TRIM := Color8(190, 125, 28)          ## orange lines along the black bands (Option screen)
@@ -18,7 +18,7 @@ const CONFIRM_SECONDS := 10
 const ROW_Y := 31
 const ROW_PITCH := 27
 const HEX_H := 24
-const PAGES := ["main", "main2", "main3", "mpset", "cheats", "cheats2", "cheats3", "cheats4", "weird", "weird2", "weird3"]   ## the pages the header's arrows flip through (settings, then cheats)
+const PAGES := ["main", "main2", "main3", "mpset", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "weird", "weird2", "weird3"]   ## the pages the header's arrows flip through (settings, then cheats)
 const CPAGES := ["controls1", "controls2", "controls3"]   ## CONTROLS: 7 rows per page (smaller rows than the other pages)
 const CROW_Y := 37                         ## CONTROLS: first row (the KEY / PAD captions sit above it)
 const CROW_PITCH := 22
@@ -76,6 +76,9 @@ const CHEAT_PAGES := {
 		["random_stage", "RANDOM STAGE", "Every battle is fought on a\nrandom stage, with the music\nof that stage, whatever stage\nwas picked or set by the mode."],
 		["stage_shuffle", "STAGE SHUFFLE", "Every 10 seconds the battle\nmoves to another random stage.\nThe fighters, their HP and the\nmusic keep going."],
 		["random_music", "RANDOM MUSIC", "Every piece of music in the\ngame is swapped for another.\nSwitching it on again gives a\nnew mix. (Not the jukebox.)"],
+	]],
+	"cheats5": ["CHALLENGES", [   # part 36
+		["green_demon", "GREEN DEMON", "A green 1-UP slowly chases\nyour fighter. If it touches\nyou, that fighter is KO'd at\nonce! Keep moving to escape.\n(Multiplayer: it hunts both.)"],
 	]],
 }
 ## WEIRD SETTINGS (part 21, page 7, after the cheats): [QoLSettings field, label, description]
@@ -168,7 +171,7 @@ func _process(delta: float) -> void:
 func _build() -> void:
 	_rows = []
 	match page:
-		"main", "main2", "main3", "mpset", "confirm", "lbconfirm", "cheats", "cheats2", "cheats3", "cheats4", "weird", "weird2", "weird3", "controls1", "controls2", "controls3":
+		"main", "main2", "main3", "mpset", "confirm", "lbconfirm", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "weird", "weird2", "weird3", "controls1", "controls2", "controls3":
 			_rows.append({"label": "", "desc": "", "buttons": [
 				{"id": "pg_prev", "text": "", "rect": Rect2(126, 4, 24, 20)},   # part 24 QA: 36 px between the arrows
 				{"id": "pg_next", "text": "", "rect": Rect2(186, 4, 24, 20)},   # for the counter ("10/10" is 34 px)
@@ -178,7 +181,7 @@ func _build() -> void:
 			for w in WEIRD_PAGES[page][1]:
 				_add_row(w[1], [["wset:%s:1" % w[0], "ON"], ["wset:%s:0" % w[0], "OFF"]], w[2])
 			_layout_main()
-		"cheats", "cheats2", "cheats3", "cheats4":
+		"cheats", "cheats2", "cheats3", "cheats4", "cheats5":
 			for c in CHEAT_PAGES[page][1]:
 				var bs := [["cheat:%s:1" % c[0], "ON"], ["cheat:%s:0" % c[0], "OFF"]]
 				if c[0] == "boss_characters":
@@ -427,7 +430,7 @@ func focus_desc() -> String:
 	if page in CPAGES:
 		return _controls_desc()
 	if cur_id().begins_with("pg_"):
-		return "1-3 settings, 4 big changes.\nCheats: 5 fighting, 6 ki &\nassists, 7 characters, 8 stage\n& music. 9-11 weird stuff.\nL and R change the page too."
+		return "1-3 settings, 4 big changes.\nCheats: 5 fighting, 6 ki, 7\ncharacters, 8 stage & music,\n9 challenges. 10-12 weird.\nL and R change the page too."
 	return _rows[row]["desc"] if row < _rows.size() else ""
 
 
@@ -719,7 +722,7 @@ func frame_input(newly: int, down: int, tap: Vector2i) -> void:
 		if not page in CPAGES and page != "lbconfirm":   # (those play it in _press: one sound, part 24 QA)
 			qol.se(QoLController.SE_BACK)
 		match page:
-			"main", "main2", "main3", "mpset", "cheats", "cheats2", "cheats3", "cheats4", "weird", "weird2", "weird3": close()
+			"main", "main2", "main3", "mpset", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "weird", "weird2", "weird3": close()
 			"controls1", "controls2", "controls3": _press("cback")
 			"jukebox": _leave_jukebox()
 			"confirm": _undo_window()
@@ -774,7 +777,7 @@ func _draw() -> void:
 	match page:
 		"controls1", "controls2", "controls3":
 			_draw_controls()
-		"main", "main2", "main3", "mpset", "confirm", "lbconfirm", "cheats", "cheats2", "cheats3", "cheats4", "weird", "weird2", "weird3":
+		"main", "main2", "main3", "mpset", "confirm", "lbconfirm", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "weird", "weird2", "weird3":
 			_plate("BIG CHANGES" if page == "mpset" else CHEAT_PAGES[page][0] if CHEAT_PAGES.has(page) else (WEIRD_PAGES[page][0] if WEIRD_PAGES.has(page) else ("SETTINGS 3" if page == "main3" else ("SETTINGS 2" if page == "main2" or page == "lbconfirm" else "SETTINGS"))))
 			var modal := page == "confirm" or page == "lbconfirm"
 			for r in (_rows.size() - (1 if modal else 0)):

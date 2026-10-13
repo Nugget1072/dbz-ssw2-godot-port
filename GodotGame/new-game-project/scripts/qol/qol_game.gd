@@ -52,7 +52,7 @@ func f_020293a4(param_1: int = 0, param_2: int = 0, param_3: int = 0, _x3: int =
 		shake_dmg = maxi(shake_dmg, param_2)            # part 23 SCREEN SHAKE: read by DSDisplay (picture only)
 	if cheats != null and cheats.damage_numbers and param_2 > 0:
 		_w3_hit(param_1, param_2)                       # part 24 DAMAGE NUMBERS (drawing only)
-	if cheats != null:
+	if cheats != null and not _gd_killing:             # (part 36 GREEN DEMON: its KO ignores the damage cheats)
 		var p1 := _helped(param_1)                     # part 27: in an MP battle both players count as "player 1"
 		if _on("hard_mode") and param_2 > 0:
 			# HARD MODE (part 18): enemy hits on player 1 do double damage; enemies take half damage, i.e. they have
@@ -88,6 +88,8 @@ func f_0202954c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 	_fx_upd = true                                     # part 22 BLOOD / AFTERIMAGES: a battle frame ran
 	if cheats != null and cheats.bomb_rain:
 		_br_tick()                                     # part 25 BOMB RAIN (once per battle frame)
+	if cheats != null and _on("green_demon"):
+		_gd_tick()                                     # part 36 GREEN DEMON (once per battle frame)
 	if cheats != null and _helped(param_1):            # part 27: side 0, and side 1 in an MP battle
 		var side: int = _ld(param_1 + 0x1A, 1, false)
 		if _on("character_shuffle") or _on("chaos_shuffle"):
@@ -283,6 +285,10 @@ func f_0202a40c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 	_stg_t = -1                                        # STAGE SHUFFLE: new battle, new timer
 	if _bombs != null:
 		_bombs.reset()                                 # part 25 BOMB RAIN: new battle, no bombs, RNG reseeded
+	if _gd != null:
+		_gd.reset()                                    # part 36 GREEN DEMON: new battle, not spawned, RNG reseeded
+	if _texblk != null:
+		_texblk.reset()                                # part 36: the shared texture block is checked again
 	if cheats == null:
 		return r
 	var teams: int = _ld(TEAMS, 4, false)
@@ -2777,6 +2783,8 @@ func _fx_draw(fx: Variant) -> void:
 		drew = _fk_frame(idx, cv, step) or drew         # part 23 (last: its polygon count varies most)
 	if cheats.bomb_rain and _bombs != null:
 		drew = _bombs.draw(cv) or drew                  # part 25 BOMB RAIN
+	if _gd != null and _on("green_demon"):
+		drew = _gd.draw(cv) or drew                     # part 36 GREEN DEMON
 	if cheats.damage_numbers:
 		drew = _dn_frame(cv) or drew                    # part 24 DAMAGE NUMBERS (on top of everything)
 	if drew:
@@ -2960,7 +2968,7 @@ var _fk_dbg := Game.args.has("flashydbg")
 func _fx_any() -> bool:
 	return cheats.blood or cheats.afterimages or cheats.flashy_ki or cheats.ko_confetti \
 		or cheats.damage_numbers or cheats.rainbow_ki \
-		or cheats.bomb_rain                             # part 24 WEIRD 3, part 25 BOMB RAIN
+		or cheats.bomb_rain or _on("green_demon")       # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON
 
 
 ## the fighter records that can be on screen (both teams, ASSIST SPAM copies)
@@ -3766,6 +3774,65 @@ func _br_tick() -> void:
 	if _bombs == null:
 		_bombs = _BOMBS_GD.new(self, _bomb_img)
 	_bombs.tick(_port_frame())
+
+
+# ---- GREEN DEMON (part 36) ------------------------------------------------------------------------------------------
+## Cheat GREEN DEMON (page 9 CHALLENGES, `cheats=green_demon`): everything is in scripts/qol/qol_green_demon.gd; hooks
+## here: f_0202954C (tick once per battle frame), f_0202A40C (reset at every battle load), _fx_any / _fx_draw (drawn
+## after the game's sprite list), f_02021DD4 (the game moves every effect object: the 1-UP moves too), f_020293A4 (its
+## KO skips the damage cheats: `_gd_killing`). The texture block it shares with BOMB RAIN: qol_texblock.gd.
+## DATA_NOTES "part 36 findings (green demon)".
+const _GD_GD := preload("res://scripts/qol/qol_green_demon.gd")
+const _TEXBLOCK_GD := preload("res://scripts/qol/qol_texblock.gd")
+var _gd = null                           ## created the first time a battle frame runs with the cheat on
+var _gd_img: Image = _GD_GD.load_image()  ## loaded here, on the main thread
+var _texblk = null                       ## the port's battle texture block (BOMB RAIN + GREEN DEMON)
+var _gd_killing := false                 ## f_020293A4 runs for the 1-UP's KO: no damage cheats
+
+
+func _tex_block():
+	if _texblk == null:
+		_texblk = _TEXBLOCK_GD.new(self)
+	return _texblk
+
+
+func _gd_tick() -> void:
+	if _gd == null:
+		_gd = _GD_GD.new(self, _gd_img)
+	_gd.tick(_port_frame())
+
+
+## The 1-UP touched fighter `r` (from x world px): KO like the game's own heavy blast hit (BOMB RAIN's _hurt, never
+## guarded): push away FUN_020213A8, HP to 0 through FUN_020293A4 (all of it; scale +0x1676 undone; INFINITE HEALTH /
+## HARD MODE skipped), hit reaction 0x11 FUN_02021B4C, stun +0x25E, hit flag +0x250 = 2. HP <= 0 starts the game's KO.
+func _gd_kill(r: int, x: float) -> void:
+	var hp: int = _ld(r + 0x24A, 2, true)
+	f_0201df20(0x027C0010, r, 2, 0)                    # hurt box {x0, y0, x1, y1} (qol_green_demon.gd BOX)
+	var cx: float = (_ld(0x027C0010, 2, true) + _ld(0x027C0014, 2, true)) * 0.5
+	var dir := 0x10 if cx >= x else 0x70               # away from the 1-UP, a little upward (0 right, 0x40 up)
+	f_020213a8(r, 0x500, -0x40, 0, dir)
+	var sc: int = _ld(_ld(TEAMS, 4, false) + 0x1676, 2, false)
+	if hp > 0 and sc > 0:
+		_gd_killing = true
+		f_020293a4(r, (hp * 256 + sc - 1) / sc, 0)
+		_gd_killing = false
+	if _ld(r + 0x24A, 2, true) > 0:
+		_st(r + 0x24A, 2, 0)
+	if _ld(r + 6, 1, false) != 0x33:
+		_st(r + 0x250, 4, 0)
+		_st(r + 0x25D, 1, _ld(r + 0x1A, 1, false))
+		f_02021b4c(r, 0x11)
+	_st(r + 0x25E, 2, 10)
+	_st(r + 0x250, 4, _ld(r + 0x250, 4, false) | 2)
+
+
+## FUN_02021DD4(dx, dy): moves every live effect object by (dx, dy) (24.8) when the battle wraps around / STAGE SHUFFLE
+## moves the fight; the 1-UP is one more object in the world
+func f_02021dd4(param_1: int = 0, param_2: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	var r := super.f_02021dd4(param_1, param_2, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	if _gd != null and _on("green_demon"):
+		_gd.shift(((param_1 + 0x80000000) & 0xFFFFFFFF) - 0x80000000, ((param_2 + 0x80000000) & 0xFFFFFFFF) - 0x80000000)
+	return r
 
 
 # ---- MULTIPLAYER BATTLE (part 27) -----------------------------------------------------------------------------------

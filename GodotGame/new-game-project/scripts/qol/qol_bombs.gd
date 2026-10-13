@@ -16,6 +16,7 @@ extends RefCounted
 ## SCREEN SHAKE, MIRROR MODE and smooth motion move it as one piece. The 6 frames + the shadow are a direct-colour
 ## texture (0xD00 bytes) in a block reserved at the top of the game's texture VRAM manager (u32 0x020DE380; offset
 ## TEX_OFS, slot 2 = bank C in battles) with its own key, so the game never allocates over it; no texture palette.
+## (Part 36: the block is qol_texblock.gd, shared with GREEN DEMON at 0xD00..0x1000; same offsets and texels.)
 ## (Part 25 drew ~38 untextured quads per bomb: in in-between frames (FPS > 60) the renderer matched them by polygon
 ## number to different quads of the previous list and moved / stretched each one differently: separated pixels and
 ## one-colour boxes. DATA_NOTES "part 26 findings (bomb sprite)".)
@@ -75,7 +76,6 @@ var _t := 0
 var _cool := {}                          ## record -> frames left
 var _tex := PackedByteArray()            ## the texture block's bytes (TEX_BYTES): frames, shadow
 var _ready := false                      ## our block is reserved and holds _tex: bombs may spawn / be drawn
-var _seen: Array = [-1, -1, -1]          ## [bank, its write counter, VRAM map counter] when the texels were last checked
 var _qb: Array = []                      ## per slot, per picture frame: the bomb quad's GX commands (read-only, built once)
 var _qs: Array = []                      ## per slot: the shadow quad's GX commands
 var _w := 11
@@ -136,7 +136,6 @@ func reset() -> void:
 	_hidden = false
 	_cv_draw = []
 	_ready = false                                   # the manager is rebuilt with the scene: checked again
-	_seen = [-1, -1, -1]
 
 
 ## the picture -> direct-colour texels (bit 15 = opaque): frame f = 16x16 at f * FR_BYTES (the 11x12 picture in its
@@ -161,84 +160,19 @@ func _load_art(img: Image) -> void:
 		for y in range(r[1], r[1] + r[3]):
 			for x in range(r[0], r[0] + r[2]):
 				_tex.encode_u16(SH_OFS + (y * 16 + x) * 2, 0x8000)
+	g._tex_block().put(0, _tex)                     # part 36: the shared block (qol_texblock.gd)
 
 
 func _c15(c: Color) -> int:
 	return int(c.r * 31.0 + 0.5) | (int(c.g * 31.0 + 0.5) << 5) | (int(c.b * 31.0 + 0.5) << 10)
 
 
-## Our texture block in the game's texture VRAM manager (blocks {+0 offset, +4 size, +8 key, +0xC refs}, pointers at
-## +0x600 sorted by offset between a head and a tail sentinel (offset TEX_END), count u8 +0x7AE < 0x30, free structs
-## stacked at +0x6C8; FUN_02010D28 = first-fit allocation). Reserved like FUN_02010D28 reserves, but in the LAST gap
-## (TEX_OFS, against the tail sentinel): the game's own first-fit allocations land exactly where they would without
-## it, and none can ever overlap it (the manager holds it with 1 reference nobody releases; the manager is rebuilt by
-## every scene reset, then it is reserved again). Its texels are written straight into the bank behind texture slot 2
-## (QoLButton does the same for Mode Select) and rewritten whenever that bank was written and they differ. Returns
-## false (no bombs) when the layout is not the battle's: manager missing / full, slot 2 not one bank, last gap too small.
+## Our texture block (part 36: qol_texblock.gd, shared with GREEN DEMON; the reservation in the game's texture VRAM
+## manager and the texel writes are described there). False (no bombs) when the layout is not the battle's.
 func _tex_ok() -> bool:
 	if _tex.is_empty():
 		return false
-	var mg: int = _ld(TEX_MGR, 4)
-	if mg == 0:
-		return false
-	var n: int = _ld(mg + 0x7AE, 1)
-	var p: int = _ld(mg + 0x600 + n * 4, 4)          # the last block (ours once reserved)
-	if n == 0 or _ld(p + 8, 4) != TEX_KEY or _ld(p, 4) != TEX_OFS:
-		p = 0
-		for i in range(1, n + 1):                       # (anywhere else: an unexpected order, not ours to move)
-			var q: int = _ld(mg + 0x600 + i * 4, 4)
-			if _ld(q + 8, 4) == TEX_KEY:
-				p = q
-				break
-		if p != 0 and _ld(p, 4) != TEX_OFS:
-			return false
-		if p == 0:
-			p = _reserve(mg, n)
-			if p == 0:
-				return false
-	var hw = g.hw
-	var sl: Array = hw.tex_slots[2]
-	if sl.size() != 1:
-		return false
-	var b: int = sl[0][0]
-	if b == _seen[0] and hw.bank_gen[b] == _seen[1] and hw.map_gen == _seen[2]:
-		return true                                     # nothing written to that bank since the last check
-	var o: int = sl[0][1] + (TEX_OFS - 0x40000)
-	if o + TEX_BYTES > (hw.bank[b] as PackedByteArray).size():
-		return false
-	if (hw.bank[b] as PackedByteArray).slice(o, o + TEX_BYTES) != _tex:
-		DSHardware.blit(hw.bank[b], o, _tex, 0, TEX_BYTES)   # (into the bank itself, as QoLButton does)
-		hw.bank_gen[b] += 1                             # the renderer re-uploads texture memory
-		hw.dirty_vram = true
-		if _dbg:
-			print("BOMB f%d texture written: bank %d + %x (texture offset %x, manager blocks %d)" % [g._port_frame(), b, o, TEX_OFS, n])
-	_seen = [b, hw.bank_gen[b], hw.map_gen]
-	return true
-
-
-## FUN_02010D28's insertion, at the end of the list; 0 when it does not fit
-func _reserve(mg: int, n: int) -> int:
-	if n >= 0x2F or n == 0:
-		return 0                                        # full, or no battle textures yet (head sentinel case)
-	var tail: int = _ld(mg + 0x600 + (n + 1) * 4, 4)
-	var last: int = _ld(mg + 0x600 + n * 4, 4)
-	if _ld(tail, 4) != TEX_END or _ld(last, 4) + _ld(last + 4, 4) >= TEX_OFS:
-		return 0
-	var p: int = _ld(mg + 0x6C8 + (0x2F - n) * 4, 4)  # the next free block struct
-	if p == 0:
-		return 0
-	_st(p, 4, TEX_OFS)
-	_st(p + 4, 4, TEX_BLOCK)
-	_st(p + 8, 4, TEX_KEY)
-	_st(p + 0xC, 4, 1)
-	_st(mg + 0x600 + (n + 2) * 4, 4, tail)
-	_st(mg + 0x600 + (n + 1) * 4, 4, p)
-	_st(mg + 0x7AE, 1, n + 1)
-	_seen = [-1, -1, -1]
-	if _dbg:
-		print("BOMB f%d texture block reserved at %x (+%x) in the game's texture manager, blocks %d -> %d" % [g._port_frame(),
-			TEX_OFS, TEX_BLOCK, n, n + 1])
-	return p
+	return g._tex_block().ok()
 
 
 func _ld(a: int, n: int, s: bool = false) -> int:

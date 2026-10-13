@@ -139,6 +139,9 @@ func _ready() -> void:
 		["weird3", func(): _menu.open(); _press(512)],
 		["weird3_on", func(): _press(128); _press(32); _press(1); _press(128); _press(128)],
 		["weird2", func(): _menu.open(); _press(512); _press(512)],
+		["challenges", func(): _menu.open(); for i in 4: _press(512)],                        # part 36: L x4 = page 9 CHALLENGES
+		["challenges_on", func(): _press(32); _press(1)],                                  # (cursor stays on row 1) ON pressed
+		["challenges_hdr", func(): _press(64)],                                            # up: the header (page help)
 		["weird_on", func(): _press(128); _press(32); _press(1); _press(128); _press(128)],                                    # L from page 1: CHEATS 3
 		["cheats3_on", func(): _press(128); _press(32); _press(1); _press(128); _press(128); _press(128); _press(128)],
 		["cheats3_header", func(): _press(128); _press(64); _press(64); _press(64); _press(64); _press(64); _press(64)],

@@ -35,7 +35,7 @@ from emulated VRAM/registers. Complete and playable; current work: polish, exact
 | `decomp/tools/` | ROM extraction, converters, Ghidra script, translator (`ghidra2gd.py`, `transpile/`), lockstep compare |
 | `decomp/DATA_NOTES.md` (+ `DATA_NOTES_INDEX.md`), `decomp/notes/` | knowledge base (never read DATA_NOTES whole: use the index + grep) |
 | `decomp/extract/` | generated: extracted ROM files + translation work dir (git-ignored) |
-| `tools/` | Windows: Godot 4.7.2, Python 3.14.8, melonDS 1.1 (+ config). `test/ssw2.py` portable test harness (Windows + Linux), `melonds-headless/` frame-exact melonDS core (Linux), `linux/` Linux test scripts, `windows/` GPU capture + pace tests |
+| `tools/` | Windows: Godot 4.7.2, Python 3.14.8, melonDS 1.1 (+ config). `test/ssw2.py` portable test harness (Windows + Linux), `melonds-headless/` frame-exact melonDS core (Linux), `linux/` Linux test scripts, `windows/` GPU capture + pace tests + `lan_pair.ps1` (two-instance LAN check) |
 | `local/` | git-ignored: test runs, baselines (`baselines/<tag>/`), menu-preview background `prevbg.png` |
 | `.claude/` | Claude Code: `settings.json` (permissions; generated files protected), `commands/` (/brief /offcheck /deliver /handoff), `agents/ssw2-helper.md` |
 | `reference/` | melonDS reference shots; `reference/states/` savestates (git-ignored, ROM-derived) |
