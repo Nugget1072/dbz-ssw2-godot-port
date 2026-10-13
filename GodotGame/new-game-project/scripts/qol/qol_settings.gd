@@ -63,9 +63,13 @@ static func path() -> String:
 	return "user://settings.cfg"
 
 
+## The user:// copy is the exported game's fallback for a read-only game folder (save_file). Part 37: never for an
+## explicit `qolcfg=` file: a test run with a fresh qolcfg used to load the player's own user:// settings (cheats /
+## weird options on) in the exported exe only, which looked like an editor-vs-exe emulation difference.
 func load_file() -> void:
 	var c := ConfigFile.new()
-	if path() == "" or (c.load(path()) != OK and (not OS.has_feature("template") or c.load("user://settings.cfg") != OK)):
+	var fallback := OS.has_feature("template") and not Game.args.has("qolcfg")
+	if path() == "" or (c.load(path()) != OK and (not fallback or c.load("user://settings.cfg") != OK)):
 		return
 	scale = int(_val(c, "display", "window_scale", scale))
 	if not scale in SCALES:
@@ -158,7 +162,7 @@ func save_file() -> void:
 			else:
 				c.set_value("weird", k, _own[k])
 	var err := c.save(path())
-	if err != OK and OS.has_feature("template"):   # read-only folder: keep it in the user data folder
+	if err != OK and OS.has_feature("template") and not Game.args.has("qolcfg"):   # read-only folder: keep it in the user data folder (never a test's qolcfg values, part 37)
 		c.save("user://settings.cfg")
 
 

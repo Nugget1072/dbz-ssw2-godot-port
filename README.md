@@ -22,3 +22,19 @@ game data of its own (only the completed save, so everything is unlocked). Contr
    needed for the reverse-engineering tools and the legacy scenes).
 2. Open the project in Godot 4.7.2 and press Play, or Project → Export → "Windows Desktop" (export templates
    needed) to rebuild `finished\DBZ_SSW2_Port.exe`.
+
+## Building from a git clone (part 37)
+The repository holds the port's code, the translated game program (`scripts/gen/`), the native library binaries,
+docs and tools, but **nothing taken from the game**: no ROM, no extracted or converted graphics / sound / text, no
+captures (`.gitignore`). Not in git, so bring your own:
+| Needed | Where it goes | Notes |
+|---|---|---|
+| Godot 4.7.2 (Windows, `_console.exe` included) | `tools\Godot_v4.7.2-stable_win64.exe\` (or set `GODOT=`) | official release |
+| Godot 4.7.2 export templates | `%APPDATA%\Godot\export_templates\4.7.2.stable\` | editor → Manage Export Templates |
+| Python 3.8+ | any (`py`), or `tools\Python3.14.8\` | stdlib only for `tools/test/ssw2.py` |
+| the completed save `save100.sav` | `GodotGame\new-game-project\data\save100.sav` | built into the exe; without it the exe starts with an empty save |
+| your own European ROM (code ADBP) | `finished\` (any `.nds` name) | only to play / test, not to build |
+
+Build: `python tools\test\ssw2.py export` → `finished\DBZ_SSW2_Port.exe` + `libdsnative.windows.x86_64.dll` +
+README.txt / BUGFIXES.txt (the native library is prebuilt in `GodotGame/new-game-project/bin/`; rebuilding it is
+optional, docs/TOOLING.md). Then put your ROM next to the exe and run it.

@@ -123,11 +123,21 @@ hunts both, random target, switch every 10 s, lock within 24 px (lost beyond 40 
 `scripts/qol/qol_texblock.gd`. Verified (TESTING 27): SP / team / All-Star / fleeing / stage shuffle / local MP
 switching + lock + unlock / LAN lockstep identical (`tools/windows/lan_pair.ps1`) / keys + taps menu / sound audible /
 BOMB RAIN identical / offcheck PASS. Facts: DATA_NOTES "part 36 findings (green demon)".
-**Found (pre-existing, not investigated): the editor build and the exported exe are not frame-identical in battle.**
-Same arguments (Free Battle path, frozen RTC, fresh cfg / save copy), all cheats off: captures identical to f3900,
-first difference f3950 (P2's entrance afterimage streak during "Ready", 1484 px), a different fight by f4250
-(local\div_exe vs local\runs\div_ed). So exe captures can't be compared with editor baselines in battle; LAN exe ↔
-exe was bit-identical (part 32). Next step if wanted: RAM lockstep editor vs exe from the battle start.
+(The "editor vs exe battle divergence" noted here was solved in part 37: a test-harness settings leak, see below.)
 Open: tuning by feel on real play (speed 0.9, catch-up, 2-s rest, lock 24/40 px are constants at the top of
 qol_green_demon.gd; `gdspeed=` for tests); the 1-UP is drawn behind the battle HUD (like the fighters' feet) when it is
 low on the screen; the preview's built-in-font fallback errors when the ROM is not found (`qol_font.gd:299`, old).
+
+## Part 37: first-session fixes, editor-vs-exe "divergence", private GitHub repo (2026-10-13)
+- `docs/mp_mockup.png` (cut from the game's art) untracked, git-ignored and purged from the whole git history (file
+  kept locally); `.gitignore` also ignores `*.nds *.srl *.sav *.dsv *.ml? *.wav ram_*.bin` anywhere.
+- Capture runs never write a save unless `save=` is given (`game_ds.gd _write_save`; V: the first session's exe
+  capture run now leaves finished\DBZ_SSW2_Port.sav byte-identical).
+- **Editor vs exe "divergence" = settings leak, not emulation.** RAM dumps of both builds (same args): identical to
+  f4090, first difference f4100 at 0x02100A00 = a texture-manager block {0x5F000, 0x1000, key 0x7B0B0B26} = BOMB RAIN's
+  block, and the f3950 picture difference (RAM identical) = AFTERIMAGES. Cause: `QoLSettings.load_file` in an
+  exported build fell back to `user://settings.cfg` (%APPDATA%\DBZSSW2Port\, the read-only-folder copy) whenever the
+  settings file could not be loaded — also for a test's fresh `qolcfg=` file — so exe test runs played with the
+  player's own cheats / weird options. Fix: the user:// fallback (load and save) only without `qolcfg=`; normal play
+  unchanged. V: exe standard battle run 21/21 PNGs identical to the editor baseline; offcheck PASS.
+- Private GitHub repository `dbz-ssw2-godot-port` (see the GitHub section below / README "Building from a git clone").

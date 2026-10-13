@@ -22,3 +22,13 @@ GodotGame/new-game-project/native/build-windows/
 local/
 # Claude Code personal settings
 .claude/settings.local.json
+# Part 37 hardening: never commit the game or anything taken from it, wherever it lands
+*.nds
+*.srl
+*.sav
+*.dsv
+*.ml[0-9]
+*.wav
+ram_*.bin
+# the user's MP mockup is cut from the game's own portraits / plates (ROM-derived): local only
+docs/mp_mockup.png

@@ -284,3 +284,12 @@ The release build stdout is only flushed on a clean exit: always pass `quit_at=`
 - BOMB RAIN after the texture-block move: `weird=bombs bombdbg` run before / after → 61/61 captures + 21 event lines
   identical; both cheats on together: one TEXBLOCK reservation, both drawn.
 - Off: `offcheck` PASS (21/21 + 1382 CHT, 221/221).
+
+## 28. Part 37 (exported exe = editor; capture saves)
+- Exe vs editor: run `finished\DBZ_SSW2_Port.exe -- quit_at=5301 "capture=<abs dir>" cap_every=50 cap_from=4300
+  cap_to=5300 "sav=<copy>" "save=<copy>" "qolcfg=<fresh file>" rtc=2026-01-01T12:00:00 inputs=<BATTLE_PATH +
+  BATTLE_ACTIONS> cheatdbg cheats=infinite_health` (the offcheck battle's flags) → `ssw2.py pngdiff <dir>
+  local\baselines\windows\battle` = 21/21. `dumpram=F,…` in both builds + a byte compare finds the first differing
+  frame / address (scratch script; part 37 found the user:// settings leak this way).
+- Capture without `save=`: the exe's DBZ_SSW2_Port.sav keeps its hash and modification time.
+- GitHub clone build: README "Building from a git clone" (clone → copy save100.sav → `ssw2.py export` → boot).

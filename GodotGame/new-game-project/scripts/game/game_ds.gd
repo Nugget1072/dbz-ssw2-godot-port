@@ -815,6 +815,8 @@ func _tick_end(pipelined: bool) -> void:
 func _write_save() -> void:
 	if machine.core.arm7.backup_dirty:
 		machine.core.arm7.backup_dirty = false
+		if Game.args.has("capture") and not Game.args.has("save"):
+			return   # part 37: test captures never touch the player's save (the frozen clock rewrites its time stamps)
 		var f := FileAccess.open(save_path, FileAccess.WRITE)
 		if f == null and not save_path.begins_with("user://"):   # game folder not writable: keep it in user://
 			save_path = "user://save100.sav"

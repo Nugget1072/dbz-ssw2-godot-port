@@ -1816,7 +1816,7 @@ portraits3.png).
   released, held, 0, x, y, touch, 0, flags} with P2 held LEFT 4600-4700 and A every 40 frames: Free Battle P2 Goku
   stands still (action 0) without input (no AI), walks left (action 3, x 8256 → 8088) and fires ki blasts (0x24, ki
   100 % → 90 %, "3 RUSH") (ai1.log MPR / CHT lines, ai1_sheet.png).
-- **Mockup layout** (docs/mp_mockup.png = 256x192 × 2.8, measured): P1 column A x 0-59, blue-grey bar 60-67, column B
+- **Mockup layout** (docs/mp_mockup.png (local only, not in git: cut from the game's art) = 256x192 × 2.8, measured): P1 column A x 0-59, blue-grey bar 60-67, column B
   68-126, black divider 127-129, P2 column A 130-188, bar 189-196, column B 197-255; row line y 95; bench diagonal from
   (0, 158) to (59, 129).
 
@@ -3140,3 +3140,15 @@ KO swap, pause, WIN; zoom 0 + mirror; zoom 4), `sky_built.png` = the built BG3 p
 - **LAN** (V lan1: host GREEN DEMON, guest no cheats, other RTC, CAMERA ZOOM 4): gameplay hash identical all 1538
   lockstep frames (G block differs from L277: drawing-only zoom fields, expected); both logs show the same spawn,
   lock and kill frames. Logic uses the game's unzoomed camera in LAN battles (`lan_battle()`).
+
+## Session 2, part 37 findings (editor vs exe) — V = port verified
+- **Editor and exported exe are frame-identical** (V: same flags as ssw2.py, standard battle 21/21 PNGs vs the editor
+  baseline; RAM dumps f10..f4090 identical). The apparent divergence (exe vs editor from f3950 pictures / f4100 RAM)
+  was the exe loading the player's `user://settings.cfg` (%APPDATA%\DBZSSW2Port\) when a test's fresh `qolcfg=` file
+  did not exist (QoLSettings.load_file's read-only-folder fallback, exported builds only): its AFTERIMAGES changed the
+  pictures, its BOMB RAIN reserved the port's texture block. Fixed: the fallback only without `qolcfg=`. | H |
+- **Texture manager block list in battle** (V ram_exe2/ram_4100.bin, Free Battle Goku vs Goku, ice stage): manager
+  [0x020DE380] = 0x02100410, 11 blocks (+0x7AE), pointers +0x600: head sentinel 0x02100B98, block structs 0x02100960 +
+  0x10·i (offset, size, key, refs; keys 0x2000000x / 0x364000xx / 0x5000000x / 0x4000004a / 0x5800000a), the port's
+  block 11 at 0x02100A00 {0x5F000, 0x1000, 0x7B0B0B26, 1} (BOMB RAIN / GREEN DEMON, parts 26 / 36), tail sentinel
+  0x02100BA8 {0x60000, 0}. | H for this battle; M that the addresses are the same in every battle |

@@ -274,6 +274,10 @@ def cmd_parse(a):
 
 
 def cmd_export(a):
+    os.makedirs(os.path.join(REPO, "finished"), exist_ok=True)   # part 37: a fresh git clone has no finished/
+    if not find_sav():
+        print("WARNING: GodotGame/new-game-project/data/save100.sav is missing (it is not in git): the exe will be built "
+              "without the completed save (new players start with an empty save)")
     r = subprocess.run(godot_cmd(False) + ["--import"], cwd=PROJ).returncode
     r = subprocess.run(godot_cmd(False) + ["--export-release", "Windows Desktop"], cwd=PROJ).returncode or r
     for s, t in (("PLAYER_README.txt", "README.txt"), ("BUGFIXES.txt", "BUGFIXES.txt")):

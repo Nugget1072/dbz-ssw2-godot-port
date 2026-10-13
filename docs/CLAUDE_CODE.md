@@ -44,7 +44,7 @@ also works for `ssw2.py` (stdlib only), but write the full path in scripts.
 | Record this PC's baselines (once, on the delivered state, before changing anything) | `py tools\test\ssw2.py baseline` |
 | Compare two capture folders | `py tools\test\ssw2.py pngdiff DIR_A DIR_B` |
 | Export + copy README / BUGFIXES into `finished/` | `py tools\test\ssw2.py export` (close running game instances first) |
-| Capture run of the exported exe | `finished\DBZ_SSW2_Port.exe -- quit_at=2400 capture=<ABSOLUTE path>\local\exe_cap cap_every=200 cap_to=2400` (a relative `capture=` lands next to the exe, in `finished\`). It uses the player's `finished\DBZ_SSW2_Port.sav`: with the clock frozen for captures the game rewrites the +4 time stamp of all 16 save blocks (contents kept; DATA_NOTES "Saving"), so back the file up first or pass `save=` a copy |
+| Capture run of the exported exe | `finished\DBZ_SSW2_Port.exe -- quit_at=2400 capture=<ABSOLUTE path>\local\exe_cap cap_every=200 cap_to=2400` (a relative `capture=` lands next to the exe, in `finished\`). It reads the player's `finished\DBZ_SSW2_Port.sav` but (part 37) never writes it unless `save=` is given. To compare with editor runs pass the same flags as `ssw2.py` (`sav=`/`save=` a copy, a fresh `qolcfg=`, `rtc=`): exe and editor are then frame-identical (part 37: 21/21 battle PNGs) |
 | Play / edit in the editor | `tools\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64.exe --path GodotGame\new-game-project` |
 
 Debug flags go after `--` on a game run: full list `docs/DEBUG_FLAGS.md`. Test procedures per feature:

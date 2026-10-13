@@ -338,7 +338,7 @@ FUN_02071374 commits → FUN_02001014(0x13) → redirect to 0 with mode 5 (secti
 - **Lower screen** (QoLMpPanel): hide engine B's BG layers on the lower screen while `display.battle_on_screen()` and
   MP battle (`display.set_layer_keep(true, mask)`: 0x1F00 = all layers, 0x100 << n = BG n; use a mask without BG0-2 —
   check the backdrop), draw the mockup layout
-  (docs/mp_mockup.png = 256x192 × 2.8; measured): columns P1-A x 0-59, bar 60-67, P1-B 68-126, black divider
+  (docs/mp_mockup.png (local only, not in git: cut from the game's art) = 256x192 × 2.8; measured): columns P1-A x 0-59, bar 60-67, P1-B 68-126, black divider
   127-129, P2-A 130-188, bar 189-196, P2-B 197-255; rows 0-94 / line 95 / 96-191. Per player (A = its first column,
   B = its second):
   - A top: active portrait (60x95 crop of the 80x128 portrait — e.g. x 10..69, y 0..94; compare with the mockup), in

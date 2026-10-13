@@ -57,7 +57,7 @@ page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in 
   screens: VS menu (scene 0x11, HOST/CLIENT relabelled), Practice select (scene 3 mode 0xB) with a second tinted
   outline drawn by re-running the menu object drawer, stage select (scene 5) with 50/50 roulette, Free Battle (mode
   5) with the CPU AI input function f_0202DCE0 returning P2's pad / touch; lower screen = port panel (both teams,
-  mockup docs/mp_mockup.png); WIN/LOSE banner from the winner's side in MP. Cheats apply to both sides in MP.
+  mockup docs/mp_mockup.png (local only, not in git: cut from the game's art)); WIN/LOSE banner from the winner's side in MP. Cheats apply to both sides in MP.
   Limits: LAN not implemented; shared DP tab in the select; game result screens skipped between rounds; two real
   gamepads untested.
 - **Part 26** — *Reorganized settings, effect pairing fix, Proton performance* (2 helper agents; DATA_NOTES part 26,
