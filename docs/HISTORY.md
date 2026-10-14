@@ -6,6 +6,10 @@ how the systems fit together now: `docs/QOL_ARCHITECTURE.md`; decoded facts per 
 page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in QOL_ARCHITECTURE.md).
 
 ## Per part (details in DATA_NOTES / transpiler notes)
+- **Part 42** — *page order, three cheats, bug hunt (2026-10-14)*: POWERS before CHALLENGES (pages 9 / 10), slower
+  Dragon Balls, NONDIRECTIONAL (held direction picks the super variant / fires the ultimate), Z-VANISH
+  (`qol_zvanish.gd`, escape a hit stun behind the attacker), BODY CHANGE (`qol_bodychange.gd`, HP swap every 20 s);
+  cheat-mix runs in local MP and LAN, three overlaps fixed. TESTING 33, DATA_NOTES `part 42 findings`.
 - **Part 41** — *three cheats + size fixes (2026-10-13)*: SMASH KNOCKBACK's face marker drawn 1:1 in a tighter box,
   HOT POTATO's bomb 1:1 and its countdown smaller; new cheat page 10 POWERS (ULTRA INSTINCT moved there, weird stuff now
   11-13) with VAMPIRE (`qol_vampire.gd`, hits heal 40 %) and TIME SKIP (`qol_timeskip.gd`, SELECT freezes the enemy 2 s),

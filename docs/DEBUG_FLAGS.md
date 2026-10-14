@@ -96,6 +96,9 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 | `vpdbg` | VAMPIRE (part 41): every heal (victim, attacker, HP lost, healed, new HP) |
 | `tsdbg` · `tscpu=N` · `tsauto=F` · `tsseed=N` | TIME SKIP (part 41): start / end lines (reason); CPU chance 1 / N per frame (0 = never, default 300); player 1 skips once at the first battle frame >= F where it may; the CPU RNG seed |
 | `dbdbg` · `dbseed=N` · `dbwait=N` · `dbgive=N` · `dbhere=DX` | DRAGON BALL HUNT (part 41): palette / spawn / grab / drop / wish lines; its RNG; frames to the first ball; player 1's team starts with N balls; balls appear DX px right of player 1 |
+| `nddbg` | NONDIRECTIONAL (part 42): every substitution (real angle -> chosen angle, the action that started) |
+| `zvdbg` · `zvcpu=N` · `zvauto` · `zvseed=N` | Z-VANISH (part 42): vanish / refused / touchable-again lines; CPU vanish chance % per hit stun (default 30, 0 = never); player 1 vanishes whenever it may; the CPU RNG seed |
+| `bcdbg` · `bct=N` | BODY CHANGE (part 42): swap lines (HP before / after per side); frames between swaps (default 1200) |
 | `texgap` | (part 41) the port texture block's check prints the game's last texture block and the free gap below the port block every battle frame |
 | `setest[=A,B,…]` | sound test (part 39): from port frame 4150 the fight is held in hit stop (silent), from 4200 battle sound k plays every 60 frames (all 0-0x31, or the listed ids); "SETEST f… se …" lines; pair with a capture + `--cfg` with `[sound] music=false` (absolute path) |
 

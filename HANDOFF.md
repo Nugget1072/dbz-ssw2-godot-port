@@ -1,6 +1,6 @@
 # HANDOFF — state of the port
 
-_Last updated: 2026-10-13 (part 41 — cheats VAMPIRE, TIME SKIP, DRAGON BALL HUNT, new cheat page POWERS, marker / bomb sizes fixed; part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
+_Last updated: 2026-10-14 (part 42 — POWERS before CHALLENGES, slower Dragon Balls, cheats NONDIRECTIONAL, Z-VANISH, BODY CHANGE, cheat-mix bug hunt in local MP + LAN; part 41 — cheats VAMPIRE, TIME SKIP, DRAGON BALL HUNT, new cheat page POWERS, marker / bomb sizes fixed; part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
 sessions on the user's PC; part 35 was the last Cowork part: `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
 Per-part history: `docs/HISTORY.md`.
 
@@ -160,7 +160,7 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
   time) → A / START / B / tap → team select. `endless_records.cfg` next to the exe, most enemies first; nothing written
   with cheats on; a run that beat nobody is not ranked. HI-SCORES RESET (settings page 2) now also clears both records
   files (confirm text updated).
-- **BOMB RAIN** moved from WEIRD STUFF 3 to cheats page 9 CHALLENGES under GREEN DEMON: `QoLSettings.bomb_rain` is a
+- **BOMB RAIN** moved from WEIRD STUFF 3 to cheats page 10 CHALLENGES under GREEN DEMON: `QoLSettings.bomb_rain` is a
   property over `cheats["bomb_rain"]` ([cheats]; an old [weird] value is carried over once), so it counts in
   `cheats_on()` (no Z-Battle ranking, no ALL-STAR / ENDLESS record) and travels in the LAN snapshot as a cheat.
 - V (TESTING 29): 47 random swaps headless (heap flat), death → page → select captures, ranked file write, Gamemode menu
@@ -177,7 +177,7 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
   as ALL-STAR).
 
 ## Part 39: four new cheats (2026-10-13) — DONE
-- **ULTRA INSTINCT** (page 5 FIGHTING row 6; page 10 POWERS since part 41; `scripts/qol/qol_ultra.gd`): a Smash Ultimate / SF3-style parry. A fresh B
+- **ULTRA INSTINCT** (page 5 FIGHTING row 6; page 9 POWERS since part 41; `scripts/qol/qol_ultra.gd`): a Smash Ultimate / SF3-style parry. A fresh B
   tap in neutral / moving / guarding opens a 5-frame window; an enemy attack box touching the fighter then is parried
   (the fighter is left out of that collision pass): no damage, 12-frame hit stop, the game's guard spark, SE 0x21 (the
   tag-in "shing", chosen by analysing all 50 battle sounds: DATA_NOTES part 39), a silver-blue silhouette of the fighter
@@ -220,7 +220,7 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
   28 px box, and kept below the RUSH counter.
 - **HOT POTATO size** (user: weirdly sized): the 11x12 bomb was drawn 1.5x (uneven pixels): now 1:1 on whole pixels,
   the countdown one digit size smaller (5x7; pops 2x on each new second).
-- **New cheat page 10 POWERS** (pages now 13: weird stuff 11-13; header help text updated): ULTRA INSTINCT (moved from
+- **New cheat page 9 POWERS** (pages now 13: weird stuff 11-13; header help text updated): ULTRA INSTINCT (moved from
   FIGHTING, which was full), VAMPIRE, TIME SKIP. DRAGON BALL HUNT = CHALLENGES row 6.
 - **VAMPIRE** (`qol_vampire.gd`): every hit heals the attacking team's fighter 2/5 of the HP it took (measured around
   FUN_020293A4 inside the collision pass), green sparks victim → healer, a light green pulse, a green "+N". Both teams.
@@ -239,3 +239,20 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
   menu previews, offcheck PASS. Debug flags `vpdbg tsdbg tscpu tsauto tsseed dbdbg dbseed dbwait dbgive dbhere texgap`.
 - Open: tuning after the user plays (heal 40 %, skip length / cost / CPU chance, ball drop threshold); TIME SKIP during
   throws / grab supers / beam struggles on the frozen side is cut short by design (untested combinations end the skip).
+
+## Part 42: page order, NONDIRECTIONAL, Z-VANISH, BODY CHANGE, cheat-mix bug hunt (2026-10-14) — DONE
+- **Pages**: POWERS is page 9, CHALLENGES page 10 (`QoLMenu.PAGES` lists "cheats6" before "cheats5"; help text updated).
+- **DRAGON BALL HUNT**: first ball after 300 running frames (was 240), next 480 + 0-120 seeded after a grab (was 150).
+- **NONDIRECTIONAL** (FIGHTING row 6, user idea): a held direction with X+A picks the super variant (up / level toward
+  the enemy / down) whatever the angle; with red HP any direction fires the ultimate. +7 substituted around the
+  dispatcher after a pure precheck (`_nd_pick`); research (VM op 4, 3 variants per fighter): DATA_NOTES part 42.
+- **Z-VANISH** (POWERS, my idea; `qol_zvanish.gd`): B in a hit stun with 50 % ki → behind the attacker, neutral,
+  untouchable until it acts, afterimage; not against supers / throws; CPU 30 % of its hit stuns (seeded).
+- **BODY CHANGE** (POWERS, my idea; `qol_bodychange.gd`): every 20 s the active fighters trade HP shares; countdown at
+  the bottom centre, Ginyu ray + violet glow.
+- **Bug hunt** (TESTING 33): five local-MP cheat mixes + two LAN mixes: no script errors, LAN identical; three overlap
+  problems fixed (BODY CHANGE countdown vs HOT POTATO countdown, VAMPIRE "+N" vs RUSH / HUD, Dragon Ball edge marker vs
+  the HUD row).
+- Helpers: two research agents (super variants; vanish mechanics) — DATA_NOTES part 42, local/research_*.md.
+- Open: tuning (vanish cost / CPU chance, swap interval, ball timing); NONDIRECTIONAL diagonals as tilted level supers
+  (index 5 / 10) not offered (untested).

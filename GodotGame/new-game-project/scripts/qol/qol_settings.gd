@@ -15,7 +15,8 @@ const CHEATS := ["no_cooldown", "infinite_health", "one_hit_ko", "infinite_ki", 
 	"chaos_shuffle", "stage_shuffle", "triple_ki", "attack_spam", "hard_mode", "random_stage", "green_demon", "bomb_rain",
 	"ultra_instinct", "randomizer", "flightless", "smash_knockback",   # part 39
 	"hot_potato", "ricochet_ki",   # part 40
-	"vampire", "time_skip", "dragon_balls"]   # part 41
+	"vampire", "time_skip", "dragon_balls",   # part 41
+	"nondirectional", "z_vanish", "body_change"]   # part 42
 var music_seed := 0                       ## RANDOM MUSIC: the current shuffle (a new one each time it is switched on)
 var cheats := {}
 var music: bool = true
@@ -39,7 +40,7 @@ var screen_shake: bool = false            ## part 23: the battle picture shakes 
 var ko_confetti: bool = false             ## part 23: confetti burst when a fighter is knocked out
 var damage_numbers: bool = false          ## part 24: each hit's damage pops up as a floating number
 var rainbow_ki: bool = false              ## part 24: ki blasts and beams cycle through rainbow colours
-## part 25: walking bombs rain on the battle (they hurt). Part 38: a cheat (page 9 CHALLENGES, [cheats] bomb_rain;
+## part 25: walking bombs rain on the battle (they hurt). Part 38: a cheat (page 10 CHALLENGES, [cheats] bomb_rain;
 ## counts in cheats_on(), so no leaderboard entry while it is on); this property just reads / writes cheats["bomb_rain"]
 var bomb_rain: bool:
 	get: return cheat("bomb_rain")

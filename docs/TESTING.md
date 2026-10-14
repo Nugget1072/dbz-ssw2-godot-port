@@ -394,3 +394,31 @@ Contact sheets: a scratch Godot script (Image.get_region + blit_rect, NEAREST zo
 - Menu: preview states `p41_powers`, `p41_timeskip(_on)`, `p41_db(_on)`, `p41_help`, `p41_weird1` (13 pages, POWERS =
   page 10, descriptions fit; p39_challenges / p40_potato now press L 5 times).
 - Off: `offcheck` PASS (21/21 + 1382 CHT, 221/221).
+
+## 33. Part 42 (page order, DRAGON BALL timing, NONDIRECTIONAL, Z-VANISH, BODY CHANGE, cheat-mix bug hunt)
+- Menu: preview states `p42_fighting` (NONDIRECTIONAL row 6), `p42_zvanish`, `p42_bodychange(_on)` (POWERS = 9/13, five
+  rows), `p42_challenges` (10/13), `p41_help` (page list text); p39 / p40 / p41 page states updated for the new order.
+- NONDIRECTIONAL: `nd1 --battle --headless --to 6300 --inputs "4400:X:8,4400:A:8,4400:Down:12,…" mp=1 mpbattle=1
+  "cheats=nondirectional,infinite_ki,infinite_health" nddbg p1hp=5900:1500 rzult` → "ND … angle 0 -> c4: act 2c" (down at
+  level), "f8 -> 3c" (up), "-> 0: act 2e" (Right with red HP: the ultimate); `nd2` captures: Goku's Spirit Bomb (his
+  down super) thrown from level, hitting. (Found on the way: team ki must be read unsigned.)
+- Z-VANISH: `zv1 --headless --to 5600 --inputs <B every 13 from 4200> "cheats=z_vanish,infinite_ki" zvdbg` → VANISH lines,
+  "touchable again" when it acts, "refused: attacker act 2d" (a super); `zv2` captures: afterimage + burst at the old
+  spot, the fighter behind its attacker. Research prototype runs (walls, CPU 100 %, KO afterwards): local/research_zvanish.md.
+- BODY CHANGE: `bc1 --headless --to 5600 "cheats=body_change" bcdbg bct=600 p2hp=4300:3000` → "side 0 8498 -> 3000, side 1
+  3000 -> 8498"; `bc2` / `bc3` captures: countdown (bottom centre since the QA below), ray, violet glow, bars traded.
+- DRAGON BALL HUNT timing: first ball at 300 running frames, the next 480-600 after a grab (dbdbg).
+- Cheat-mix bug hunt (local MP `mp=1 mpbattle=1`, both players with Y / A / X+A / B taps / Select / directions / R from
+  a seeded generator; LAN `lan_pair.ps1` the same for host and guest):
+  - mixA TIME SKIP + RANDOMIZER + ULTRA INSTINCT + SMASH KNOCKBACK + VAMPIRE + INFINITE KI; mixB DRAGON BALLS + HOT POTATO +
+    BOMB RAIN + GREEN DEMON + FLIGHTLESS + BODY CHANGE + RICOCHET + TRIPLE + HOMING (ended by GREEN DEMON's KO: the
+    battle ends, character select follows: as designed); mixC CHAOS SHUFFLE + TIME SKIP + ASSIST SPAM + INFINITE
+    ASSISTS + STAGE SHUFFLE + ATTACK SPAM + NO COOLDOWN + Z-VANISH + NONDIRECTIONAL; mixD2 VAMPIRE + BODY CHANGE +
+    Z-VANISH + NONDIRECTIONAL + ULTRA + DRAGON BALLS + TIME SKIP + SMASH + HOT POTATO (captures); mixE2 CHARACTER SHUFFLE
+    + TIME SKIP + Z-VANISH + TRIPLE + HOMING + FLIGHTLESS → no script error anywhere.
+  - LAN p42_lan1 (TIME SKIP, Z-VANISH, NONDIRECTIONAL, RANDOMIZER, ULTRA, VAMPIRE, INFINITE KI) and p42_lan2 (DRAGON
+    BALLS, BODY CHANGE, HOT POTATO, SMASH, FLIGHTLESS, RICOCHET, CHAOS SHUFFLE) → lan_cmp exit 0, identical event lines.
+  - Found and fixed (mixD2 captures): BODY CHANGE's countdown (top centre) met HOT POTATO's countdown → moved to the
+    bottom centre between the ki gauges; VAMPIRE's "+N" reached the HUD / RUSH band → kept to y 64-150; a Dragon Ball's
+    edge marker sat on the HUD row → kept above y 140.
+- Off: `offcheck` PASS.

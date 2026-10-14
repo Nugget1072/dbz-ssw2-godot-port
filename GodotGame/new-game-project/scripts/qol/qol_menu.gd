@@ -5,7 +5,7 @@ extends Control
 ## a black title plate, black rows with orange trim and bold italic labels, and orange hexagon buttons (current
 ## value in red, cursor = white hexagon). Every button works with the D-pad (Up/Down row, Left/Right button, A or
 ## Start = press, B = back, L / R = page) and with a tap (touch / mouse). Pages: "main" .. "main3" (settings,
-## pages 1-3), "cheats".."cheats6" (pages 5-10, by theme: CHEAT_PAGES), "weird".."weird3" (pages 11-13, WEIRD_PAGES), "mpset" (page 4, MULTIPLAYER), "jukebox", "confirm" (window size), "controls1" + "controls2"
+## pages 1-3), "cheats".."cheats6" (pages 5-10, by theme: CHEAT_PAGES; part 42: "cheats6" POWERS = page 9 before "cheats5" CHALLENGES = page 10), "weird".."weird3" (pages 11-13, WEIRD_PAGES), "mpset" (page 4, MULTIPLAYER), "jukebox", "confirm" (window size), "controls1" + "controls2"
 ## (CONTROLS, part 16) + "controls3" (MOUSE CURSOR: the gamepad cursor of the touch screen, QoLCursor, part 24). Row 0 of every page but the jukebox is the header: page arrows + EXIT (controls: BACK).
 
 const TRIM := Color8(190, 125, 28)          ## orange lines along the black bands (Option screen)
@@ -18,7 +18,7 @@ const CONFIRM_SECONDS := 10
 const ROW_Y := 31
 const ROW_PITCH := 27
 const HEX_H := 24
-const PAGES := ["main", "main2", "main3", "mpset", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "cheats6", "weird", "weird2", "weird3"]   ## the pages the header's arrows flip through (settings, then cheats)
+const PAGES := ["main", "main2", "main3", "mpset", "cheats", "cheats2", "cheats3", "cheats4", "cheats6", "cheats5", "weird", "weird2", "weird3"]   ## the pages the header's arrows flip through (settings, then cheats)
 const CPAGES := ["controls1", "controls2", "controls3"]   ## CONTROLS: 7 rows per page (smaller rows than the other pages)
 const CROW_Y := 37                         ## CONTROLS: first row (the KEY / PAD captions sit above it)
 const CROW_PITCH := 22
@@ -34,7 +34,7 @@ const BUTTON_HELP := {
 	"ds_l": "Power up (e.g. Goku's Kaioken):\nstronger while the ki gauge\ndrains. (BOSS CHARACTERS cheat:\nhold it while picking.)",
 	"ds_r": "Charge ki while held.\nR+A, R+B: special moves.",
 	"ds_start": "Pause the battle.\nMenus: confirm.",
-	"ds_select": "Not used in battle by the game.\nTIME SKIP cheat: skip time.\nALL-STAR / ENDLESS: use a heart\n(by tap while TIME SKIP is on).",   # part 41
+	"ds_select": "Not used in battle by the game.\nTIME SKIP cheat: skip time.\nALL-STAR: a heart (or tap it).",   # part 41 (part 42: shorter)
 	"ds_up": "Fly up. Menus: cursor up.",
 	"ds_down": "Fly down. Menus: cursor down.",
 	"ds_left": "Fly left. Menus: cursor left.",
@@ -57,6 +57,7 @@ const CHEAT_PAGES := {
 		["one_hit_ko", "ONE-HIT KO", "Every hit from player 1 knocks\nout the enemy fighter it hits.\n(Guarded hits do normal damage.)"],
 		["no_cooldown", "NO COOLDOWN", "Attacks can be used again at once:\nki blasts and super attacks start\neven while another attack is\nstill firing. (Player 1 only.)"],
 		["attack_spam", "ATTACK SPAM", "Attacks restart at once and\nevery hit connects: spam heavy\nattacks, dash attacks, combos.\n(Supers and throws still play\nout in full.)"],
+		["nondirectional", "NONDIRECTIONAL", "Hold a direction with X+A to\npick which super comes out,\nfrom any angle: UP / DOWN /\nsideways supers anywhere.\n(No direction: as normal.)"],   # part 42
 	]],
 	"cheats2": ["KI & ASSISTS", [
 		["infinite_ki", "INFINITE KI", "Player 1's ki gauge stays full\n(200%): ki blasts and super\nattacks cost nothing."],
@@ -90,7 +91,9 @@ const CHEAT_PAGES := {
 	"cheats6": ["POWERS", [   # part 41 (ULTRA INSTINCT moved here from FIGHTING)
 		["ultra_instinct", "ULTRA INSTINCT", "Tap B just as a hit comes\n(5 frames!) to PARRY it: no\ndamage, the attacker is stunned\nand ki blasts fly back. A tap\nthat parries nothing: red flash."],   # part 39 (page 5 until part 41)
 		["vampire", "VAMPIRE", "Every hit drains life: the\nattacker heals 40% of the\ndamage it deals (green sparks\nfly back to it). Both teams.\nLong fights, wild comebacks!"],   # part 41
+		["z_vanish", "Z-VANISH", "Being hit? Press B (50% ki)\nto vanish and reappear behind\nthe attacker, free to strike\nback! Not while knocked down\nor grabbed. The CPU does it too."],   # part 42
 		["time_skip", "TIME SKIP", "Press SELECT with 100% ki to\nskip time: the enemy freezes\nfor 2 seconds while you keep\nmoving and hitting. The CPU\ncan do it too! (Costs 100%.)"],   # part 41
+		["body_change", "BODY CHANGE", "Ginyu's trick! Every 20 seconds\nthe two fighters swap their HP\n(as a share of max HP). A purple\ncountdown warns you: be ahead\nwhen it hits 0! (Both teams.)"],   # part 42
 	]],
 }
 ## WEIRD SETTINGS (part 21, page 7, after the cheats): [QoLSettings field, label, description]
@@ -441,7 +444,7 @@ func focus_desc() -> String:
 	if page in CPAGES:
 		return _controls_desc()
 	if cur_id().begins_with("pg_"):
-		return "1-3 settings, 4 big changes.\nCheats: 5 fighting, 6 ki, 7 char-\nacters, 8 stage & music, 9 chal-\nlenges, 10 powers. 11-13 weird.\nL and R change the page too."
+		return "1-3 settings, 4 big changes.\nCheats: 5 fighting, 6 ki, 7 char-\nacters, 8 stage & music, 9 powers,\n10 challenges. 11-13 weird.\nL and R change the page too."
 	return _rows[row]["desc"] if row < _rows.size() else ""
 
 

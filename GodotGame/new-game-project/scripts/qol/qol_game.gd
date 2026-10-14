@@ -113,6 +113,10 @@ func f_0202954c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 		if _db == null:
 			_db = _DB_GD.new(self)
 		_db.tick(_port_frame())                        # part 41 DRAGON BALL HUNT (once per battle frame)
+	if cheats != null and _on("body_change"):
+		if _bc == null:
+			_bc = _BC_GD.new(self)
+		_bc.tick(_port_frame())                        # part 42 BODY CHANGE (once per battle frame)
 	if cheats != null and _on("time_skip"):
 		if _ts == null:
 			_ts = _TS_GD.new(self)
@@ -120,6 +124,10 @@ func f_0202954c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 		if _ts.frozen(param_1):
 			_ts.freeze_step(param_1)                   # the frozen side's fighter: hittable, nothing else
 			return 0
+	if cheats != null and _on("z_vanish"):
+		if _zv == null:
+			_zv = _ZV_GD.new(self)
+		_zv.tick(param_1)                              # part 42 Z-VANISH (active fighters: B in a hit stun)
 	if cheats != null:
 		_c39_tick(param_1)                             # part 39 FLIGHTLESS / ULTRA INSTINCT / RANDOMIZER (active fighters)
 	if cheats != null and _helped(param_1):            # part 27: side 0, and side 1 in an MP battle
@@ -345,6 +353,10 @@ func f_0202a40c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 		_db.reset()                                    # part 41 DRAGON BALL HUNT
 	if _ts != null:
 		_ts.reset()                                    # part 41 TIME SKIP
+	if _bc != null:
+		_bc.reset()                                    # part 42 BODY CHANGE
+	if _zv != null:
+		_zv.reset()                                    # part 42 Z-VANISH
 	if cheats == null:
 		return r
 	var teams: int = _ld(TEAMS, 4, false)
@@ -2862,6 +2874,10 @@ func _fx_draw(fx: Variant) -> void:
 		drew = _db.draw(idx, cv) or drew                # part 41 DRAGON BALL HUNT balls, HUD, wish
 	if _ts != null and _on("time_skip"):
 		drew = _ts.draw(idx, cv) or drew                # part 41 TIME SKIP tint, skipper, rings
+	if _bc != null and _on("body_change"):
+		drew = _bc.draw(idx, cv) or drew                # part 42 BODY CHANGE countdown, ray, glow
+	if _zv != null and _on("z_vanish"):
+		drew = _zv.draw(idx, cv) or drew                # part 42 Z-VANISH afterimages
 	if cheats.damage_numbers:
 		drew = _dn_frame(cv) or drew                    # part 24 DAMAGE NUMBERS (on top of everything)
 	if drew:
@@ -3047,7 +3063,7 @@ func _fx_any() -> bool:
 		or cheats.damage_numbers or cheats.rainbow_ki \
 		or cheats.bomb_rain or _on("green_demon") \
 		or _on("ultra_instinct") or _on("smash_knockback") or _on("hot_potato") \
-		or _on("vampire") or _on("dragon_balls") or _on("time_skip")   # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON, parts 39-41
+		or _on("vampire") or _on("dragon_balls") or _on("time_skip") or _on("body_change") or _on("z_vanish")   # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON, parts 39-41
 
 
 ## the fighter records that can be on screen (both teams, ASSIST SPAM copies)
@@ -3857,7 +3873,7 @@ func _br_tick() -> void:
 
 
 # ---- GREEN DEMON (part 36) ------------------------------------------------------------------------------------------
-## Cheat GREEN DEMON (page 9 CHALLENGES, `cheats=green_demon`): everything is in scripts/qol/qol_green_demon.gd; hooks
+## Cheat GREEN DEMON (page 10 CHALLENGES, `cheats=green_demon`): everything is in scripts/qol/qol_green_demon.gd; hooks
 ## here: f_0202954C (tick once per battle frame), f_0202A40C (reset at every battle load), _fx_any / _fx_draw (drawn
 ## after the game's sprite list), f_02021DD4 (the game moves every effect object: the 1-UP moves too), f_020293A4 (its
 ## KO skips the damage cheats: `_gd_killing`). The texture block it shares with BOMB RAIN: qol_texblock.gd.
@@ -6310,7 +6326,7 @@ func _asr_win(to: int) -> void:
 
 
 # ---- FLIGHTLESS (part 39) -------------------------------------------------------------------------------------------
-## Cheat FLIGHTLESS (page 9 CHALLENGES, `cheats=flightless`): every active fighter (both teams) that is above the
+## Cheat FLIGHTLESS (page 10 CHALLENGES, `cheats=flightless`): every active fighter (both teams) that is above the
 ## floor falls: its own fall speed grows by FL_G per battle frame up to FL_MAX and is added straight to y (+0x3C, 24.8
 ## px, y down). The game's ground test FUN_020214C4 (camera update, later in the same frame) clamps the feet to the
 ## floor line (effect pool +0x4DEE, s16 px; feet = (y >> 8) - u8 +0x24F) and lands the fighter its own way (landing
@@ -6371,7 +6387,7 @@ func _fl_tick(f: int) -> void:
 
 
 # ---- SMASH KNOCKBACK (part 39, part 40) -----------------------------------------------------------------------------
-## Cheat SMASH KNOCKBACK (page 9 CHALLENGES, `cheats=smash_knockback`): after the game's collision pass FUN_0201E5BC,
+## Cheat SMASH KNOCKBACK (page 10 CHALLENGES, `cheats=smash_knockback`): after the game's collision pass FUN_0201E5BC,
 ## every fighter that lost HP in it (FUN_020293A4, noted in `_kb_hit`) and was knocked back (hit reaction 0xF-0x12 or
 ## KO 0x33, moving) gets its push multiplied by k = 1 + KB_K * (HP lost / max HP), so at full HP nothing changes and
 ## near a KO it flies about KB_K + 1 times as far: the push is FUN_020213A8(victim, s, -0x40, 0, dir) (velocity
@@ -6535,7 +6551,7 @@ func _kb_draw() -> bool:
 	return drew
 
 # ---- ULTRA INSTINCT (part 39) ---------------------------------------------------------------------------------------
-## Cheat ULTRA INSTINCT (page 10 POWERS since part 41, page 5 before; `cheats=ultra_instinct`): the parry; everything is in
+## Cheat ULTRA INSTINCT (page 9 POWERS since part 41, page 5 before; `cheats=ultra_instinct`): the parry; everything is in
 ## scripts/qol/qol_ultra.gd. Hooks here: f_0202954C (tick for player 1's active fighter, both players' in MP),
 ## f_0201E5BC (before / after the collision pass), f_0202A40C (reset), _fx_any / _fx_draw (its flashes).
 const _ULTRA_GD := preload("res://scripts/qol/qol_ultra.gd")
@@ -6635,6 +6651,22 @@ var _rz_busy := false
 
 
 func f_0202aeb4(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	var nd := -1
+	if cheats != null and not _rz_busy and _on("nondirectional") and _helped(param_1):
+		nd = _nd_pick(param_1)                         # part 42 NONDIRECTIONAL: the held direction's angle, or -1
+	if nd < 0:
+		return _aeb(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	var real7: int = _ld(param_1 + 7, 1, false)
+	_st(param_1 + 7, 1, nd)                            # the dispatcher (and RANDOMIZER's calls) see the chosen angle;
+	var rn := _aeb(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)   # the VM keeps +0x20 = it
+	if _nd_dbg:
+		print("ND f%d fighter %x angle %x -> %x: act %x" % [_port_frame(), param_1, real7, nd, _ld(param_1 + 6, 1, false)])
+	_st(param_1 + 7, 1, real7)                         # (the game rewrites +7 after the handler anyway)
+	return rn
+
+
+## the dispatcher with RANDOMIZER's handling (part 39); NONDIRECTIONAL wraps it (f_0202aeb4)
+func _aeb(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
 	if cheats == null or _rz_busy or not _on("randomizer") or not _helped(param_1):
 		return super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 	var held: int = _ld(param_1 + 0x270, 2, false)
@@ -6684,6 +6716,57 @@ func f_0202aeb4(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4:
 		r = super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 	_rz_busy = false
 	return r
+
+
+# ---- NONDIRECTIONAL (part 42) --------------------------------------------------------------------------------------
+## Cheat NONDIRECTIONAL (page 5 FIGHTING, `cheats=nondirectional`): X+A with a direction held picks the super variant
+## by that direction instead of the angle to the enemy. The dispatcher FUN_0202AEB4 (X+A held, R not, not Y+B) tests the
+## ultimate (FUN_02026A8C: direction rule u8 blk+0x23 = 0 level / 1 up / 3 down / 4 any, blk = [f+0x50]) and then the
+## super with q = ((+7 + 0x20) & 0xFF) >> 6 (cost u8 blk+0x1F+q, unlock bit q of +0x274); on a start +0x20 = +7 and VM op
+## 4 jumps to the up / level / down script by +0x20 (DATA_NOTES part 42). Here: when the super (or the ultimate) WOULD
+## start with the held direction's angle (_nd_pick, pure reads), +7 = that angle for the dispatcher call (and
+## RANDOMIZER's calls inside it). Up = 0x3C / 0x44, Down = 0xC4 / 0xBC (not 0x40 / 0xC0: the VM's mirror boundary would
+## turn the fighter round), Left / Right = level TOWARD the enemy (0 / 0x80; a literal Left turned away from it). When
+## the red-HP ultimate is possible but its rule refuses the real angle, any held direction fires it (the rule's own
+## direction). No direction held / the precheck fails: the game's own behaviour. Player 1 (both humans in MP); never the
+## CPU. LAN: the held word (lockstep input) and battle RAM only. Debug: `nddbg`.
+var _nd_dbg := Game.args.has("nddbg")
+
+
+func _nd_pick(f: int) -> int:
+	var held: int = _ld(f + 0x270, 2, false)
+	if (held & 0x401) != 0x401 or (held & 0x100) != 0 or (held & 0x802) == 0x802 or (held & 0xF0) == 0:
+		return -1
+	var right: bool = ((_ld(f + 7, 1, false) + 0x40) & 0xFF) < 0x80   # the enemy is to the right (the VM's mirror rule)
+	var side: int = _ld(f + 0x1A, 1, false) & 1
+	var teams: int = _ld(TEAMS, 4, false)
+	var ki: int = _ld(teams + side * 0x8E8 + 0x8D0, 2, false) >> 8   # (unsigned: 200 % = 0xC800)
+	var blk: int = _ld(f + 0x50, 4, false)
+	var unl: int = _ld(f + 0x274, 4, false)
+	var d: int
+	if (held & 0x40) != 0:
+		d = 0x3C if right else 0x44
+	elif (held & 0x80) != 0:
+		d = 0xC4 if right else 0xBC
+	else:
+		d = 0 if right else 0x80
+	var opp := f_02027bd0(side)
+	if (unl & 0x40) != 0 and _ld(f + 0x24E, 1, true) == 0 and ki > 0x95 and opp != 0 \
+			and (_ld(opp + 0x250, 4, false) & 0x400) == 0 and ((_ld(opp + 6, 1, false) - 0x2E) & 0xFF) > 1 \
+			and _ld(teams + 0x1675, 1, true) == 0 and f_0201c594(side) != 0:
+		match _ld(blk + 0x23, 1, false):                # the ultimate is possible: its own direction
+			0:
+				return 0 if right else 0x80
+			1:
+				return 0x3C if right else 0x44
+			3:
+				return 0xC4 if right else 0xBC
+			_:
+				return d
+	var q: int = ((d + 0x20) & 0xFF) >> 6
+	if _ld(blk + 0x1F + q, 1, false) <= ki and (unl & (1 << q)) != 0:
+		return d
+	return -1
 
 
 ## [record bytes, team block tail +0x8C8..+0x8E8 (active member, assists, ki, Team Arts counters)]
@@ -6860,7 +6943,7 @@ func _se_test() -> void:
 
 
 # ---- HOT POTATO (part 40) -------------------------------------------------------------------------------------------
-## Cheat HOT POTATO (page 9 CHALLENGES, `cheats=hot_potato`): everything is in scripts/qol/qol_potato.gd; hooks here:
+## Cheat HOT POTATO (page 10 CHALLENGES, `cheats=hot_potato`): everything is in scripts/qol/qol_potato.gd; hooks here:
 ## f_0202954C (tick once per battle frame), f_0201E5BC (`_hp_coll` while the collision pass runs) + f_020293A4 (hit():
 ## a hit inside the pass may pass the bomb), f_0202A40C (reset), _fx_any / _fx_draw (the bomb + countdown). The art is
 ## BOMB RAIN's (`_bomb_img`, the shared texture block).
@@ -6880,7 +6963,7 @@ var _vp_in := false                      ## inside the measured damage call (als
 
 
 # ---- TIME SKIP (part 41) -------------------------------------------------------------------------------------------
-## Cheat TIME SKIP (page 10 POWERS, `cheats=time_skip`): everything is in scripts/qol/qol_timeskip.gd; hooks here:
+## Cheat TIME SKIP (page 9 POWERS, `cheats=time_skip`): everything is in scripts/qol/qol_timeskip.gd; hooks here:
 ## f_0202954C (tick once per battle frame; the frozen side's fighter runs freeze_step instead), f_020294B8 (its support
 ## only drawn), f_02021F54 (its objects frozen around the effect loop), f_0201E224 / f_02019594 (body push / tether
 ## cannot move it), f_0202A40C (reset), _fx_any / _fx_draw (tint, skipper copy, rings).
@@ -6908,8 +6991,22 @@ func f_0201e224(param_1: int = 0, param_2: int = 0, _x2: int = 0, _x3: int = 0, 
 	return r
 
 
+# ---- Z-VANISH (part 42) --------------------------------------------------------------------------------------------
+## Cheat Z-VANISH (page 9 POWERS, `cheats=z_vanish`): everything is in scripts/qol/qol_zvanish.gd; hooks here:
+## f_0202954C (tick for each active fighter before it runs), f_0202A40C (reset), _fx_any / _fx_draw (afterimages).
+const _ZV_GD := preload("res://scripts/qol/qol_zvanish.gd")
+var _zv = null                           ## created the first time a battle frame runs with the cheat on
+
+
+# ---- BODY CHANGE (part 42) ---------------------------------------------------------------------------------------
+## Cheat BODY CHANGE (page 9 POWERS, `cheats=body_change`): everything is in scripts/qol/qol_bodychange.gd; hooks here:
+## f_0202954C (tick once per battle frame), f_0202A40C (reset), _fx_any / _fx_draw (countdown, ray, glow).
+const _BC_GD := preload("res://scripts/qol/qol_bodychange.gd")
+var _bc = null                           ## created the first time a battle frame runs with the cheat on
+
+
 # ---- DRAGON BALL HUNT (part 41) -------------------------------------------------------------------------------------
-## Cheat DRAGON BALL HUNT (page 9 CHALLENGES, `cheats=dragon_balls`): everything is in scripts/qol/qol_dragonballs.gd;
+## Cheat DRAGON BALL HUNT (page 10 CHALLENGES, `cheats=dragon_balls`): everything is in scripts/qol/qol_dragonballs.gd;
 ## hooks here: f_0202954C (tick once per battle frame), f_0201E5BC (`_db_coll`) + f_020293A4 (hit(): the HP lost, as
 ## VAMPIRE measures it: a big hit drops a ball), f_0202A40C (reset), _fx_any / _fx_draw. The art is the game's own
 ## (read from the player's ROM), kept in the shared texture block (qol_texblock.gd, part 41: 12 KiB).

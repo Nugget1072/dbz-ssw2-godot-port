@@ -3302,3 +3302,66 @@ KO swap, pause, WIN; zoom 0 + mirror; zoom 4), `sky_built.png` = the built BG3 p
 - **VAMPIRE / TIME SKIP / DRAGON BALL HUNT** (port cheats, V): heals 2/5 of the HP lost measured around FUN_020293A4 (the
   other damage cheats included); a skip of 120 battle frames lets ~6 combo hits land on the frozen fighter, which plays
   one reaction afterwards; a 400+ HP hit (ki blast 432, dash 1080, heavy 1350) drops a ball. All LAN-identical. | H |
+
+## Session 2, part 42 findings (super variants by direction, Z-VANISH, part 42 cheats) — V = port verified, C = code read
+- **Super variant = VM op 4** (H, C+V): every fighter's 0x2C (charge) and 0x2D (fire) script starts with the
+  10-byte header and op 4 "goto by direction" (66 bytes: `04 xx` + 16 u32 targets from the 'c' chunk start). The VM
+  (FUN_02022930) reads d = +0x20 while +0xE & 8 (set by the dispatcher FUN_0202AEB4 for 0x2C / 0x2E and again by
+  FUN_0202BB08 0x2C->0x2D / FUN_0202BA78 0x2E->0x2F; FUN_02021B4C clears +0xE), else +7; s = ((d+0x40)&0xFF)>>3,
+  index = 15-s (s < 16) or s-16 (s >= 16, mirrored: ops 2/3 set +0x12 |= 1). 0 = straight up, 7/8 level, 15 down.
+  All 26 fighters: 3 variants, 0x2C groups 0-3 up / 4-11 horizontal / 12-15 down (Frieza 10, Cell 15: 0-4 / 5-10 /
+  11-15); 0x2D adds aim sub-groups (horizontal 4-5 / 6-9 / 10-11 for most). 0x2E / 0x2F have no op 4. Goku:
+  0x2C 0x13B4 -> 0x1404 / 0x1428 / 0x144C (volley / Kamehameha / Spirit Bomb). | H |
+- **+7 vs the dispatcher** (H, C+V): +7 = FUN_02021488(opp, f) (angle fighter -> opponent, 0 right, 0x40 up) is written
+  by FUN_0202954C AFTER the action handler (so the dispatcher sees last frame's value) and before the VM. The X+A
+  branch uses q = quadrant of +7 for the super (cost u8 blk+0x1F+q, unlock bit q of +0x274; the ki is spent later by
+  VM op 0x48) and the ultimate rule (blk+0x23: 0 horizontal, 1 up, 3 down, 4 any; per fighter: 0 for ids 0,1,3,4,8,
+  14,17,18,19,22,23,24; 1 for 5,15,21; 3 for 7,9,10,11; 4 for 2,6,12,13,16,20,25). Costs are 50 % for all four
+  quadrants on every fighter (level 0 blocks). Held directions are not read by the X+A branch nor by the VM (V: same
+  script for any held direction). Fall-throughs after a refused super (melee / dash / guard) also use +7. | H |
+- **Projectiles and the angle** (H, C+V): plain projectiles take the owner's live +7 at their first frame
+  (FUN_020209E0), beam objects start at the owner's +0x20 quadrant and turn toward the opponent (FUN_0201E95C).
+- **NONDIRECTIONAL prototype** (V): +7 replaced around the dispatcher call by a direction from the held D-pad
+  (up 0x3C / 0x44, down 0xC4 / 0xBC, horizontal 0x00 / 0x80 by facing) picks the variant (down Spirit Bomb from
+  below, Kamehameha from below / beside, up volley from beside) and fires Goku's rule-0 ultimate from below with
+  Right held; literal 0x80 with the enemy on the right turns the fighter round and fires away. | H |
+- **Hit reactions** (H, C+V): 0x0E = guard stagger (FUN_0202BFF8, B held keeps it), 0x0F light (stun 0) / 0x11 heavy
+  (stun 10 / 20 dash attack, 10 / 60 shots) both FUN_0202BCD0, 0x10 (FUN_02016A5C scripted knock-away, stun 60) / 0x12
+  (victim after a Team Arts sequence, FUN_020287E8) FUN_0202BC08 (falling, +0x2A += 0x20); 0x10 / 0x12 landing with
+  vx 0 -> SE 0x10 + action 0x16 (FUN_020214C4). Ki-blast victims carry +0x250 = 0x4002 (V). | H |
+- **FUN_02021340(o)** (H, C): stop: +0x21 = +7, +0x22/+0x24/+0x26 and velocity / target / accel +0x28..+0x32 = 0.
+- **Combo state** (H, C): FUN_02029804(attacker) = team RUSH +0x8E0 = 1 when attacker u8 +0x257 == 0 else +1 (at 3:
+  4 objects 0x3E-0x41 spawned, likely the RUSH display), then +0x257 = 12 (counts down in FUN_0202954C, not during +0x250 & 0x400). Clearing the
+  attacker's +0x257 ends the combo (next hit RUSH 1, next Y a fresh 0x1C).
+- **+0x250 bits** (H, C scan of every & / | on +0x250): 0x40 = skip collision registration (read only by FUN_0202954C,
+  set only by R+B action 0x19 FUN_0202BF70 as 0x68 with 0x20 / 8); 0x80 = not grabbable: FUN_02026D40 (throw range
+  test of Y+B FUN_0202B698 and grab supers FUN_02028DDC) and FUN_0202700C (Team Arts start) refuse such a target (set by
+  FUN_0202759C, FUN_020283A8); 0x1000 = set when an attack / step dash starts (FUN_0202AEB4, FUN_0202C4A0; seen with 0x1C), read by the AI (FUN_0202DCE0, FUN_0202DA14,
+  FUN_0202EF9C); 0x40000 = ki blast / super shooting (FUN_0202AEB4, FUN_0202C02C).
+- **R+B** (H, C): 0x19 FUN_0202BF70 (anim end: effect 0x11 tied to action 0x1A, stop, action 0x1A, +0x250 |= 0x68) ->
+  0x1A FUN_0202BEEC (R+B held and ki: spend 0x32 / frame mode 1; else stop + 0x1B) -> 0x1B FUN_0202D100 (neutral at the
+  animation end). Cost 30 % at the start (FUN_0202C02C 0x1E00 mode 1). | M what it looks like |
+- **Throw range** (H, C): FUN_02026D40(thrower, target, range u8 blk+0x1D): thrower +0x274 & 0x10, target +0x250 &
+  0x408 == 0 and & 0x80 == 0, target action <= 0x2D or 0x32, supers allowed (teams+0x1675 == 0), a type-2 box in the
+  target's frame (FUN_0201E19C), thrower not in a hit (+0x250 & 2), distance u32 [[0x020DE3A4]+8] < range. Not
+  collision based (+0x250 & 0x40 does not protect).
+- **Stage bounds** (H, C): pool [0x020DE3CC] +0x4DE7 bit 0 = bounded (FUN_020218FC clamps x to [+0x4DE8, +0x4DEC],
+  +0xC |= 2); clear = endless (both fighters shifted together, effects by FUN_02021DD4). V: stage 0 [1152, 0, 2944,
+  4096], stage 7 [640, 2800, 3456, 4096], Free Battle default stage endless [0, 0, 16384, 8192].
+- **Facing** (H, C+V): +7 = FUN_02021488(opp, f) at the end of FUN_0202954C; sprite mirror +0x12 bit 0 set / cleared
+  by x order at the end of FUN_02029AB0 unless +0xE & 8 (toggled by +0xE & 2); FUN_02021440(o) = facing right
+  (+7, or +0x20 when +0xE & 8, in the right half). A fighter moved by the port faces correctly the same frame.
+- **VM warp ops** (H, C FUN_02022930): 0x1C `s16 dx, s16 dy` self = opponent + (dx, dy); 0x1D `u16 r, u8 a` opponent +
+  rÂ·(cos, -sin)a; 0x67 `s16 dx, s16 dy` opponent + (dx Â· FUN_02021440(opp) sign, dy) (in front / behind); 0x56 / 0x57 =
+  0x1C / 0x1D relative to the own active fighter; 0x78 / 0x79 spawn at opponent + offset. Users not identified.
+- **Z-VANISH prototype** (V, research agent zv1-zv4): out of 0x0F-0x12, B edge on held (+0x270, sampled per battle
+  frame; +0x26C loses presses in hit stop): stop, stun 0, +0x250 = 0, action 5 / 0, 40 px behind the attacker (walls,
+  floor + u8 +0x24F), +0x250 |= 0x40 for <= 20 frames until it acts, attacker +0x257 = 0, ki 0x3200 mode 1: CPU
+  re-targets, combos again, throws, KO / win pose / results as usual; refused during supers (attacker 0x2D). The AI
+  holds B in ~1/3 of its hit-stun entries (guard intent): CPU vanishes need a port roll. | H |
+- **Ki is u16** (H, V nddbg): team +0x8D0 must be read unsigned (200 % = 0xC800 is negative as s16): NONDIRECTIONAL's
+  first precheck read it signed and refused every super with full ki.
+- **Part 42 port cheats** (V): NONDIRECTIONAL (+7 = held direction's angle around FUN_0202AEB4 when the precheck
+  passes; Down at level -> Goku's Spirit Bomb, Right with red HP below the enemy -> ultimate), Z-VANISH (the prototype
+  above as a cheat: B edge in 0xF-0x12, 50 %, afterimage), BODY CHANGE (HP shares swapped every 1200 battle frames, the
+  life bars follow by themselves). All LAN-identical (p42_lan1 / p42_lan2), no script error in the local-MP mixes. | H |

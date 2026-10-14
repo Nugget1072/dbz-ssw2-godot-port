@@ -16,7 +16,7 @@ const BUTTONS := [
 	["ds_l", "L", "POWER UP"],
 	["ds_r", "R", "CHARGE KI"],
 	["ds_start", "START", "PAUSE"],
-	["ds_select", "SELECT", "(UNUSED)"],
+	["ds_select", "SELECT", "TIME SKIP"],   # part 42 (was "(UNUSED)": the game has no battle use; the TIME SKIP cheat does)
 	["ds_up", "UP", "MOVE UP"],
 	["ds_down", "DOWN", "MOVE DOWN"],
 	["ds_left", "LEFT", "MOVE LEFT"],

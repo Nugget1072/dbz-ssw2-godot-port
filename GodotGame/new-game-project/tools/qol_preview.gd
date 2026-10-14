@@ -146,19 +146,28 @@ func _ready() -> void:
 		["p39_fighting", func(): _menu.open(); _presses(256, 4); _presses(128, 5)],
 		["p39_fighting_on", func(): _press(32); _press(1)],
 		["p39_characters", func(): _menu.open(); _presses(256, 6); _presses(128, 5)],
-		["p39_challenges", func(): _menu.open(); _presses(512, 5); _presses(128, 2)],   # (part 41: page 9 is 5 x L now)
+		["p39_challenges", func(): _menu.open(); _presses(512, 4); _presses(128, 2)],   # (part 42: CHALLENGES = page 10 = 4 x L)
 		["p39_challenges_kb", func(): _press(128); _press(32); _press(1)],
 		# part 40: RICOCHET KI (page 6 row 4), HOT POTATO (page 9 row 5)
 		["p40_ki", func(): _menu.open(); _presses(256, 5); _presses(128, 3)],
-		["p40_potato", func(): _menu.open(); _presses(512, 5); _presses(128, 4)],
+		["p40_potato", func(): _menu.open(); _presses(512, 4); _presses(128, 4)],
 		# part 41: POWERS (page 10: ULTRA INSTINCT, VAMPIRE, TIME SKIP), DRAGON BALL HUNT (page 9 row 6)
-		["p41_powers", func(): _menu.open(); _presses(512, 4); _presses(128, 2)],
+		["p41_powers", func(): _menu.open(); _presses(512, 5); _presses(128, 2)],   # (part 42: POWERS = page 9)
 		["p41_timeskip", func(): _press(128)],
 		["p41_timeskip_on", func(): _press(32); _press(1)],
-		["p41_db", func(): _menu.open(); _presses(512, 5); _presses(128, 5)],
+		["p41_db", func(): _menu.open(); _presses(512, 4); _presses(128, 5)],
 		["p41_db_on", func(): _press(32); _press(1)],
 		["p41_weird1", func(): _menu.open(); _presses(512, 3)],
 		["p41_help", func(): _menu.open(); _press(64)],
+		# part 42: NONDIRECTIONAL (page 5 row 6), POWERS page 9 (Z-VANISH row 3, BODY CHANGE row 5), CHALLENGES page 10
+		["p42_fighting", func(): _menu.open(); _presses(256, 4); _presses(128, 5)],
+		["p42_zvanish", func(): _menu.open(); _presses(512, 5); _presses(128, 2)],
+		["p42_bodychange", func(): _presses(128, 2)],
+		["p42_bodychange_on", func(): _press(32); _press(1)],
+		["p42_challenges", func(): _menu.open(); _presses(512, 4)],
+		["p42_ctrl_a", func(): _menu.open(); _press(256); _press(1); _press(128)],   # CONTROLS: the A row (help text)
+		["p42_ctrl_b", func(): _press(128)],
+		["p42_ctrl_sel", func(): _menu.open(); _press(256); _press(1); _press(256)],   # CONTROLS 2: SELECT
 		["p40_potato_on", func(): _press(32); _press(1)],
 		["weird_on", func(): _press(128); _press(32); _press(1); _press(128); _press(128)],                                    # L from page 1: CHEATS 3
 		["cheats3_on", func(): _press(128); _press(32); _press(1); _press(128); _press(128); _press(128); _press(128)],

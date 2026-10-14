@@ -197,7 +197,7 @@ func draw(idx: Dictionary, cv: Array) -> bool:
 			var digits := ":" + str(n[1])
 			var w := (digits.length() * 6 - 1) * ps
 			var sx := clampf(cv[2] + z * (float(n[3]) - cv[0]), w * 0.5 + 2.0, 254.0 - w * 0.5)
-			var sy := clampf(cv[3] + z * (float(n[4]) - cv[1]) - rise, 30.0, 180.0)
+			var sy := clampf(cv[3] + z * (float(n[4]) - cv[1]) - rise, 64.0, 150.0)   # (part 42 QA: never in the HUD / RUSH band, y < 57, nor on the HUD rows below)
 			var al := 31 if age < NUM_LIFE - 14 else clampi(31 * (NUM_LIFE - age) / 14, 1, 30)
 			g._dn_k = 0x800 + ((int(n[5]) * 37 + ps * 5) & 0x7FF)
 			g._dn_emit(digits, ps, floorf(sx + w * 0.5) if mirror else floorf(sx - w * 0.5), floorf(sy - 3.5 * ps), mirror, GREEN_TOP, GREEN_BOT, al)

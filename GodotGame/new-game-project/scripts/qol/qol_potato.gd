@@ -1,5 +1,5 @@
 extends RefCounted
-## HOT POTATO (part 40, cheat page 9 CHALLENGES; QoLSettings cheat "hot_potato", test flag `cheats=hot_potato`). Owned by
+## HOT POTATO (part 40, cheat page 10 CHALLENGES; QoLSettings cheat "hot_potato", test flag `cheats=hot_potato`). Owned by
 ## QoLGame (`# ---- HOT POTATO (part 40)`), which calls tick() once per battle frame (its FUN_0202954C override), hit()
 ## for every fighter that loses HP inside the game's collision pass FUN_0201E5BC, draw() after the game's sprite list
 ## (_fx_draw) and reset() at every battle load. Nothing here runs with the cheat off.

@@ -1,5 +1,5 @@
 extends RefCounted
-## DRAGON BALL HUNT (part 41, cheat page 9 CHALLENGES; QoLSettings cheat "dragon_balls", test flag
+## DRAGON BALL HUNT (part 41, cheat page 10 CHALLENGES; QoLSettings cheat "dragon_balls", test flag
 ## `cheats=dragon_balls`). Owned by QoLGame (`# ---- DRAGON BALL HUNT (part 41)`), which calls tick() once per battle
 ## frame (its FUN_0202954C override), hit() for every fighter that loses HP inside the game's collision pass
 ## FUN_0201E5BC, draw() after the game's sprite list (_fx_draw) and reset() at every battle load. Nothing here runs
@@ -22,8 +22,9 @@ extends RefCounted
 ## (player 1's team starts the fight with N balls), `dbhere=DX` (balls appear DX px right of player 1).
 
 const SEED := 0xDB707
-const FIRST_WAIT := 240                  ## running battle frames from the fight's start to the first ball
-const NEXT_WAIT := 150                   ## from a grab to the next ball
+const FIRST_WAIT := 300                  ## running battle frames from the fight's start to the first ball (part 42: was 240)
+const NEXT_WAIT := 480                   ## from a grab to the next ball (part 42: was 150, the user: "too quickly")
+const NEXT_JITTER := 120                 ## + 0..NEXT_JITTER frames (seeded)
 const REST := 420                        ## after a wish
 const PICK_R := 26                       ## world px from the fighter's body centre
 const BODY_UP := 12                      ## world px from the record's y up to the body centre
@@ -282,7 +283,7 @@ func _grab(side: int, r: int, b: Dictionary, pf: int) -> void:
 	_fx.append([2, 0, b["x"] / 256.0, b["y"] / 256.0, k])
 	g.f_02029e3c(r, PICK_SE)
 	grabs += 1
-	_wait = NEXT_WAIT
+	_wait = NEXT_WAIT + _rng.randi_range(0, NEXT_JITTER)
 	if _dbg:
 		print("DB f%d side %d grabs the %d-star ball (holds %d)" % [pf, side, k + 1, _held[side].size()])
 
@@ -425,7 +426,7 @@ func draw(idx: Dictionary, cv: Array) -> bool:
 			_ball(b["k"], sx, sy, 36, 31, (_age / 8) % 6 == 0 or blink)
 		elif hud:
 			var mx := clampf(sx, 10.0, 246.0)
-			var my := clampf(sy, 64.0, 150.0)
+			var my := clampf(sy, 64.0, 140.0)                # (part 42 QA: clear of the HUD rows at y 157-169)
 			_hball(b["k"], mx, my, 26)
 			var d := (Vector2(sx, sy) - Vector2(mx, my)).normalized()
 			for j in 2:

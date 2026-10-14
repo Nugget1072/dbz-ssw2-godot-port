@@ -1,5 +1,5 @@
 extends RefCounted
-## TIME SKIP (part 41, cheat page 10 POWERS; QoLSettings cheat "time_skip", test flag `cheats=time_skip`), after Hit's
+## TIME SKIP (part 41, cheat page 9 POWERS; QoLSettings cheat "time_skip", test flag `cheats=time_skip`), after Hit's
 ## Time Skip (and ZA WARUDO). Owned by QoLGame (`# ---- TIME SKIP (part 41)`); nothing here runs with the cheat off.
 ## SELECT (unused in battle, DATA_NOTES part 41) with at least COST ki (100 %) in a free moment (neutral / moving /
 ## guarding / charging / attacking, not in hit stun, a throw, a super or a sequence) spends COST and stops the

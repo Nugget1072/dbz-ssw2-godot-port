@@ -1,5 +1,5 @@
 extends RefCounted
-## GREEN DEMON (part 36, cheat page 9 CHALLENGES; QoLSettings cheat "green_demon", test flag `cheats=green_demon`),
+## GREEN DEMON (part 36, cheat page 10 CHALLENGES; QoLSettings cheat "green_demon", test flag `cheats=green_demon`),
 ## after the fan-made Super Mario 64 challenge. Owned by QoLGame (`# ---- GREEN DEMON (part 36)`), which calls tick()
 ## once per battle frame (its FUN_0202954C override), draw() after the game's sprite list (_fx_draw), shift() when the
 ## game moves every effect object (FUN_02021DD4: stage wrap-around, STAGE SHUFFLE) and reset() at every battle load.
