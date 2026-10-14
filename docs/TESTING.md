@@ -344,3 +344,25 @@ Contact sheets: a scratch Godot script (Image.get_region + blit_rect, NEAREST zo
 - Menu: `tools/qol_preview.tscn` states `p39_fighting(_on)`, `p39_characters`, `p39_challenges(_kb)` → 6 rows on pages
   5 and 7, 4 on page 9, descriptions fit the upper box.
 - Off: `offcheck` PASS (21/21 + 1382 CHT, 221/221).
+
+## 31. Part 40 (RANDOMIZER ultimates, FLIGHTLESS jump, SMASH KNOCKBACK off camera, HOT POTATO, RICOCHET KI)
+- RANDOMIZER ultimates: `ssw2.py run rz6 --battle --headless --to 6500 --inputs <X+A every 250 frames from 4600>
+  p1hp=4300:1500 cheats=randomizer,infinite_ki,infinite_health cheatdbg rzseed=5` → "super 2e as 0 -> 19 starts 2e"
+  (Metal Cooler's own ultimate, 597 frames); `rz7` (+ `rzult`, X+A every 700) → Teen Gohan 2e, then Majin Vegeta
+  "starts 2e (forced)" (its own test refused): its ultimate plays and KOs the CPU (`rz8` captures: cut-in, Final
+  Explosion, 31 RUSH, face icon). Before the fix the test's 150 % was spent and nothing (or a plain super) started.
+- FLIGHTLESS jump: `fl3 / fl4 --inputs "4300:Up:4,4380:Up:4,4460:Up:40" cheats=flightless,infinite_health fldbg` →
+  peak 37 px, ~32 frames in the air (part 39: ~9 px); captures show the arc. Parameter sweep: scratch simulation.
+- SMASH KNOCKBACK: `kb4 --battle --headless --to 7000 p1hp=4100:1500 cheats=smash_knockback,infinite_health cheatdbg
+  kbdbg` → "KB … free" (tether undone, camera centre kept near the CPU), "off camera at x,y: -130 HP" every 20 frames
+  (INFINITE HEALTH keeps the HP); `kb5` captures: the face-icon marker at the top edge, red on each tick, under the HUD.
+- HOT POTATO: `hp1 --headless --to 6500 --inputs <Y every 30 frames> cheats=hot_potato hpdbg` → "fuse lit", "passed"
+  both ways, "BOOM … HP 8506 / 13000" (30 %); `hp2` / `hp3` captures: countdown over the bomb over the holder's head,
+  kept below the HUD, the game's explosion.
+- RICOCHET KI: `rc1 --headless --to 5100 --inputs <A every 25 frames> cheats=ricochet_ki,infinite_ki,infinite_health
+  rcdbg` → x / y bounces at the screen edges, up to 3 per shot, none outside the fight (part 40 fix: battle state 7);
+  `rc2` captures: blasts bouncing back at the CPU.
+- LAN: `lan_pair.ps1 -tag p40_lan -cheats "randomizer,flightless,smash_knockback,hot_potato,ricochet_ki,infinite_ki"`
+  (+ blasts / jumps / supers both sides) → lan_cmp exit 0, the same 31 event lines on both sides.
+- Menu: preview states `p40_ki`, `p40_potato(_on)`, `p39_challenges(_kb)` (all descriptions fit).
+- Off: `offcheck` PASS (21/21 + 1382 CHT, 221/221).

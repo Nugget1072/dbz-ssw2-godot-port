@@ -87,6 +87,12 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 | `uiauto` | ULTRA INSTINCT: every collision pass is a parry window for player 1 (parries every hit: captures of the effects) |
 | `uise=N` | ULTRA INSTINCT parry sound (FUN_02029E3C id, default 0x21; -1 = none) |
 | `rzseed=N` · `rzto=ID` | RANDOMIZER picks (seed) / always this fighter id (0-25) |
+| `rzult` | (part 40) player 1's once-a-battle ultimate flag (+0x24E) cleared every frame: many ultimates in one run |
+| `p1hp=F:HP` · `p2hp=F:HP` | (part 40) set player 1's / 2's active fighter's HP at port frame F (red-HP ultimates: `p1hp=4300:1500` + `infinite_health`) |
+| `fldbg` | FLIGHTLESS: per-frame height / fall speed / the game's vertical speed of every airborne active fighter |
+| `kbdbg` | SMASH KNOCKBACK: launched fighters + camera centre per frame (tether undone), off-camera damage ticks |
+| `hpdbg` · `hpseed=N` · `hpfuse=N` · `hpwait=N` | HOT POTATO: light / pass / BOOM lines; its RNG; fuse frames; frames to the first fuse |
+| `rcdbg` | RICOCHET KI: every bounce (shot, count, screen position, axis, new direction) |
 | `setest[=A,B,…]` | sound test (part 39): from port frame 4150 the fight is held in hit stop (silent), from 4200 battle sound k plays every 60 frames (all 0-0x31, or the listed ids); "SETEST f… se …" lines; pair with a capture + `--cfg` with `[sound] music=false` (absolute path) |
 
 ## Weird stuff

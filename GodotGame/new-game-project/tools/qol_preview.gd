@@ -148,6 +148,10 @@ func _ready() -> void:
 		["p39_characters", func(): _menu.open(); _presses(256, 6); _presses(128, 5)],
 		["p39_challenges", func(): _menu.open(); _presses(512, 4); _presses(128, 2)],
 		["p39_challenges_kb", func(): _press(128); _press(32); _press(1)],
+		# part 40: RICOCHET KI (page 6 row 4), HOT POTATO (page 9 row 5)
+		["p40_ki", func(): _menu.open(); _presses(256, 5); _presses(128, 3)],
+		["p40_potato", func(): _menu.open(); _presses(512, 4); _presses(128, 4)],
+		["p40_potato_on", func(): _press(32); _press(1)],
 		["weird_on", func(): _press(128); _press(32); _press(1); _press(128); _press(128)],                                    # L from page 1: CHEATS 3
 		["cheats3_on", func(): _press(128); _press(32); _press(1); _press(128); _press(128); _press(128); _press(128)],
 		["cheats3_header", func(): _press(128); _press(64); _press(64); _press(64); _press(64); _press(64); _press(64)],

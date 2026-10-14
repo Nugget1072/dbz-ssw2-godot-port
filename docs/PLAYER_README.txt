@@ -151,6 +151,8 @@ CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; th
   INFINITE KI ...... the ki gauge stays at 200 %: ki blasts and supers cost nothing.
   KI HOMING ........ player 1's ki blasts curve toward the enemy (beams are not affected).
   TRIPLE KI BLASTS . every ki blast you fire becomes three shots in a fan (beam attacks are not changed).
+  RICOCHET KI ...... your ki blasts bounce off the edges of the screen and off the floor, up to 3 times each,
+                     instead of flying away, so missed shots come back (beams are not changed).
   INFINITE ASSISTS . player 1's support character can be called again and again.
   ASSIST SPAM ...... call your support again while one is still fighting: every call brings one more (up to 8
                      at once, each with its own attack). Supports are called by touching their portrait.
@@ -170,9 +172,10 @@ CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; th
   CHAOS SHUFFLE .... like CHARACTER SHUFFLE, but every second and right away. Supers, throws and grabs (yours or
                      the enemy's) and summoned helpers are let finish first. Your ki blasts in flight vanish at
                      each change. Wins over CHARACTER SHUFFLE.
-  RANDOMIZER ....... every super attack (X+A, and ultimates) is done by a random fighter: your fighter turns
-                     into another character the moment the super starts, does that character's super, and turns
-                     back when it is over (or at once if you are hit during it). HP stays the same.
+  RANDOMIZER ....... every super attack (X+A, and the red-HP ultimate attacks) is done by a random fighter:
+                     your fighter turns into another character the moment the super starts, does that character's
+                     super or ultimate, and turns back when it is over (or at once if you are hit during it). HP
+                     stays the same, and an ultimate costs its 150 % ki once.
  Page 8 STAGE & MUSIC
   RANDOM STAGE ..... every battle is fought on a random stage (with that stage's music).
   STAGE SHUFFLE .... every 10 seconds the battle moves to another random stage; fighters, HP and music go on.
@@ -192,11 +195,19 @@ CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; th
                      Watch the shadows on the floor and move away - they hurt both teams. Uses the game's own
                      explosion and sound. (It was a weird option before; now it is a cheat, so no scores or
                      records while it is on. A BOMB RAIN that was on in an older settings.cfg stays on.)
-  FLIGHTLESS ....... nobody can fly: fighters in the air (both teams) fall quickly back to the ground, so Up is
-                     only a short hop. Supers, ultimates and throws still play out in the air; afterwards the
-                     fighter falls again.
+  FLIGHTLESS ....... nobody can fly: fighters in the air (both teams) fall quickly back to the ground. Up from the
+                     ground is a jump (about half a fighter high). Supers, ultimates and throws still play out in
+                     the air; afterwards the fighter falls again.
   SMASH KNOCKBACK .. like Super Smash Bros.: the more HP a fighter has lost, the farther hits send them flying
-                     (no change at full HP, up to three times as far near a KO). Both teams.
+                     (no change at full HP, up to 2.4 times as far near a KO) - even out of the picture: the camera
+                     stays on the other fighter. A fighter off the screen loses a little HP every third of a second
+                     (it can be knocked out that way) until it gets back; a marker with its face at the edge of
+                     the screen shows where it is and flashes red at each loss. Both teams. (Stages with walls keep
+                     their walls.)
+  HOT POTATO ....... a few seconds into a fight a lit bomb lands on one fighter's head, with a big countdown over
+                     it. Land a hit on the other team to pass the bomb to them (it can't come straight back). When
+                     the countdown reaches 0 it explodes on whoever holds it: 30 % of max HP and a knock-down
+                     (guarding doesn't help). A new bomb comes a few seconds later. Both teams.
 WEIRD STUFF (settings pages 10-12, after the cheats; all OFF unless you turn them on; for fun)
  Page 10: BEVEL EMBOSS, TOUCH FUZZY, GAME BOY, MIRROR MODE, SCREEN SHAKE, CRT TV. Page 11: BLOOD, AFTERIMAGES,
  2ND FIDDLE, EPIC MODE, FLASHY KI, KO CONFETTI. Page 12: RAINBOW KI.

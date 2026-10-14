@@ -3228,3 +3228,26 @@ KO swap, pause, WIN; zoom 0 + mirror; zoom 4), `sky_built.png` = the built BG3 p
   the winner frozen (+0x800, camera mode != 0) until action 0x14 (swap back there), hits 0xF / 0x11 mid-super. | H |
 - **FLIGHTLESS / SMASH KNOCKBACK** (port cheats, V): +0x60 / frame (max 0x700) added to y of airborne active fighters;
   push × (1 + 2 · HP lost / max). | H |
+
+## Session 2, part 40 findings (ultimates, camera tether, jump) — V = port verified, C = code read
+- **Ultimate test spends the ki** (H, C+V): FUN_02026A8C(f) (dispatcher X+A, after the clash test) needs rec +0x274 &
+  0x40, the side's life bar SHOWN value (u8 [*(0x020DE3BC) + side·0x258 + 0xF4A]) < 0x17 (FUN_0201C594: "red HP"),
+  +0x24E == 0 (once per battle until something clears it), team ki > 0x95 %, the opponent not in a sequence (+0x250 &
+  0x400) nor in 0x2E / 0x2F, supers allowed (globals +0x1675), and the direction rule u8 blk+0x23: < 4 → the quadrant
+  of +7 (direction to the opponent: 0 right, 1 up, 2 left, 3 down) must be even with blk+0x23 == 0, or equal to it;
+  >= 4 any. On success it sets +0x24E = 1 and SPENDS 0x9600 (150 %) itself (FUN_02027950), then the dispatcher starts
+  0x2E (+0x250 = 0x40400, voice 0x20, common effect 0xF + FUN_0202216C(obj, 0, 4), stop). The part 39 RANDOMIZER put
+  only the record back: the 150 % was gone (user report). V: Metal Cooler / Teen Gohan pass their own test; Majin
+  Vegeta's refused (direction), started the dispatcher's way it plays fully (cut-in, Final Explosion). | H |
+- **Camera tether** (H, C): FUN_02019594(a, b) mode 0: centre = midpoint (px), d = hardware sqrt(dx² + (4dy/3)²);
+  zoom 0x100 below d 0xC0, else 0x14000 / (d + 0x80) clamped to 0x100; when < 0x80: angle FUN_020016D0(dx, 4dy/3) and
+  both fighters are put at the midpoint ± (0x1F8 = 504 px · cos, 0x17A = 378 px · sin) / 2 (when |4dy/3| < |dx|: x
+  set, else y set), or, when one has +0x250 & 0x20000, the other is placed relative to it; zoom = 0x80. Undoing the
+  writes (positions saved around the call) lets a fighter leave the picture; nothing else reads the pulled positions
+  in that frame. Bounded stages (0 / 2 / 7 / 12) keep their walls. | H |
+- **Jump** (V fldbg): the ground takeoff (Up in ground neutral) shows vy -1024 then -664 (action 1 while Up is held)
+  slowing by 21 / frame; under FLIGHTLESS's 0.375 px/f² pull it peaked at ~9 px; with -0.75 px/f extra lift and 0.125
+  px/f² while rising: 37 px, ~32 frames. | H |
+- **Plain shots and the camera** (V rcdbg): the handler FUN_020209E0 also runs outside the fight (port 3876-3908,
+  before battle state 7) with a camera that does not belong to it (screen x 57000+): RICOCHET KI bounces only in state
+  7. Shots keep living while off the picture long enough to come back after a bounce. | H |

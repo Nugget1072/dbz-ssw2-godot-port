@@ -48,6 +48,8 @@ func _on(name: String) -> bool:
 func f_020293a4(param_1: int = 0, param_2: int = 0, param_3: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
 	if _kb_on and param_2 > 0:
 		_kb_hit[param_1] = true                         # part 39 SMASH KNOCKBACK: scaled after the collision pass
+	if _hp_coll and param_2 > 0:
+		_hp.hit(param_1)                                # part 40 HOT POTATO: a hit by the holder's side passes it
 	if cheats != null and cheats.blood and param_2 > 0:
 		_blood_hit(param_1, param_2)                    # part 22 BLOOD: droplets (drawing only)
 	if cheats != null and cheats.screen_shake and param_2 > 0:
@@ -92,6 +94,10 @@ func f_0202954c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 		_br_tick()                                     # part 25 BOMB RAIN (once per battle frame)
 	if cheats != null and _on("green_demon"):
 		_gd_tick()                                     # part 36 GREEN DEMON (once per battle frame)
+	if cheats != null and _on("hot_potato"):
+		if _hp == null:
+			_hp = _POTATO_GD.new(self, _bomb_img)
+		_hp.tick(_port_frame())                        # part 40 HOT POTATO (once per battle frame)
 	if cheats != null:
 		_c39_tick(param_1)                             # part 39 FLIGHTLESS / ULTRA INSTINCT / RANDOMIZER (active fighters)
 	if cheats != null and _helped(param_1):            # part 27: side 0, and side 1 in an MP battle
@@ -154,7 +160,13 @@ func f_020209e0(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4:
 		_tri_before(param_1)
 		var r := super.f_020209e0(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 		_tri_after(param_1)
+		if cheats != null and _on("ricochet_ki") and _helped(param_1):
+			_rc_bounce(param_1)                        # part 40 RICOCHET KI
 		return r
+	if cheats != null and _on("ricochet_ki") and _helped(param_1):
+		var r40 := super.f_020209e0(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+		_rc_bounce(param_1)                            # part 40 RICOCHET KI
+		return r40
 	return super.f_020209e0(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 
 
@@ -297,6 +309,14 @@ func f_0202a40c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 		_ui.reset()                                    # part 39 ULTRA INSTINCT: no windows / flashes left
 	_rz.clear()                                        # part 39 RANDOMIZER: the records are built anew
 	_fl_v.clear()                                      # part 39 FLIGHTLESS
+	_fl_gnd.clear()
+	_fl_up.clear()
+	if _hp != null:
+		_hp.reset()                                    # part 40 HOT POTATO
+	_rc.clear()                                        # part 40 RICOCHET KI
+	_kb_free.clear()                                   # part 40 SMASH KNOCKBACK
+	_kb_off.clear()
+	_kb_flash.clear()
 	if cheats == null:
 		return r
 	var teams: int = _ld(TEAMS, 4, false)
@@ -1658,6 +1678,8 @@ func f_020225c8(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 	if _mp_end != 0:                                   # part 27 MP QA: the battle-end banner of an MP battle
 		param_2 = _mp_end_kind(param_2)
 	var r := super.f_020225c8(param_1, param_2, param_3, param_4, param_5, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	if r != 0 and not _rc.is_empty():
+		_rc.erase(r)                                   # part 40 RICOCHET KI: a new object in that slot
 	if r != 0 and cheats != null and _on("chaos_shuffle"):
 		_chaos_spawned(param_1, r)                     # part 19: objects of supers / throws / summons
 	if r != 0 and cheats != null and not _tri_busy and _on("triple_ki") and param_1 != 0 and param_4 != 0 \
@@ -2799,6 +2821,10 @@ func _fx_draw(fx: Variant) -> void:
 		drew = _gd.draw(cv) or drew                     # part 36 GREEN DEMON
 	if _ui != null and _on("ultra_instinct"):
 		drew = _ui.draw(idx, cv, step) or drew          # part 39 ULTRA INSTINCT flashes
+	if _hp != null and _on("hot_potato"):
+		drew = _hp.draw(idx, cv) or drew                # part 40 HOT POTATO bomb + countdown
+	if not _kb_off.is_empty() and _on("smash_knockback"):
+		drew = _kb_draw() or drew                       # part 40 SMASH KNOCKBACK edge markers
 	if cheats.damage_numbers:
 		drew = _dn_frame(cv) or drew                    # part 24 DAMAGE NUMBERS (on top of everything)
 	if drew:
@@ -2983,7 +3009,7 @@ func _fx_any() -> bool:
 	return cheats.blood or cheats.afterimages or cheats.flashy_ki or cheats.ko_confetti \
 		or cheats.damage_numbers or cheats.rainbow_ki \
 		or cheats.bomb_rain or _on("green_demon") \
-		or _on("ultra_instinct")                        # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON, part 39
+		or _on("ultra_instinct") or _on("smash_knockback") or _on("hot_potato")   # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON, part 39
 
 
 ## the fighter records that can be on screen (both teams, ASSIST SPAM copies)
@@ -6256,7 +6282,16 @@ func _asr_win(to: int) -> void:
 ## battle RAM only. DATA_NOTES "part 39 findings".
 const FL_G := 0x60                       ## fall speed gained per frame (24.8 px: 0.375 px)
 const FL_MAX := 0x700                    ## fastest fall (7 px / frame; flying is ~2.3)
+## part 40: a real jump (the user: 3x higher). The game's takeoff from the ground (Up: FUN_020213A8(0x400, -0x40, 0,
+## 0x40), ~4 px / frame slowing by 0.25) alone peaked at ~13 px under FL_G; on a takeoff (grounded last frame, now in
+## the air going up in action 0 / 1) the fall speed starts at -FL_JUMP (an extra lift) and grows by only FL_GU while
+## the fighter still rises, FL_G again from the top: ~35 px high (the old hop: ~9), ~30 frames in the air (`fldbg` traces it).
+const FL_JUMP := 0xC0                    ## 0.75 px / frame of extra lift at the takeoff
+const FL_GU := 0x20                      ## 0.125 px / frame² while rising
 var _fl_v := {}                          ## fighter -> its fall speed (24.8 px / frame)
+var _fl_gnd := {}                        ## fighter -> standing at its last tick
+var _fl_up := {}                         ## fighter -> in a jump's rising part
+var _fl_dbg := Game.args.has("fldbg")
 
 
 func _fl_tick(f: int) -> void:
@@ -6264,7 +6299,11 @@ func _fl_tick(f: int) -> void:
 	var floor_y: int = _ld(_ld(0x020DE3CC, 4, false) + 0x4DEE, 2, true)
 	if (y >> 8) - _ld(f + 0x24F, 1, false) >= floor_y:
 		_fl_v.erase(f)                                 # standing (or the floor clamp's frame)
+		_fl_up.erase(f)
+		_fl_gnd[f] = true
 		return
+	var was_gnd: bool = _fl_gnd.get(f, false)
+	_fl_gnd[f] = false
 	var act: int = _ld(f + 6, 1, false)
 	var keep := _ld(f + 0x24A, 2, true) <= 0 or act == 0x33 or (act >= 0x13 and act <= 0x15) \
 		or (act >= 0x26 and act <= 0x30) or act >= 0x85 or (act >= 0x34 and act <= 0x66) \
@@ -6272,13 +6311,27 @@ func _fl_tick(f: int) -> void:
 	var cam: int = _ld(CAMERA, 4, false)
 	if keep or (cam != 0 and _ld(cam, 2, false) != 0):
 		_fl_v.erase(f)                                 # hovers (and starts falling slowly again afterwards)
+		_fl_up.erase(f)
 		return
-	var v: int = mini(int(_fl_v.get(f, 0)) + FL_G, FL_MAX)
+	var vy: int = _ld(f + 0x2A, 2, true)               # the game's own vertical speed (y down)
+	var v: int
+	if was_gnd and vy < 0 and (act == 0 or act == 1):
+		v = -FL_JUMP                                   # a takeoff: jump
+		_fl_up[f] = true
+	elif _fl_up.has(f):
+		v = int(_fl_v.get(f, 0)) + FL_GU
+		if v + vy >= 0:
+			_fl_up.erase(f)                            # the top: falling from here on
+	else:
+		v = mini(int(_fl_v.get(f, 0)) + FL_G, FL_MAX)
 	_fl_v[f] = v
 	_st(f + 0x3C, 4, (y + v) & 0xFFFFFFFF)
+	if _fl_dbg:
+		print("FL f%d fighter %x act %x height %d v %d game vy %d%s" % [_port_frame(), f, act, floor_y + _ld(f + 0x24F, 1, false) - ((y + v) >> 8),
+			v, vy, " up" if _fl_up.has(f) else ""])
 
 
-# ---- SMASH KNOCKBACK (part 39) --------------------------------------------------------------------------------------
+# ---- SMASH KNOCKBACK (part 39, part 40) -----------------------------------------------------------------------------
 ## Cheat SMASH KNOCKBACK (page 9 CHALLENGES, `cheats=smash_knockback`): after the game's collision pass FUN_0201E5BC,
 ## every fighter that lost HP in it (FUN_020293A4, noted in `_kb_hit`) and was knocked back (hit reaction 0xF-0x12 or
 ## KO 0x33, moving) gets its push multiplied by k = 1 + KB_K * (HP lost / max HP), so at full HP nothing changes and
@@ -6286,9 +6339,28 @@ func _fl_tick(f: int) -> void:
 ## +0x28 / +0x2A, deceleration +0x30 / +0x32, speed +0x22, accel +0x26; FUN_02021264 adds velocity to the position,
 ## then the deceleration, until the velocity reaches 0): velocity AND deceleration x k = same duration, k x the
 ## distance. Both teams. LAN: integers from battle RAM only.
-const KB_K := 2.0
+## Part 40 (the user: "too dull"): KB_K 2 -> 1.4, and fighters can be knocked OUT OF THE CAMERA. The game's camera
+## (mode 0, FUN_02019594) zooms out to 0x80 at most and then pulls both active fighters back along their line (the
+## tether: they never leave the picture). A knocked-back fighter is LAUNCHED (`_kb_free`): while one is, the tether's
+## pull is undone (positions saved / put back around FUN_02019594) and the camera centre (+0xC / +0x10) is kept within
+## KB_EDGE_X / KB_EDGE_Y px of the other fighter (it stays in the picture); a launch ends once the game needs no pull
+## and the fighter is out of its hit reaction. A fighter whose centre is off the camera (screen = 128 / 96 + zoom x
+## (pos - centre) / 256, beyond KB_OFF px) loses KB_DMG of its max HP every KB_TICK running battle frames
+## (FUN_020293A4, the scale +0x1676 undone; a KO the game's way: reaction 0x11); a marker at the screen edge shows where
+## it is: its own life-bar face icon (sprite rec+0x290) in a dark orange-trimmed box with an arrow, flashing red on
+## each tick (drawn in `_fx_draw`). Bounded stages keep their walls. Debug: `kbdbg`.
+const KB_K := 1.4
+const KB_EDGE_X := 160                   ## world px from the anchor fighter to the camera centre (at zoom 0x80: 256 = edge)
+const KB_EDGE_Y := 100                   ## (192 = edge)
+const KB_OFF := 12                       ## screen px beyond the edge: off the camera
+const KB_TICK := 20                      ## running battle frames between damage ticks
+const KB_DMG := 0.01                     ## of max HP per tick (3 % a second)
 var _kb_on := false                      ## inside the collision pass with the cheat on
 var _kb_hit := {}                        ## fighter -> true: lost HP in this pass
+var _kb_free := {}                       ## fighter -> true: launched (the tether does not pull)
+var _kb_off := {}                        ## fighter -> running frames off the camera
+var _kb_flash := {}                      ## fighter -> frames of the marker's red flash left
+var _kb_dbg := Game.args.has("kbdbg")
 
 
 func _kb_apply() -> void:
@@ -6298,9 +6370,12 @@ func _kb_apply() -> void:
 		var act: int = _ld(v + 6, 1, false)
 		if mx <= 0 or not (act in [0xF, 0x10, 0x11, 0x12, 0x33]):
 			continue
+		if _ld(v + 0x28, 2, true) == 0 and _ld(v + 0x2A, 2, true) == 0:
+			continue
+		_kb_free[v] = true                             # part 40: it may fly out of the picture
 		var k := 1.0 + KB_K * clampf(1.0 - float(hp) / mx, 0.0, 1.0)
 		var kk := int(k * 256.0)
-		if kk <= 256 or (_ld(v + 0x28, 2, true) == 0 and _ld(v + 0x2A, 2, true) == 0):
+		if kk <= 256:
 			continue
 		for off in [0x22, 0x26, 0x28, 0x2A, 0x30, 0x32]:
 			_st(v + off, 2, clampi((_ld(v + off, 2, true) * kk) >> 8, -0x7FFF, 0x7FFF) & 0xFFFF)
@@ -6309,6 +6384,108 @@ func _kb_apply() -> void:
 				_ld(v + 0x28, 2, true), _ld(v + 0x2A, 2, true)])
 	_kb_hit.clear()
 
+
+## FUN_02019594(a, b): camera mode 0 (centre, zoom, tether pull). Part 40: with a launched fighter the pull is undone
+## and the centre stays near the other fighter.
+func f_02019594(param_1: int = 0, param_2: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	if cheats == null or _kb_free.is_empty() or not _on("smash_knockback"):
+		return super.f_02019594(param_1, param_2, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	var pos := [_ld(param_1 + 0x38, 4, true), _ld(param_1 + 0x3C, 4, true), _ld(param_2 + 0x38, 4, true), _ld(param_2 + 0x3C, 4, true)]
+	var r := super.f_02019594(param_1, param_2, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	var pulled: bool = pos != [_ld(param_1 + 0x38, 4, true), _ld(param_1 + 0x3C, 4, true), _ld(param_2 + 0x38, 4, true), _ld(param_2 + 0x3C, 4, true)]
+	for f in _kb_free.keys():                          # launches end: back in range and out of the hit reaction
+		var a: int = _ld(f + 6, 1, false)
+		if not pulled and not (a in [0xF, 0x10, 0x11, 0x12]) or not (f == param_1 or f == param_2):
+			_kb_free.erase(f)
+	if not pulled:
+		return r
+	_st(param_1 + 0x38, 4, pos[0] & 0xFFFFFFFF)
+	_st(param_1 + 0x3C, 4, pos[1] & 0xFFFFFFFF)
+	_st(param_2 + 0x38, 4, pos[2] & 0xFFFFFFFF)
+	_st(param_2 + 0x3C, 4, pos[3] & 0xFFFFFFFF)
+	var cam: int = _ld(CAMERA, 4, false)
+	var anchor := 0
+	if _kb_free.has(param_1) and not _kb_free.has(param_2):
+		anchor = param_2
+	elif _kb_free.has(param_2) and not _kb_free.has(param_1):
+		anchor = param_1
+	if anchor != 0:
+		var ax: int = _ld(anchor + 0x38, 4, true) >> 8
+		var ay: int = _ld(anchor + 0x3C, 4, true) >> 8
+		_st(cam + 0xC, 4, clampi(_ld(cam + 0xC, 4, true), ax - KB_EDGE_X, ax + KB_EDGE_X) & 0xFFFFFFFF)
+		_st(cam + 0x10, 4, clampi(_ld(cam + 0x10, 4, true), ay - KB_EDGE_Y, ay + KB_EDGE_Y) & 0xFFFFFFFF)
+	if _kb_dbg:
+		print("KB f%d free %s centre %d,%d zoom %x" % [_port_frame(), str(_kb_free.keys()), _ld(cam + 0xC, 4, true), _ld(cam + 0x10, 4, true), _ld(cam + 6, 2, false)])
+	return r
+
+
+## [screen x, screen y] of fighter f's centre through the game's camera (its own zoom, as FUN_02019180)
+func _kb_screen(f: int) -> Vector2:
+	var cam: int = _ld(CAMERA, 4, false)
+	var z: int = _ld(cam + 6, 2, false)
+	var x: int = _ld(cam + 0x30, 4, true) + z * ((_ld(f + 0x38, 4, true) >> 8) - _ld(cam + 0xC, 4, true)) / 256
+	var y: int = _ld(cam + 0x34, 4, true) + z * ((_ld(f + 0x3C, 4, true) >> 8) - _ld(cam + 0x10, 4, true)) / 256
+	return Vector2(x, y)
+
+
+## once per battle frame per active fighter (`_c39_tick`): off the camera -> damage ticks
+func _kb_tick(f: int) -> void:
+	if _kb_flash.has(f):
+		_kb_flash[f] -= 1
+		if _kb_flash[f] <= 0:
+			_kb_flash.erase(f)
+	var cam: int = _ld(CAMERA, 4, false)
+	var act: int = _ld(f + 6, 1, false)
+	if cam == 0 or _ld(cam, 2, false) != 0 or _ld(BATTLE_STATE, 1, false) != 7 or f_02012fd4() != 0 \
+			or _ld(f + 0x24A, 2, true) <= 0 or act == 0x33 or (_ld(f + 0x250, 4, false) & 0xC20) != 0:
+		return                                         # super / Team Arts camera, pause, KO, sequences: no ticks
+	var s := _kb_screen(f)
+	if s.x >= -KB_OFF and s.x <= 256 + KB_OFF and s.y >= -KB_OFF and s.y <= 192 + KB_OFF:
+		_kb_off.erase(f)
+		return
+	var n: int = int(_kb_off.get(f, 0)) + 1
+	_kb_off[f] = n
+	if n % KB_TICK != 0:
+		return
+	var mx: int = _ld(f + 0x24C, 2, false)
+	var sc: int = _ld(_ld(TEAMS, 4, false) + 0x1676, 2, false)
+	var want: int = maxi(1, int(mx * KB_DMG))
+	if sc > 0:
+		f_020293a4(f, (want * 256 + sc - 1) / sc, 0)
+	_kb_flash[f] = 8
+	if _ld(f + 0x24A, 2, true) <= 0 and _ld(f + 6, 1, false) != 0x33:
+		_st(f + 0x250, 4, 0)                           # a KO off the camera: the game's KO follows (as GREEN DEMON)
+		_st(f + 0x25D, 1, _ld(f + 0x1A, 1, false))
+		f_02021b4c(f, 0x11)
+		_st(f + 0x25E, 2, 10)
+		_st(f + 0x250, 4, _ld(f + 0x250, 4, false) | 2)
+	if _kb_dbg:
+		print("KB f%d fighter %x off camera at %d,%d: -%d HP -> %d" % [_port_frame(), f, int(s.x), int(s.y), want, _ld(f + 0x24A, 2, true)])
+
+
+## the edge markers (after the game's sprite list): for each active fighter off the camera, its face icon at the
+## nearest screen edge in a dark box with an orange rim and an arrow toward it; red flash on a damage tick
+func _kb_draw() -> bool:
+	var drew := false
+	for f in _kb_off:
+		var p: int = f + 0x290
+		if _ld(f + 0x24A, 2, true) <= 0 or _ld(p, 4, false) == 0 or f != f_02027c00(_ld(f + 0x1A, 1, false) & 1):
+			continue
+		var s := _kb_screen(f)
+		var mx := clampf(s.x, 18.0, 238.0)
+		var my := clampf(s.y, 62.0, 174.0)               # (below the HUD and the RUSH counter)
+		var d := (s - Vector2(mx, my)).normalized()
+		var red: bool = _kb_flash.has(f)
+		_fx_box(mx - 15, my - 15, 30, 30, 0x0D9F if red else 0x02DF, 0x80C0 | (31 << 16) | (0x21 << 24), 44, 0x0E00)   # rim
+		_fx_box(mx - 13, my - 13, 26, 26, 0x0006 if red else 0x0842, 0x80C0 | (31 << 16) | (0x21 << 24), 45, 0x0E01)   # box
+		var m := [24.0, 0.0, 0.0, 0.0, 24.0, 0.0, 0.0, 0.0, 1.0, mx, my, 46.0]
+		_spr_emit(p, m, 0x80C0 | (31 << 16) | (0x21 << 24), 0x7FFF if not red else 0x4E7F)
+		for k in 3:                                    # the arrow: three shrinking squares outward
+			var c := Vector2(mx, my) + d * (19.0 + k * 3.0)
+			var w := 5 - k * 2
+			_fx_box(floorf(c.x - w * 0.5), floorf(c.y - w * 0.5), w, w, 0x02DF, 0x80C0 | (31 << 16) | (0x21 << 24), 46, 0x0E02 + k)
+		drew = true
+	return drew
 
 # ---- ULTRA INSTINCT (part 39) ---------------------------------------------------------------------------------------
 ## Cheat ULTRA INSTINCT (page 5 FIGHTING, `cheats=ultra_instinct`): the parry; everything is in
@@ -6324,14 +6501,17 @@ func f_0201e5bc(_x0: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int
 		return super.f_0201e5bc(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 	var ui: bool = _ui != null and _on("ultra_instinct") and _ui.busy()
 	var kb := _on("smash_knockback")
-	if not ui and not kb:
+	var hp: bool = _hp != null and _on("hot_potato") and _hp.any()
+	if not ui and not kb and not hp:
 		return super.f_0201e5bc(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 	if ui:
 		_ui.before()
 	_kb_hit.clear()
 	_kb_on = kb
+	_hp_coll = hp
 	var r := super.f_0201e5bc(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 	_kb_on = false
+	_hp_coll = false
 	if ui:
 		_ui.after()
 	if kb:
@@ -6339,13 +6519,28 @@ func f_0201e5bc(_x0: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int
 	return r
 
 
+var _rzult := Game.args.has("rzult")
+var _p2hp_at := int(Game.flag("p2hp", "-1:0").split(":")[0])
+var _p2hp_v := int((Game.flag("p2hp", "-1:0") + ":0").split(":")[1])
+var _p1hp_at := int(Game.flag("p1hp", "-1:0").split(":")[0])
+var _p1hp_v := int((Game.flag("p1hp", "-1:0") + ":0").split(":")[1])
+
+
 ## once per battle frame per fighter (f_0202954C, before its action handler): the part 39 cheats
 func _c39_tick(f: int) -> void:
 	var side: int = _ld(f + 0x1A, 1, false) & 1
 	if f != f_02027c00(side):
 		return
+	if _p2hp_at >= 0 and side == 1 and _port_frame() == _p2hp_at:
+		_st(f + 0x24A, 2, _p2hp_v)                     # part 40 debug `p2hp=F:HP`
+	if _p1hp_at >= 0 and side == 0 and _port_frame() == _p1hp_at:
+		_st(f + 0x24A, 2, _p1hp_v)                     # part 40 debug `p1hp=F:HP` (red-HP ultimates)
+	if _rzult and side == 0:
+		_st(f + 0x24E, 1, 0)                           # part 40 debug `rzult`: the once-a-battle ultimate flag cleared
 	if _on("flightless"):
 		_fl_tick(f)
+	if _on("smash_knockback"):
+		_kb_tick(f)                                    # part 40: off the camera -> damage
 	if not _helped(f):
 		return
 	if _on("ultra_instinct"):
@@ -6391,7 +6586,8 @@ func f_0202aeb4(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4:
 	if (held & 0x401) != 0x401 or (held & 0x100) != 0 or (held & 0x802) == 0x802 \
 			or param_1 != f_02027c00(_ld(param_1 + 0x1A, 1, false) & 1) or _ld(param_1 + 5, 1, false) > 25:
 		return super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
-	var snap := M.slice(param_1 - BASE, param_1 - BASE + 0x2D8)
+	var team: int = _ld(TEAMS, 4, false) + (_ld(param_1 + 0x1A, 1, false) & 1) * 0x8E8
+	var snap := _rz_snap(param_1, team)
 	var alive := _rz_alive()
 	var act0: int = _ld(param_1 + 6, 1, false)
 	var r := super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
@@ -6403,8 +6599,8 @@ func f_0202aeb4(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4:
 	var st: Dictionary = _rz.get(param_1, {})
 	var orig: int = st.get("orig", cur)
 	_rz_kill_new(alive)                                # the super's start effects (common effects 0xD / 0xF)
-	_put(param_1, snap)                                # the record as before the call (old chunks still loaded)
-	var n := _rz_pick(cur, orig)
+	_rz_restore(param_1, team, snap)                   # record AND team ki as before the call (part 40: the
+	var n := _rz_pick(cur, orig)                       # ultimate check FUN_02026A8C spends its 150 % itself)
 	if st.is_empty():
 		st = {"orig": orig, "boss": _rz_unboss(param_1), "t": 0, "wait": 0}
 	_rz_load(param_1, n, act0, false)
@@ -6412,17 +6608,55 @@ func f_0202aeb4(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4:
 	st["t"] = 0
 	st["wait"] = 0
 	alive = _rz_alive()
+	snap = _rz_snap(param_1, team)
 	r = super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 	var act2: int = _ld(param_1 + 6, 1, false)
+	var forced := false
+	if act == 0x2E and act2 != 0x2E:                   # part 40: an ultimate was asked for; this fighter's own test
+		_rz_kill_new(alive)                            # refused it (its ultimate wants another direction / is
+		_rz_restore(param_1, team, snap)               # locked): it starts its ultimate the dispatcher's way
+		_rz_ultimate(param_1)
+		act2 = 0x2E
+		forced = true
+		r = 1
 	if Game.args.has("cheatdbg"):
-		print("CHT randomizer f%d fighter %x: super %x as %d -> %d starts %x (original %d)" % [_port_frame(), param_1, act, cur, n, act2, orig])
+		print("CHT randomizer f%d fighter %x: super %x as %d -> %d starts %x%s (original %d) ki %d" % [_port_frame(), param_1, act, cur, n, act2,
+			" (forced)" if forced else "", orig, _ld(team + 0x8D0, 2, false)])
 	if not act2 in RZ_SUPERS:                         # this fighter has no super here: the original does its own
 		_rz_kill_new(alive)
+		_rz_restore(param_1, team, snap, false)        # (the ki only: the record is reloaded)
 		_rz_back(param_1, false)
 		r = super.f_0202aeb4(param_1, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 	_rz_busy = false
 	return r
 
+
+## [record bytes, team block tail +0x8C8..+0x8E8 (active member, assists, ki, Team Arts counters)]
+func _rz_snap(f: int, team: int) -> Array:
+	return [M.slice(f - BASE, f - BASE + 0x2D8), M.slice(team + 0x8C8 - BASE, team + 0x8E8 - BASE)]
+
+
+func _rz_restore(f: int, team: int, snap: Array, rec := true) -> void:
+	if rec:
+		_put(f, snap[0])
+	_put(team + 0x8C8, snap[1])
+
+
+## the dispatcher FUN_0202AEB4's ultimate branch (after FUN_02026A8C said yes: +0x24E = 1, 150 % ki spent)
+func _rz_ultimate(f: int) -> void:
+	_st(f + 0x24E, 1, 1)
+	f_02027950(f, 0x9600, 0)
+	_st(f + 0x250, 4, 0)
+	_st(f + 0x25D, 1, _ld(f + 0x1A, 1, false))
+	f_02021b4c(f, 0x2E)
+	_st(f + 0x250, 4, _ld(f + 0x250, 4, false) | 0x40400)
+	_st(f + 0x20, 1, _ld(f + 7, 1, false))
+	_st(f + 0xE, 2, _ld(f + 0xE, 2, false) | 8)
+	f_02029e3c(f, 0x20)
+	var o := f_0202247c(f, 0xF)
+	if o != 0:
+		f_0202216c(o, 0, 4)
+	f_020213a8(f, 0, 0, 0, 0)
 
 ## a random fighter id 0-25, not the current one, nor the original (`rzto=ID`: that one)
 func _rz_pick(cur: int, orig: int) -> int:
@@ -6568,3 +6802,64 @@ func _se_test() -> void:
 		if k < _setest_ids.size():
 			f_02029e3c(f_02027c00(0), _setest_ids[k])
 			print("SETEST f%d se %x" % [fr, _setest_ids[k]])
+
+
+# ---- HOT POTATO (part 40) -------------------------------------------------------------------------------------------
+## Cheat HOT POTATO (page 9 CHALLENGES, `cheats=hot_potato`): everything is in scripts/qol/qol_potato.gd; hooks here:
+## f_0202954C (tick once per battle frame), f_0201E5BC (`_hp_coll` while the collision pass runs) + f_020293A4 (hit():
+## a hit inside the pass may pass the bomb), f_0202A40C (reset), _fx_any / _fx_draw (the bomb + countdown). The art is
+## BOMB RAIN's (`_bomb_img`, the shared texture block).
+const _POTATO_GD := preload("res://scripts/qol/qol_potato.gd")
+var _hp = null                           ## created the first time a battle frame runs with the cheat on
+var _hp_coll := false                    ## inside the collision pass with a bomb lit
+
+
+# ---- RICOCHET KI (part 40) ------------------------------------------------------------------------------------------
+## Cheat RICOCHET KI (page 6 KI & ASSISTS, `cheats=ricochet_ki`): player 1's plain shots (handler FUN_020209E0: ki
+## blasts and the plain-projectile specials; both players' in MP) bounce off the edges of the camera's picture and off
+## the floor, up to RC_MAX times each, instead of flying away. Right after the handler moved the shot (f_020209E0
+## override): its screen position through the game's camera (its own zoom, as FUN_02019180) beyond an edge (RC_PAD px
+## inside) while moving out -> that velocity component (velocity +0x28 / +0x2A, target +0x2C / +0x2E, accel +0x30 /
+## +0x32) is mirrored, and the direction +0x21 / +7 and the sprite rotation (FUN_02011F74, as the handler and the
+## game's dash-attack reflection set it) follow. The floor: y beyond the floor line (effect pool +0x4DEE) + RC_FLOOR.
+## Counts per object slot, forgotten when the slot is reused (f_020225C8). LAN: battle RAM and the game's camera.
+## Debug: `rcdbg`.
+const RC_MAX := 3
+const RC_PAD := 4                        ## screen px inside the edge
+const RC_TOP := 24                       ## the top edge sits below the HUD bars
+const RC_FLOOR := 56                     ## world px below the floor line (the feet line is ~+64)
+var _rc := {}                            ## shot object -> bounces so far
+var _rc_dbg := Game.args.has("rcdbg")
+
+
+func _rc_bounce(o: int) -> void:
+	if (_ld(o + 4, 1, false) & 1) == 0 or int(_rc.get(o, 0)) >= RC_MAX:
+		return
+	var cam: int = _ld(CAMERA, 4, false)
+	if cam == 0 or _ld(BATTLE_STATE, 1, false) != 7:
+		return                                         # (the fight only: other scenes run the handler too)
+	var z: int = _ld(cam + 6, 2, false)
+	var wx: int = _ld(o + 0x38, 4, true) >> 8
+	var wy: int = _ld(o + 0x3C, 4, true) >> 8
+	var sx: int = _ld(cam + 0x30, 4, true) + z * (wx - _ld(cam + 0xC, 4, true)) / 256
+	var sy: int = _ld(cam + 0x34, 4, true) + z * (wy - _ld(cam + 0x10, 4, true)) / 256
+	var vx: int = _ld(o + 0x28, 2, true)
+	var vy: int = _ld(o + 0x2A, 2, true)
+	var floor_y: int = _ld(_ld(0x020DE3CC, 4, false) + 0x4DEE, 2, true) + RC_FLOOR
+	var bx := (sx <= RC_PAD and vx < 0) or (sx >= 256 - RC_PAD and vx > 0)
+	var by := (sy <= RC_TOP and vy < 0) or (wy >= floor_y and vy > 0)
+	if not bx and not by:
+		return
+	var d: int = _ld(o + 0x21, 1, false)
+	for off in ([0x28, 0x2C, 0x30] if bx else []) + ([0x2A, 0x2E, 0x32] if by else []):
+		_st(o + off, 2, (-_ld(o + off, 2, true)) & 0xFFFF)
+	if bx:
+		d = (0x80 - d) & 0xFF
+	if by:
+		d = (0x100 - d) & 0xFF
+	_st(o + 0x21, 1, d)
+	_st(o + 7, 1, d)
+	f_02011f74(o + 0x124, 0, 0, (0x100 - d) & 0xFF)
+	_rc[o] = int(_rc.get(o, 0)) + 1
+	if _rc_dbg:
+		print("RC f%d shot %x bounce %d at screen %d,%d (%s) dir %x" % [_port_frame(), o, _rc[o], sx, sy, "x" if bx else "y", d])

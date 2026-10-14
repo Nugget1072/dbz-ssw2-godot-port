@@ -1,6 +1,6 @@
 # HANDOFF — state of the port
 
-_Last updated: 2026-10-13 (part 39 — cheats ULTRA INSTINCT, RANDOMIZER, FLIGHTLESS, SMASH KNOCKBACK; part 38 ENDLESS; parts 36-37 were the first Claude Code
+_Last updated: 2026-10-13 (part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
 sessions on the user's PC; part 35 was the last Cowork part: `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
 Per-part history: `docs/HISTORY.md`.
 
@@ -197,3 +197,19 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
   tests HELD bits (FUN_020011B4 reads +0x270). Debug flags `uidbg uiauto uise= rzseed= rzto= setest` (DEBUG_FLAGS).
 - Open: real-play tuning (parry window 5 / stun 30 / knock-back factor 2 / fall speed) after the user tries them; the
   parry sound can be changed in one constant (`qol_ultra.gd` PARRY_SE) if 0x21 does not feel right.
+
+## Part 40: cheat fixes + HOT POTATO, RICOCHET KI (2026-10-13) — DONE
+- **RANDOMIZER + ultimates (bug)**: the ultimate test FUN_02026A8C spends the 150 % itself; RANDOMIZER now puts the
+  team block tail (ki) back with the record before the swap, and starts the random fighter's ultimate the dispatcher's
+  way when that fighter's own test refuses (direction rule). V: Metal Cooler / Teen Gohan / Majin Vegeta (forced)
+  ultimates as random fighters, ki spent once.
+- **FLIGHTLESS jump** (user: 3x higher): extra lift + lighter pull while rising: ~37 px (was ~9), ~32 frames.
+- **SMASH KNOCKBACK** (user: too dull): push factor 1.4 (was 2); launched fighters can leave the picture (the camera
+  tether's pull undone, the camera stays near the other fighter); off the camera 1 % max HP every 20 frames (KO
+  possible); edge marker = the fighter's own face icon in a dark orange-rimmed box with an arrow, red on each tick.
+- **HOT POTATO** (new, page 9, `qol_potato.gd`): a bomb with a 10-s countdown on a fighter's head, passed by hitting
+  the other team, explodes for 30 % (the game's explosion + sound). Both teams.
+- **RICOCHET KI** (new, page 6): player 1's ki blasts bounce off the screen edges / floor up to 3 times.
+- V (TESTING 31): logs + captures of each, LAN pair lan_cmp exit 0 with all of them, menu previews, offcheck PASS.
+  Facts: DATA_NOTES "part 40 findings". Debug flags: `p1hp p2hp rzult fldbg kbdbg hpdbg hpseed hpfuse hpwait rcdbg`.
+- Open: tuning after the user plays (off-camera damage rate, potato fuse / damage, bounce count).

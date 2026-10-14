@@ -63,6 +63,7 @@ const CHEAT_PAGES := {
 		["infinite_ki", "INFINITE KI", "Player 1's ki gauge stays full\n(200%): ki blasts and super\nattacks cost nothing."],
 		["ki_homing", "KI HOMING", "Player 1's ki blasts curve\ntoward the enemy.\nBeam attacks are not affected."],
 		["triple_ki", "TRIPLE KI BLASTS", "Every ki blast player 1 fires\nbecomes three shots in a fan.\nBeam attacks are not changed."],
+		["ricochet_ki", "RICOCHET KI", "Player 1's ki blasts bounce off\nthe edges of the screen and off\nthe floor, up to 3 times, instead\nof flying away: missed shots\ncome back! (Beams don't.)"],   # part 40
 		["infinite_assists", "INFINITE ASSISTS", "Player 1's support character\ncan be called again and again."],
 		["assist_spam", "ASSIST SPAM", "Call your support character\nwhile one is still fighting:\nevery call brings one more\n(up to 8 at once). Touch the\nsupport's portrait to call."],
 	]],
@@ -82,8 +83,9 @@ const CHEAT_PAGES := {
 	"cheats5": ["CHALLENGES", [   # part 36
 		["green_demon", "GREEN DEMON", "A green 1-UP slowly chases\nyour fighter. If it touches\nyou, that fighter is KO'd at\nonce! Keep moving to escape.\n(Multiplayer: it hunts both.)"],
 		["bomb_rain", "BOMB RAIN", "Little bombs rain down in\nbattle! A direct hit takes 1/4\nof max HP, a blast nearby less.\nWatch their shadows and dodge.\n(They hurt both teams.)"],   # part 38: was WEIRD STUFF 3
-		["flightless", "FLIGHTLESS", "Nobody can fly! Fighters in\nthe air fall fast to the\nground; UP is only a hop.\nSupers still work in the air.\n(Both teams.)"],   # part 39
-		["smash_knockback", "SMASH KNOCKBACK", "Hits send fighters flying\nfarther the more HP they have\nlost, like Super Smash Bros.:\nnormal at full HP, much farther\nnear a KO. (Both teams.)"],   # part 39
+		["flightless", "FLIGHTLESS", "Nobody can fly! Fighters in\nthe air fall fast to the\nground; UP is a jump. Supers\nstill work in the air.\n(Both teams.)"],   # part 39 (part 40: higher jump)
+		["smash_knockback", "SMASH KNOCKBACK", "Hurt fighters fly farther, like\nSmash Bros, even off the screen!\nOff screen they lose HP until\nthey come back (a marker shows\nwhere). (Both teams.)"],   # part 39 (part 40: off the camera)
+		["hot_potato", "HOT POTATO", "A lit bomb lands on a fighter.\nHit the other team to pass it\non! When the countdown hits 0\nit explodes on whoever holds\nit (30% of max HP)."],   # part 40
 	]],
 }
 ## WEIRD SETTINGS (part 21, page 7, after the cheats): [QoLSettings field, label, description]

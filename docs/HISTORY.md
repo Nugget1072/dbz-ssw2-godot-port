@@ -6,6 +6,10 @@ how the systems fit together now: `docs/QOL_ARCHITECTURE.md`; decoded facts per 
 page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in QOL_ARCHITECTURE.md).
 
 ## Per part (details in DATA_NOTES / transpiler notes)
+- **Part 40** — *cheat fixes + two cheats (2026-10-13)*: RANDOMIZER now does ultimates (the ultimate test spends
+  its 150 % itself: the team ki is put back too; refused ones forced), FLIGHTLESS jump ~4x higher, SMASH KNOCKBACK
+  lighter but fighters can fly out of the picture (tether undone, off-camera damage, face-icon edge marker), new HOT
+  POTATO (`qol_potato.gd`) and RICOCHET KI. TESTING 31, DATA_NOTES `part 40 findings`.
 - **Part 39** — *four cheats (2026-10-13)*: ULTRA INSTINCT (B-tap parry, 5 frames: hit stop, guard spark, SE 0x21,
   silver silhouette through a port palette; attacker stunned, blasts reflected; red flash on a missed tap; new module
   `qol_ultra.gd`), RANDOMIZER (every super done by a random fighter via the dispatcher + CHARACTER SHUFFLE's loader),
