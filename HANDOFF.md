@@ -304,6 +304,12 @@ cheats, one with Kid Gohan (not SSJ2 Gohan) parrying Final Boss SSJ Goku's whole
   cover (the game, `scripts/gen/` + `charvm_ops_disasm.md`, melonDS GPL tool, Dragon Ball / Nintendo characters);
   `docs/THIRD_PARTY_NOTICES.txt` (Godot, godot-cpp, FreeBIOS BSD table) — both copied to finished/ by `ssw2.py export`
   and added to the release (zip rebuilt with the same exe; re-download = identical).
+- **Commit email** (user request): all 18 commits rewritten (git fast-export → author / committer lines only → fast-import;
+  trees identical) from the Gmail address to `164543587+Nugget1072@users.noreply.github.com`, tag v1.0 moved with them,
+  force-pushed by the user (the permission check blocks force pushes from Claude). Repo `user.email` = the no-reply
+  address; the user turned on GitHub's private-email settings. Backup of the old history:
+  `local/backup_before_email_rewrite.bundle`. GitHub still serves the old commits by their exact SHA until its garbage
+  collection (GitHub Support can purge them).
 - `local/` pruned on the user's request (~1.8 GB of old runs); kept: baselines, release zip, research notes, prevbg.png,
   the history-rewrite bundle. Not done: a LICENSE (the user's decision).
 - For a public release later: `scripts/gen/` is a machine translation of the game's program code (kept by the user's
