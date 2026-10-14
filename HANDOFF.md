@@ -283,7 +283,7 @@ cheats, one with Kid Gohan (not SSJ2 Gohan) parrying Final Boss SSJ Goku's whole
   `ds_main_loop.gd.uid`, `Game`'s `p1` / `p2` / `stage` / `p2_cpu` flags. `Pilot` stays (scripted test input).
 - **Docs**: README.md = GitHub front page (features, play, build, clips, legal); `docs/RELEASE_NOTES.md` = release text
   draft; `docs/archive/` (HANDOFF_ARCHIVE_part8, PROJECT_BRIEF, ROM_REMIX_ONBOARDING); `docs/WORK_OUTSIDE_FOLDER.txt`.
-- **Clips** (`local/release/videos/`, game footage, never in git): `ssw2.py clip` (every-frame capture + its
+- **Clips** (for the user only, not published; `local/release/videos/`, game footage, never in git): `ssw2.py clip` (every-frame capture + its
   audio.wav → H.264 / AAC MP4, 3x nearest) and `tools/test/showcase.py` (the four clips, TESTING 35):
   ULTRA INSTINCT (Kid Gohan = id 24 vs Final Boss SSJ Goku: 12 real B-tap parries incl. all ten blasts of the boss's
   super from above, 0 misses, Gohan 10000/10000 HP, then his 16-hit counter super), TIME SKIP (SSJ Goku vs Frieza,
@@ -294,8 +294,8 @@ cheats, one with Kid Gohan (not SSJ2 Gohan) parrying Final Boss SSJ Goku's whole
 - V: offcheck PASS after the removal (21/21 + 1382 CHT, 221/221); export + the exe's offcheck battle vs the baseline
   21/21; `showcase.py` twice = every frame identical (deterministic); clips checked frame by frame (contact sheets).
   The zip is written with Python's zipfile (forward-slash paths; PowerShell 5.1's Compress-Archive writes backslashes).
-- Not done: pruning old test output in `local/` (~1.8 GB; the bulk delete was refused by the permission check:
-  the user runs it); a LICENSE (the user's decision).
+- `local/` pruned on the user's request (~1.8 GB of old runs); kept: baselines, release zip, research notes, prevbg.png,
+  the history-rewrite bundle. Not done: a LICENSE (the user's decision).
 - For a public release later: `scripts/gen/` is a machine translation of the game's program code (kept by the user's
   decision, part 37); `tools/melonds-headless/libmelonds_headless.so` is a GPL-3 build of melonDS (its source is
   upstream; a public repo should say so).

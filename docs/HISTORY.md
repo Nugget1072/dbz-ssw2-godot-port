@@ -11,7 +11,7 @@ page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in 
   legacy match flags), historical docs to `docs/archive/`, `WORK_OUTSIDE_FOLDER.txt` to `docs/`, README.md rewritten
   as the GitHub front page, `docs/RELEASE_NOTES.md` draft, `ssw2.py clip` (MP4 of an every-frame capture + its
   audio.wav) and `tools/test/showcase.py` (four cheat clips: ULTRA INSTINCT Kid Gohan vs Final Boss SSJ Goku with
-  real parry taps, TIME SKIP, RANDOMIZER, Z-VANISH), a release zip without ROM / personal files; `local/` pruned.
+  real parry taps, TIME SKIP, RANDOMIZER, Z-VANISH), a release zip without ROM / personal files (GitHub release v1.0); `local/` pruned.
 - **Part 43** — *gamemodes BOSS RUSH + TOURNAMENT (2026-10-14)*: the Gamemode menu's two EMPTY slots filled (4th bar
   in free texture memory). BOSS RUSH = ALL-STAR's battle against the 18 boss versions, one heart, boss BGMs, BOSS RUSH
   RECORDS; TOURNAMENT (`qol_tournament.gd`, `qol_tournament_page.gd`) = an 8-team bracket of separate battles, the

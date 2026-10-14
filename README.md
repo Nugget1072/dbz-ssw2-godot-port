@@ -33,14 +33,6 @@ mouse is the touch screen. Steam Deck / Linux: runs under Proton (see the player
 - **Weird stuff**: Game Boy palette, CRT TV, mirror mode, bevel emboss, blood, afterimages, rainbow ki, EPIC MODE…
 - **Bug fixes** of the original game, listed in [`docs/BUGFIXES.txt`](docs/BUGFIXES.txt).
 
-## Showcase clips
-Short clips of four cheats (recorded in the port, frame by frame with the game's own sound) are attached to the
-GitHub release, not stored in the repository (they are game footage):
-- **ULTRA INSTINCT** — Kid Gohan parries every blast of Final Boss SSJ Goku's super attack, then hits back.
-- **TIME SKIP** — SSJ Goku stops Frieza's time, combos the frozen enemy and finishes with a Kamehameha.
-- **RANDOMIZER** — every super Krillin throws is done by a random fighter: Piccolo, Broly, Gotenks.
-- **Z-VANISH** — Goku and Vegeta trade afterimage dodges in the middle of a combo.
-
 ## Build from source
 The repository holds the port's code (`GodotGame/new-game-project/`), the machine-translated game program
 (`scripts/gen/`, generated from the ROM's code by `decomp/tools/`), prebuilt native libraries, tools and docs —
@@ -60,7 +52,7 @@ builds `finished\DBZ_SSW2_Port.exe` + `libdsnative.windows.x86_64.dll` + README.
 library is prebuilt in `GodotGame/new-game-project/bin/`; rebuilding it is optional, [`docs/TOOLING.md`](docs/TOOLING.md)).
 A fresh clone built this way gives an exe whose standard test battle is frame-identical to the editor
 ([`docs/TESTING.md`](docs/TESTING.md) section 28). `python tools/test/ssw2.py` lists the test harness commands
-(scripted runs, captures, the off-identity check, export, clips).
+(scripted runs, captures, the off-identity check, export).
 
 ## Repository layout
 | Folder / file | What it is |
