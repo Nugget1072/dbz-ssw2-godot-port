@@ -30,7 +30,7 @@ from emulated VRAM/registers. Complete and playable; current work: polish, exact
 ## Folder map
 | Path | What |
 |---|---|
-| `finished/` | exported game: `DBZ_SSW2_Port.exe` + `libdsnative.windows.x86_64.dll` + README.txt / BUGFIXES.txt / BOSS_CHARACTERS.txt (+ the user's ROM, never distributed) |
+| `finished/` | exported game: `DBZ_SSW2_Port.exe` + `libdsnative.windows.x86_64.dll` + README.txt / BUGFIXES.txt / BOSS_CHARACTERS.txt / LICENSE.txt / THIRD_PARTY_NOTICES.txt (+ the user's ROM, never distributed) |
 | `GodotGame/new-game-project/` | the Godot project (below); `data/save100.sav` = the completed save built into the exe |
 | `decomp/tools/` | ROM extraction, converters, Ghidra script, translator (`ghidra2gd.py`, `transpile/`), lockstep compare |
 | `decomp/DATA_NOTES.md` (+ `DATA_NOTES_INDEX.md`), `decomp/notes/` | knowledge base (never read DATA_NOTES whole: use the index + grep) |
@@ -66,7 +66,8 @@ user's art. `scripts/pilot/` = the Pilot autoload (scripted test input, `pilot=`
   (battle 21/21 PNGs + 1382 `CHT f` lines, intro 221/221). PNG baselines are per machine: the first session records
   the PC's own (`baseline`, on the delivered state, before any change); CHT lines are machine-independent.
 - **Delivery**: `py tools\test\ssw2.py export` (= `--export-release "Windows Desktop"` → `finished/DBZ_SSW2_Port.exe`,
-  copies `docs/PLAYER_README.txt` → `finished/README.txt`, `docs/BUGFIXES.txt` → `finished/BUGFIXES.txt`; export
+  copies `docs/PLAYER_README.txt` → `finished/README.txt`, `docs/BUGFIXES.txt` → `finished/BUGFIXES.txt`, `LICENSE` →
+  `LICENSE.txt`, `docs/THIRD_PARTY_NOTICES.txt`; export
   templates 4.7.2 needed; close running games first). `docs/BOSS_CHARACTERS.txt` → `finished/` only if changed.
   Never rebuild the native library (`native/build.sh`, `tools/linux/export.sh`) while a game runs. Then commit (git:
   check `git status` shows nothing ROM-derived).

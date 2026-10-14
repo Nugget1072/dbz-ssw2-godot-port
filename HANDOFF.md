@@ -300,6 +300,10 @@ cheats, one with Kid Gohan (not SSJ2 Gohan) parrying Final Boss SSJ Goku's whole
   again = zip contents byte-identical to the loose files; unpacked + a renamed ROM copy: no ROM → "Game ROM not found"
   screen, first run creates DBZ_SSW2_Port.sav + settings.cfg, boots to MODE SELECT, PORT menu by mouse, offcheck
   battle 21/21; a fresh `gh repo clone` + save100.sav + `ssw2.py export` → battle 21/21. ROM copies deleted after.
+- **LICENSE** (user: "allows all legal uses") = MIT for the port's own code; README "License" lists what it cannot
+  cover (the game, `scripts/gen/` + `charvm_ops_disasm.md`, melonDS GPL tool, Dragon Ball / Nintendo characters);
+  `docs/THIRD_PARTY_NOTICES.txt` (Godot, godot-cpp, FreeBIOS BSD table) — both copied to finished/ by `ssw2.py export`
+  and added to the release (zip rebuilt with the same exe; re-download = identical).
 - `local/` pruned on the user's request (~1.8 GB of old runs); kept: baselines, release zip, research notes, prevbg.png,
   the history-rewrite bundle. Not done: a LICENSE (the user's decision).
 - For a public release later: `scripts/gen/` is a machine translation of the game's program code (kept by the user's

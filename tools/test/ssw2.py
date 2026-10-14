@@ -284,8 +284,9 @@ def cmd_export(a):
               "without the completed save (new players start with an empty save)")
     r = subprocess.run(godot_cmd(False) + ["--import"], cwd=PROJ).returncode
     r = subprocess.run(godot_cmd(False) + ["--export-release", "Windows Desktop"], cwd=PROJ).returncode or r
-    for s, t in (("PLAYER_README.txt", "README.txt"), ("BUGFIXES.txt", "BUGFIXES.txt")):
-        shutil.copy(os.path.join(REPO, "docs", s), os.path.join(REPO, "finished", t))
+    for s, t in (("docs/PLAYER_README.txt", "README.txt"), ("docs/BUGFIXES.txt", "BUGFIXES.txt"), ("LICENSE", "LICENSE.txt"),
+                 ("docs/THIRD_PARTY_NOTICES.txt", "THIRD_PARTY_NOTICES.txt")):
+        shutil.copy(os.path.join(REPO, *s.split("/")), os.path.join(REPO, "finished", t))
     print("export finished with code", r, "->", os.path.join(REPO, "finished"))
     return r
 

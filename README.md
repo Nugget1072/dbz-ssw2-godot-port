@@ -65,6 +65,16 @@ A fresh clone built this way gives an exe whose standard test battle is frame-id
 | `HANDOFF.md` | current state, known issues, next steps |
 | `CLAUDE.md` / `AGENTS.md` | instructions for AI coding agents working on the project |
 
+## License
+The port's own code, tools and docs are under the [MIT License](LICENSE): use, copy, modify and redistribute them for
+any purpose, commercial included, as long as the license notice stays with them. Not covered (owned by others):
+- the game itself, and `scripts/gen/` (the machine translation of the game's program code) and
+  `decomp/notes/charvm_ops_disasm.md`, which are derived from it;
+- `tools/melonds-headless/` (melonDS, GPL-3.0; see its README);
+- Dragon Ball characters and names, and the Nintendo characters pictured in two cheats' art (`assets_qol/`).
+Third-party software inside the exe (Godot Engine, godot-cpp, FreeBIOS tables):
+[`docs/THIRD_PARTY_NOTICES.txt`](docs/THIRD_PARTY_NOTICES.txt).
+
 ## Legal
 Fan project, not affiliated with or endorsed by the game's developer or publishers or the *Dragon Ball* rights
 holders (Bird Studio / Shueisha, Toei Animation, Bandai Namco). All trademarks belong to their owners. No ROM or game

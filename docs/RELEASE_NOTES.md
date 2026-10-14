@@ -32,4 +32,6 @@ extras. **Bring your own ROM**: the download contains no game data.
 - A few texels differ from a real DS on scaled / rotated 3D quads; screens that load many files can hitch briefly.
 - No lag frames while loading (the original drops some).
 
-Not affiliated with or endorsed by the game's developer or publishers or the *Dragon Ball* rights holders.
+License: the port's own code is MIT (`LICENSE.txt`); third-party parts of the exe: `THIRD_PARTY_NOTICES.txt`. The game
+itself is not included and not covered. Not affiliated with or endorsed by the game's developer or publishers or the
+*Dragon Ball* rights holders.
