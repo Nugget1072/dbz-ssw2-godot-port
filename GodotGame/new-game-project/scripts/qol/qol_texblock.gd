@@ -1,16 +1,19 @@
 extends RefCounted
-## The port's own 4 KiB of battle texture VRAM (part 36; moved out of qol_bombs.gd, where part 26 built it). Shared by
-## BOMB RAIN (frames + shadow at 0..0xD00) and GREEN DEMON (frame + shadow at 0xD00..0x1000): one block, one key, so
-## both can be on at once. Owned by QoLGame (`_tex_block()`, `# ---- GREEN DEMON (part 36)`); no class_name (like
+## The port's own 12 KiB of battle texture VRAM (part 36: 4 KiB, moved out of qol_bombs.gd, where part 26 built it;
+## part 41: 12 KiB, grown downward). Shared by BOMB RAIN (frames + shadow at 0x5F000..0x5FD00; HOT POTATO draws the
+## same frames), GREEN DEMON (frame + shadow at 0x5FD00..0x60000) and DRAGON BALL HUNT (16-colour balls at
+## 0x5D000..0x5F000): one block, one key, so all can be on at once. Part 41 measured the game's own blocks in battle
+## (`texgap`, STAGE SHUFFLE over many stages): they end by 0x19700, the free last gap is >= 0x45900 bytes. Owned by QoLGame (`_tex_block()`, `# ---- GREEN DEMON (part 36)`); no class_name (like
 ## qol_bombs.gd). Each user `put()`s its texels once; `ok()` (once per battle frame) reserves the block in the game's
 ## texture VRAM manager when needed and rewrites the texels when the bank no longer holds them.
-## Layout of the block: direct-colour texels (bit 15 = opaque), texture offset TEX_OFS + ofs.
+## Layout: put(ofs) = texture offset BASE36 + ofs (the part-36 users), put_abs(texture offset).
 
 const TEX_MGR := 0x020DE380              ## u32 -> the game's texture VRAM manager (DATA_NOTES part 18)
 const TEX_KEY := 0x7B0B0B26              ## our block's key (the game's keys: -1, 0x2000000x, small ids)
 const TEX_END := 0x60000                 ## the manager's tail sentinel: texture slots 0-2 (A|B|C)
-const TEX_BLOCK := 0x1000                ## reserved block: TEX_END - TEX_BLOCK .. TEX_END
-const TEX_OFS := TEX_END - TEX_BLOCK     ## texture VRAM offset of the block (slot 2 + 0x1F000)
+const TEX_BLOCK := 0x3000                ## reserved block: TEX_END - TEX_BLOCK .. TEX_END (part 41: was 0x1000)
+const TEX_OFS := TEX_END - TEX_BLOCK     ## texture VRAM offset of the block (slot 2 + 0x1D000)
+const BASE36 := 0x5F000                  ## put()'s offset 0: BOMB RAIN's frame 0 (the part-36 block start)
 
 var g = null                             ## the QoLGame
 var bytes := PackedByteArray()           ## the whole block as it must be in VRAM (unused parts 0)
@@ -23,9 +26,15 @@ func _init(game) -> void:
 	bytes.resize(TEX_BLOCK)
 
 
-## a user's texels at block offset `ofs` (written to VRAM by the next ok())
+## a part-36 user's texels at texture offset BASE36 + `ofs` (written to VRAM by the next ok())
 func put(ofs: int, data: PackedByteArray) -> void:
-	if data.is_empty() or ofs + data.size() > TEX_BLOCK:
+	put_abs(BASE36 + ofs, data)
+
+
+## texels at texture VRAM offset `tex` (TEX_OFS .. TEX_END)
+func put_abs(tex: int, data: PackedByteArray) -> void:
+	var ofs := tex - TEX_OFS
+	if data.is_empty() or ofs < 0 or ofs + data.size() > TEX_BLOCK:
 		return
 	DSHardware.blit(bytes, ofs, data, 0, data.size())
 	_seen = [-1, -1, -1]
@@ -64,6 +73,9 @@ func ok() -> bool:
 			p = _reserve(mg, n)
 			if p == 0:
 				return false
+	if Game.args.has("texgap"):                         # part 41 debug: the game's last block and the free gap
+		var pv: int = _ld(mg + 0x600 + (n - 1) * 4, 4)
+		print("TEXGAP f%d blocks %d last game block %x..%x gap %x" % [g._port_frame(), n, _ld(pv, 4), _ld(pv, 4) + _ld(pv + 4, 4), TEX_OFS - (_ld(pv, 4) + _ld(pv + 4, 4))])
 	var hw = g.hw
 	var sl: Array = hw.tex_slots[2]
 	if sl.size() != 1:

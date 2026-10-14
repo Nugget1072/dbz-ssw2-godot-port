@@ -366,3 +366,31 @@ Contact sheets: a scratch Godot script (Image.get_region + blit_rect, NEAREST zo
   (+ blasts / jumps / supers both sides) → lan_cmp exit 0, the same 31 event lines on both sides.
 - Menu: preview states `p40_ki`, `p40_potato(_on)`, `p39_challenges(_kb)` (all descriptions fit).
 - Off: `offcheck` PASS (21/21 + 1382 CHT, 221/221).
+## 32. Part 41 (marker / bomb sizes, VAMPIRE, TIME SKIP, DRAGON BALL HUNT, POWERS page)
+- **Gotcha (PowerShell jobs):** inside `Start-Job { ... }` an UNQUOTED `cheats=a,b` argument loses everything after the
+  comma (PowerShell array syntax): the run gets only `a` (part 41: a "Game Over" without INFINITE HEALTH, a TIME SKIP
+  test without INFINITE KI). Quote it: `"cheats=a,b"`. Two instances in parallel are deterministic otherwise.
+- SMASH KNOCKBACK marker: `kb6 --battle --every 15 --from 4940 --to 5240 p1hp=4100:1500 cheats=smash_knockback,
+  infinite_health` → face icon 24 px 1:1 (its texture is 32x32 with the face at the top left; `kbdbg` before the fix
+  printed `uv 0 0 512 512`) in a 28 px orange box, below the RUSH counter (y >= 57).
+- HOT POTATO: `hp4` (hp3's inputs) → bomb 1:1 (11x12, crisp), countdown 5x7 digits (pop 2x on each new second).
+- VAMPIRE: `vp1 --battle --headless --to 5900 --inputs <Y every 25 frames> cheats=vampire vpdbg` → "VP … heals 79"
+  (198 x 2/5), beam ticks 120 → 48, both sides; `vp2` / `vp3` captures: green "+79", sparks victim → attacker, a light
+  green pulse.
+- TIME SKIP: `ts4 --headless --to 5000 --inputs <Y every 20> cheats=time_skip,infinite_ki,vampire tsdbg tsauto=4615
+  tscpu=0 vpdbg` → "skips time", 6 hits land on the frozen CPU, "time runs again (time)" 120 battle frames later
+  (+ hit-stop frames); `ts5` (`4615:Select:4`) = the real key; `ts6 --to 7000 cheats=time_skip tsdbg tscpu=60` → the CPU
+  skips ("cpu"), one ended early by its own throw ("skipper action 2a"); `ts3` captures: violet tint, the skipper in
+  its colours, the frozen fighter stone grey and still, ring in / out.
+- DRAGON BALL HUNT: `db2 --every 4 --from 4150 --to 4330 cheats=dragon_balls,infinite_health dbdbg dbwait=60 dbgive=6
+  dbhere=0` → grab of the 7th ball = WISH (HP / ki full, balls circle and fly off, gold flash); `db3` (dbgive=3,
+  dbhere=70): a floating 5-star ball, HUD 3/7; `db4 --headless --to 6500 dbgive=3` → drops on hits >= 400 HP, both
+  teams grab them again; `db5` captures: the drop (blinking gold while not grabbable), the edge marker of a ball off
+  the picture. `texgap` + STAGE SHUFFLE: the game's texture blocks end by 0x19700 (the port block now 0x5D000-0x60000).
+- All together: `st41 --headless --to 7500` with every part 39-41 cheat + Y / X+A / A / Select inputs → no script error.
+- LAN: `lan_pair.ps1 -tag p41_lan -cheats "vampire,time_skip,dragon_balls,infinite_ki" -hin <Y every 20, Select 600 /
+  1300> -gin <A every 30, Select 1000> -extra "tsdbg vpdbg dbdbg dbwait=100 p2hp=4300:6000 p1hp=4300:6000"` → lan_cmp
+  exit 0, the same 18 VP / TS / DB lines on both sides (time skips by host and guest).
+- Menu: preview states `p41_powers`, `p41_timeskip(_on)`, `p41_db(_on)`, `p41_help`, `p41_weird1` (13 pages, POWERS =
+  page 10, descriptions fit; p39_challenges / p40_potato now press L 5 times).
+- Off: `offcheck` PASS (21/21 + 1382 CHT, 221/221).

@@ -1,5 +1,5 @@
 extends RefCounted
-## ULTRA INSTINCT (part 39, cheat page 5 FIGHTING; QoLSettings cheat "ultra_instinct", test flag
+## ULTRA INSTINCT (part 39, cheat page 10 POWERS since part 41 (page 5 FIGHTING before); QoLSettings cheat "ultra_instinct", test flag
 ## `cheats=ultra_instinct`): a parry after Super Smash Bros. Ultimate / Street Fighter III: 3rd Strike. Owned by
 ## QoLGame (`# ---- ULTRA INSTINCT (part 39)`), which calls tick() for player 1's active fighter once per battle frame
 ## (both players' in local / LAN multiplayer: QoLGame._helped), before() / after() around the game's collision pass

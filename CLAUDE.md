@@ -84,6 +84,8 @@ user's art. Legacy, unused: `scenes/battle/`, `scripts/{battle,ui,audio,pilot}/`
   only via `QoLController.on_game_thread`.
 - `lanbattle=1` test runs need `lanteams=… lanbstage=HEX` (else a correct DESYNC at L277) and a fresh `qolcfg=` each.
 - Keep at most 2 game instances running at once (memory); kill only the processes you started.
+- Running `ssw2.py` inside a PowerShell `Start-Job`: QUOTE comma lists (`"cheats=a,b"`); unquoted, everything after the
+  first comma is lost (part 41: looked like non-determinism; parallel runs are deterministic).
 
 ## Where to read next
 | Need | Read |

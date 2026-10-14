@@ -29,15 +29,15 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
 - `QoLMenu` (`qol_menu.gd`) draws on the bottom screen in the style of the game's OPTION MODE screen (part 12) over the
   game's own Mode Select BG1 (`DSDisplay.set_layer_keep` / `layer_keep` uniform in ds_engine2d.gdshader hides the other
   layers while the menu is open). Header row = ◀ page ▶ + EXIT (L / R flip pages); every button by D-pad + A or tap.
-- Pages (`QoLMenu.PAGES`, 12): 1 SETTINGS (`main`: WINDOW SIZE 1X/2X/4X/8X/FULL with 10-s KEEP/UNDO `confirm` page, FRAME
+- Pages (`QoLMenu.PAGES`, 13 since part 41): 1 SETTINGS (`main`: WINDOW SIZE 1X/2X/4X/8X/FULL with 10-s KEEP/UNDO `confirm` page, FRAME
   RATE 60/120/240/MAX, FPS COUNTER, MUSIC, SOUND FX, JUKEBOX) · 2 SETTINGS 2 (`main2`: CONTROLS, VOLUME, AUTO PAUSE,
   DETAILED SHADOWS, ZOOM, HI-SCORES RESET → `lbconfirm` page) · 3 SETTINGS 3 (`main3`: AUTO SKIP, DAMAGE NUMBERS, INPUT
-  DISPLAY) · 4 BIG CHANGES (`mpset`: MULTIPLAYER, PERFORMANCE) · 5-9 cheats (`QoLMenu.CHEAT_PAGES`: FIGHTING (part 39: +
-  ULTRA INSTINCT), KI & ASSISTS (part 40: + RICOCHET KI), CHARACTERS (part 39: + RANDOMIZER), STAGE & MUSIC, CHALLENGES
-  (part 36: GREEN DEMON; part 38: + BOMB RAIN; part 39: + FLIGHTLESS, SMASH KNOCKBACK; part 40: + HOT POTATO)) · 10-12
-  WEIRD STUFF
-  (`QoLMenu.WEIRD_PAGES`: 10 bevel / fuzzy / game boy / mirror / shake / crt, 11 blood / afterimages / 2nd fiddle / epic /
-  flashy / confetti, 12 rainbow). HI-SCORES RESET (`lbyes`) also calls `QoLAllStarRecords.reset_files()` (part 38). The header's help text (`QoLMenu` page-row description) lists the page numbers. Sub-pages:
+  DISPLAY) · 4 BIG CHANGES (`mpset`: MULTIPLAYER, PERFORMANCE) · 5-10 cheats (`QoLMenu.CHEAT_PAGES`: FIGHTING (part 39: +
+  ULTRA INSTINCT, moved to POWERS in part 41), KI & ASSISTS (part 40: + RICOCHET KI), CHARACTERS (part 39: + RANDOMIZER), STAGE & MUSIC, CHALLENGES
+  (part 36: GREEN DEMON; part 38: + BOMB RAIN; part 39: + FLIGHTLESS, SMASH KNOCKBACK; part 40: + HOT POTATO; part 41: + DRAGON BALL HUNT), POWERS (part 41: ULTRA INSTINCT,
+  VAMPIRE, TIME SKIP)) · 11-13 WEIRD STUFF
+  (`QoLMenu.WEIRD_PAGES`: 11 bevel / fuzzy / game boy / mirror / shake / crt, 12 blood / afterimages / 2nd fiddle / epic /
+  flashy / confetti, 13 rainbow). HI-SCORES RESET (`lbyes`) also calls `QoLAllStarRecords.reset_files()` (part 38). The header's help text (`QoLMenu` page-row description) lists the page numbers. Sub-pages:
   `controls1`-`controls3` (`QoLMenu.CPAGES`), `jukebox`, `confirm`, `lbconfirm`.
 - Text: the game's font `romdata/scene/font_eu.bin` read from the ROM at startup (`QoLFont`; styles REGULAR / BOLD /
   LABEL / BIG / HEAVY; HEAVY = hand-drawn title font `QoLFont.HEAVY_GLYPHS`). `QoLTopInfo` writes the upper-screen header
@@ -80,7 +80,7 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
   emulated machine. Always-on exact speed-ups in scripts/core + render (deferred per-line register capture, io_write GX
   short path, scanline loop, native VRAM view copies) — docs/TOOLING.md "part 32".
 
-## Cheats (pages 5-9; QoLGame overrides, P1 only in single player, both sides in MP)
+## Cheats (pages 5-10; QoLGame overrides, P1 only in single player, both sides in MP)
 | Cheat | Where / how |
 |---|---|
 | INFINITE HEALTH, ONE-HIT KO, HARD MODE | damage FUN_020293A4 (`f_020293a4`): P1 0 damage / enemy HP 0 unless guarding / P1 ×2, enemies ÷2 |
@@ -97,15 +97,18 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
 | RANDOM MUSIC | see Sound |
 | GREEN DEMON (part 36, page 9 CHALLENGES) | `scripts/qol/qol_green_demon.gd` (no class_name) owned by QoLGame `# ---- GREEN DEMON (part 36)`: tick from f_0202954C, reset at f_0202A40C, drawn in `_fx_draw`, f_02021DD4 override (wrap-around / STAGE SHUFFLE move it), `_gd_kill` (KO through f_020293A4 with `_gd_killing` = damage cheats skipped). Art assets_qol/greendemon.png (16x16, from greendemon_src.png); texels in the shared port texture block `scripts/qol/qol_texblock.gd` (QoLGame `_tex_block()`, also BOMB RAIN's). Hunts P1 (both players in local / LAN MP: `_mp_on()`); LAN-safe (own RNG, game camera) |
 | BOMB RAIN (part 38: a cheat, page 9 under GREEN DEMON) | see "Weird stuff" below for the code; `QoLSettings.bomb_rain` is now a property over `cheats["bomb_rain"]` ([cheats] in settings.cfg; an old [weird] value is read once when [cheats] has none) |
-| ULTRA INSTINCT (part 39, page 5 FIGHTING) | `scripts/qol/qol_ultra.gd` (no class_name) owned by QoLGame `# ---- ULTRA INSTINCT (part 39)`: `tick` from f_0202954C (`_c39_tick`: a fresh B press opens a 5-pass parry window), `before` / `after` around the collision pass (QoLGame override f_0201E5BC: its own copy of the box test finds enemy attack boxes on the parrier, who is left out of that pass with +4 = 0; then stun 0x11 / reflect / ignore + hit stop + guard spark 0xB + SE 0x21), drawn in `_fx_draw` (silhouettes through two palettes it allocates with the game's FUN_02010B6C; `_spr_copy` / `_spr_emit` got a `pal` argument) |
+| ULTRA INSTINCT (part 39; page 10 POWERS since part 41, page 5 before) | `scripts/qol/qol_ultra.gd` (no class_name) owned by QoLGame `# ---- ULTRA INSTINCT (part 39)`: `tick` from f_0202954C (`_c39_tick`: a fresh B press opens a 5-pass parry window), `before` / `after` around the collision pass (QoLGame override f_0201E5BC: its own copy of the box test finds enemy attack boxes on the parrier, who is left out of that pass with +4 = 0; then stun 0x11 / reflect / ignore + hit stop + guard spark 0xB + SE 0x21), drawn in `_fx_draw` (silhouettes through two palettes it allocates with the game's FUN_02010B6C; `_spr_copy` / `_spr_emit` got a `pal` argument) |
 | RANDOMIZER (part 39, page 7 CHARACTERS) | QoLGame `# ---- RANDOMIZER (part 39)`: override f_0202AEB4 (the action dispatcher: a super / ultimate started → record bytes AND the team block tail (ki: the ultimate test FUN_02026A8C spends its 150 % itself; part 40 fix) put back (`_rz_snap` / `_rz_restore`), an ultimate the random fighter's own test refuses is started the dispatcher's way (`_rz_ultimate`), `_rz_load` = CHARACTER SHUFFLE's loader with a random id, dispatcher again), `_rz_tick` (back on a hit / win pose / when the super and its objects are over), `_rz_back`; shuffles wait (`_shuffle_tick`); LAN seed with the battle seed |
 | FLIGHTLESS (part 39, page 9) | QoLGame `# ---- FLIGHTLESS (part 39)` `_fl_tick` (from `_c39_tick`, both teams' active fighters): own fall speed added to y; the game's ground test FUN_020214C4 lands them; part 40: a takeoff gets an extra lift and a lighter pull while rising (`_fl_up`: ~35 px jump) |
-| SMASH KNOCKBACK (part 39, page 9) | QoLGame `# ---- SMASH KNOCKBACK (part 39, part 40)`: f_020293A4 notes victims while `_kb_on` (inside the f_0201E5BC override), `_kb_apply` scales their push after the pass and marks them launched (`_kb_free`); override f_02019594 (camera mode 0) undoes the tether pull for launched fighters and keeps the centre near the other one; `_kb_tick` (from `_c39_tick`) off-camera damage; `_kb_draw` edge markers (face icon sprite rec+0x290 via `_spr_emit`) |
-| HOT POTATO (part 40, page 9) | `scripts/qol/qol_potato.gd` (no class_name) owned by QoLGame `# ---- HOT POTATO (part 40)`: tick from f_0202954C, `hit` from f_020293A4 while `_hp_coll` (inside the f_0201E5BC override), reset at f_0202A40C, drawn in `_fx_draw` (BOMB RAIN's bomb frames in the shared texture block + the DAMAGE NUMBERS digits `_dn_emit`) |
+| SMASH KNOCKBACK (part 39, page 9) | QoLGame `# ---- SMASH KNOCKBACK (part 39, part 40)`: f_020293A4 notes victims while `_kb_on` (inside the f_0201E5BC override), `_kb_apply` scales their push after the pass and marks them launched (`_kb_free`); override f_02019594 (camera mode 0) undoes the tether pull for launched fighters and keeps the centre near the other one; `_kb_tick` (from `_c39_tick`) off-camera damage; `_kb_draw` edge markers (face icon sprite rec+0x290 via `_spr_emit`; part 41: drawn 1:1 = its 32x32 texture with the 24x24 face at the top left, in a 28 px box, kept below the RUSH counter) |
+| HOT POTATO (part 40, page 9) | `scripts/qol/qol_potato.gd` (no class_name) owned by QoLGame `# ---- HOT POTATO (part 40)`: tick from f_0202954C, `hit` from f_020293A4 while `_hp_coll` (inside the f_0201E5BC override), reset at f_0202A40C, drawn in `_fx_draw` (BOMB RAIN's bomb frames in the shared texture block + the DAMAGE NUMBERS digits `_dn_emit`; part 41: bomb 1:1, digits one size smaller) |
 | RICOCHET KI (part 40, page 6) | QoLGame `# ---- RICOCHET KI (part 40)` `_rc_bounce` after the plain-shot handler (f_020209E0 override); slot counts forgotten in f_020225C8 |
+| VAMPIRE (part 41, page 10 POWERS) | `scripts/qol/qol_vampire.gd` (no class_name) owned by QoLGame `# ---- VAMPIRE (part 41)`: f_020293A4 measures the HP really lost around the whole damage call while `_vp_coll` (inside the f_0201E5BC override; `_vp_in` guards the re-entry) → `hit` heals the other side's active fighter 40 %; drawn in `_fx_draw` (green palette via FUN_02010B6C at 0x027C0140, sparks, "+N" with the DAMAGE NUMBERS digits: glyph ':' = "+") |
+| TIME SKIP (part 41, page 10) | `scripts/qol/qol_timeskip.gd` (no class_name) owned by QoLGame `# ---- TIME SKIP (part 41)`: tick from f_0202954C (Select edge on +0x270, CPU chance, end rules); the frozen side's fighter runs `freeze_step` instead of FUN_0202954C (hurt box registered, nothing else); overrides f_02021F54 (its objects get obj +4 bit 4 around the effect loop), f_0201E224 / f_02019594 (it cannot be pushed / tethered), f_020294B8 (its support only drawn); ALL-STAR hearts leave SELECT to it (`QoLAllStarHearts.filter`); drawn in `_fx_draw` (violet tint quad, the skipper's copy, the frozen fighter grey via a palette at 0x027C01A0, rings) |
+| DRAGON BALL HUNT (part 41, page 9) | `scripts/qol/qol_dragonballs.gd` (no class_name) owned by QoLGame `# ---- DRAGON BALL HUNT (part 41)`: tick from f_0202954C, `hit` from f_020293A4 while `_db_coll` (VAMPIRE's measured HP), reset at f_0202A40C, drawn in `_fx_draw`. Art: the game's own clear-event Dragon Balls (clearevent.bin db_normal.ntft + palettes) decoded at runtime from the player's ROM, box-filtered to 24 / 12 px 16-colour textures in the shared texture block (grown to 12 KiB in part 41: 0x5D000-0x60000), palettes via FUN_02010B6C at 0x027C0160 |
 | Leaderboard rule | f_02002560 returns 0 while `QoLSettings.cheats_on() > 0`; `reset_leaderboards()` (`# ---- LEADERBOARD`); the ALL-STAR / ENDLESS records pages write nothing either |
 
-## Weird stuff (pages 10-12) and other picture effects
+## Weird stuff (pages 11-13) and other picture effects
 - Renderer only (no game state): BEVEL EMBOSS, TOUCH FUZZY (`FX_*` shader variants in ds_engine2d / ds_poly,
   ds_fx_bevel.gdshader; global uniform `ds_fx`), GAME BOY (ds_fx_gameboy.gdshader), MIRROR MODE (`DSDisplay.mirror_active()`;
   GameDS swaps LEFT / RIGHT; off in pause), SCREEN SHAKE (`FX_SHAKE`; f_020293A4 records `shake_dmg`) — `DSDisplay`
@@ -117,7 +120,8 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
 - BOMB RAIN (a cheat since part 38, CHALLENGES page): `scripts/qol/qol_bombs.gd` (no class_name; owned by QoLGame `# ---- BOMB RAIN`): sprite
   assets_qol/bomb.png (from the user's bomb_src.png), one direct-colour textured quad per bomb at texture VRAM 0x5F000
   reserved through the game's texture manager 0x020DE380 (part 36: that block is `qol_texblock.gd`, shared with GREEN
-  DEMON); hits copy FUN_0201E9EC, explosion FUN_0202247C / FUN_0202216C + SE 0x1E.
+  DEMON and HOT POTATO; part 41: grown downward to 12 KiB for DRAGON BALL HUNT, `put()` offsets unchanged from 0x5F000,
+  `put_abs()` for the new part); hits copy FUN_0201E9EC, explosion FUN_0202247C / FUN_0202216C + SE 0x1E.
 - INPUT DISPLAY: `QoLInputDisplay` (pad word 0x020DD4E0). 2ND FIDDLE: `# ---- 2ND FIDDLE`. EPIC MODE: `QoLEpic` (text
   rewriter; story strings via FUN_0200B954), `QoLEpicImg` + `QoLEpicRefs` (Data File / credits pictures; FUN_02009B28
   override). JELLY FIGHTERS was removed in part 25.

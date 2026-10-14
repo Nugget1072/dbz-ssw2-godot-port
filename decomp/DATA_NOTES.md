@@ -3251,3 +3251,54 @@ KO swap, pause, WIN; zoom 0 + mirror; zoom 4), `sky_built.png` = the built BG3 p
 - **Plain shots and the camera** (V rcdbg): the handler FUN_020209E0 also runs outside the fight (port 3876-3908,
   before battle state 7) with a camera that does not belong to it (screen x 57000+): RICOCHET KI bounces only in state
   7. Shots keep living while off the picture long enough to come back after a bounce. | H |
+## Session 2, part 41 findings (time freeze, Dragon Ball art, texture gap) — V = port verified, C = code read
+- **Battle frame order** (H, C+V; research agent + TIME SKIP): FUN_02013C34 (battle state 7/8, once per battle frame,
+  skipped entirely while the global hit stop u16 [G+0x1BCAC] != 0, G = *(0x020DE3A0)): input [G+0x1BCB4] (FUN_02012DA8:
+  P1 from the pad block 0x020DD4DC +0/+2/+4 pressed / released / held; P2 = CPU AI FUN_0202DCE0(P2, P1), struct [0..3]
+  -> +0x26C..+0x272), FUN_020129C0 (states < 7: directions only), FUN_02029AB0 (FUN_0202954C for both active fighters
+  in the order of +0x25D, FUN_020294B8 = the support on screen incl. its drawing, FUN_020218FC walls / recentring,
+  FUN_0201E224 body push-apart < 32 px, skipped when either +0x250 & 0x20), FUN_02021F54 effect loop, FUN_0201E5BC
+  collision pass, FUN_02019980 (tether FUN_02019594 + floor FUN_020214C4), then both active fighters drawn by
+  FUN_02019328 (independent of FUN_0202954C). | H |
+- **FUN_0202954C(f, opp) order** (H, C): +0xC = 0; return if +0x250 & 0x800; beam-struggle mashing; +0x288 / +0x28C =
+  previous x / y; FUN_0201DEE0(f) (collision list append, max 0x30, not when +0x250 & 0x40 or +0x10 & 0x40); +0x34 =
+  0x02020EC4; character handler 0x020D785C[f+5] (not during a cut-in / +0x250 & 0x400); action handler (reads input,
+  integrates motion); facing FUN_02021488; VM FUN_02022930 (animation, boxes, timers); +0x257 / team +0x8D4 countdowns.
+- **Per-fighter freeze** (H, V TIME SKIP ts4 / research tsx1-3): not running FUN_0202954C for a fighter but doing +0xC = 0,
+  previous position = position, FUN_0201DEE0(f) and +0x34 = 0x02020EC4 freezes position, action, VM frame, timers and
+  input while it stays drawn and hittable (hurt boxes of the frozen pose). Hits apply damage + hit stop + sparks at once;
+  the reaction FUN_02021B4C / push FUN_020213A8 / stun +0x25E only wait, each hit overwriting the last (one reaction plays
+  after). Still moving it: FUN_0201E224 (body push) and FUN_02019594 (tether): positions restored around them. | H |
+- **+0x250 & 0x800** (H, C): read only by FUN_0202954C / FUN_020294B8 (return before the collision registration = not
+  hittable); set / cleared by VM ops 0x52 / 0x51 (cut-ins: opponent FUN_02027BD0 + support FUN_02027B1C = [teams+0x11E0]
+  |= 0x800, self |= 0x200, all 48 objects +4 |= 4 by FUN_02021F18 / &= ~4 by FUN_02021EDC). No per-fighter stop counter.
+- **Object freeze bit** (H, C+V): obj +4 & 4: FUN_02021F54 skips handler, VM, attach FUN_02020F80 and life FUN_0202104C
+  when (+4 & 6) != 0 and still draws it unless +4 & 2; frozen objects do not register for collision. The 8 aura slots
+  (pool +0x42C0) use the same test.
+- **Melee hit handler FUN_02027C2C** (H, C): attacker +0x250 & 4 = already hit this swing; guard branch (victim +0x250 &
+  9): hit stop 2 / 3, spark 0xB, SE 0xA, victim +0x250 = 0, reaction 0xE, |= 1 (stays guarded); hit: hit stop 2 (dash 8),
+  damage, push, victim +0x250 = 0 (not in KO 0x33), reaction 0xF (dash 0x11), |= 2, +0x25E 0 / 0xA / 0x14, attacker ki
+  +0xA00 / +0x1400.
+- **Input bits** (H, C): +0x26C pressed / +0x270 held = DS key layout (A 1, B 2, Select 4, Start 8, Right 0x10, Left
+  0x20, Up 0x40, Down 0x80, R 0x100, L 0x200, X 0x400, Y 0x800). **Select has no battle reader** (every FUN_020011B4 /
+  FUN_020011C8 mask and raw test scanned; FUN_0202B904 mash mask 0xCF3); L+R+Select+Start held without A/B/X/Y = the
+  battle soft reset (FUN_02013064 → FUN_02012224). Pressed edges are lost in hit-stop frames (FUN_02012DA8 not called):
+  edge-detect the held bit. Lower-screen touch is read only in actions 0 / 5 (panels x 8+80k..88+80k y 16..136, Team
+  Arts bar y 144..184). | H |
+- **Dragon Ball art** (H, decoded + looked at): `romdata/scene/common/clearevent.bin` (file id 277, the game's named
+  pack) members `db_normal.ntft` (index 46, 16384 B, RLE 0x30) = 256x128 4-bit linear texture (low nibble = left px),
+  4x2 cells of 64x64, cell k = the (k+1)-star ball centred (sizes 24, 38, 24, 62, 52, 38, 52 px), cell 7 empty;
+  palettes `db_normal.ntfp` (98: orange, stars = indices 1 / 2) and `db_bright.ntfp` (99: light gold), colour 0 =
+  0x7C1F transparent. Loader (M, C): FUN_02009060 opens the 19 scene/common packs (path table 0x020D5784, handles u8
+  0x020DE1CC + i, clearevent = 9; member id = 1626 + index); FUN_02062B90 uploads member 0x688 with FUN_0200C68C(buf, 1,
+  5, 4) and palettes 0x6BC / 0x6BD / a white one / 0x6BE into slots (1, 0..3). No other Dragon Ball art in the named
+  packs (only the monochrome Mode Select centre tile null*.ntft). Box-filtered to 24 px all star counts stay
+  recognisable in the game's palette; at 12 px they are plain balls.
+- **Texture VRAM in battle** (H, V `texgap` with STAGE SHUFFLE over many stages): the game's own texture-manager blocks
+  (0x020DE380) end by 0x19700 at most; the last gap before the tail sentinel 0x60000 is >= 0x45900 bytes. The port block
+  (qol_texblock.gd) is 12 KiB since part 41 (0x5D000-0x60000).
+- **Face icon sprite** (H, V kbdbg): rec+0x290's texture is 32x32 (texcoords 0..512 in 1/16), 16-colour, the 24x24 face
+  at its top left.
+- **VAMPIRE / TIME SKIP / DRAGON BALL HUNT** (port cheats, V): heals 2/5 of the HP lost measured around FUN_020293A4 (the
+  other damage cheats included); a skip of 120 battle frames lets ~6 combo hits land on the frozen fighter, which plays
+  one reaction afterwards; a 400+ HP hit (ki blast 432, dash 1080, heavy 1350) drops a ball. All LAN-identical. | H |

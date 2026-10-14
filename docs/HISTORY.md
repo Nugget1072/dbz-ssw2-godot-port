@@ -6,6 +6,11 @@ how the systems fit together now: `docs/QOL_ARCHITECTURE.md`; decoded facts per 
 page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in QOL_ARCHITECTURE.md).
 
 ## Per part (details in DATA_NOTES / transpiler notes)
+- **Part 41** — *three cheats + size fixes (2026-10-13)*: SMASH KNOCKBACK's face marker drawn 1:1 in a tighter box,
+  HOT POTATO's bomb 1:1 and its countdown smaller; new cheat page 10 POWERS (ULTRA INSTINCT moved there, weird stuff now
+  11-13) with VAMPIRE (`qol_vampire.gd`, hits heal 40 %) and TIME SKIP (`qol_timeskip.gd`, SELECT freezes the enemy 2 s),
+  DRAGON BALL HUNT on CHALLENGES (`qol_dragonballs.gd`, the game's own ball art from the ROM; port texture block 12 KiB).
+  TESTING 32, DATA_NOTES `part 41 findings`.
 - **Part 40** — *cheat fixes + two cheats (2026-10-13)*: RANDOMIZER now does ultimates (the ultimate test spends
   its 150 % itself: the team ki is put back too; refused ones forced), FLIGHTLESS jump ~4x higher, SMASH KNOCKBACK
   lighter but fighters can fly out of the picture (tether undone, off-camera damage, face-icon edge marker), new HOT

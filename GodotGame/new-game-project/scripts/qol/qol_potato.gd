@@ -13,7 +13,7 @@ extends RefCounted
 ## frames later the next fuse is lit. Both teams; the fuse stops during pause / cut-ins, supers / Team Arts (camera mode
 ## != 0), tags, throws / grab sequences (+0x250 & 0x420), KO and outside the fight (battle state 7).
 ## Art: the user's walking bomb (assets_qol/bomb.png, BOMB RAIN's) in the port's shared texture block (qol_texblock.gd,
-## the same bytes BOMB RAIN writes, so both can be on), drawn 1.5x as one textured quad, sparks animated.
+## the same bytes BOMB RAIN writes, so both can be on), drawn 1:1 as one textured quad (part 41; 1.5x before), sparks animated.
 ## LAN: own RNG seeded at every battle load (`hpseed`), battle RAM only: both machines agree.
 ## Debug: `hpdbg` (light / pass / boom lines), `hpseed=N`, `hpfuse=N` (frames), `hpwait=N`.
 const SEED := 0x7A707
@@ -34,8 +34,8 @@ const FR_BYTES := 0x200
 const SH_OFS := FRAMES * FR_BYTES
 const PID := 0x20                        ## polygon ID of the bomb
 const KEY := 24                          ## its PLTT_BASE pairing key (bombs 0-12, demon 16-17)
-const SCALE := 1.5
-const HEAD := 46.0                       ## world px from the fighter's centre up to the bomb's centre
+const SCALE := 1.0                       ## part 41: 1:1 (1.5 made its pixels uneven; the user: "weirdly sized")
+const HEAD := 43.0                       ## world px from the fighter's centre up to the bomb's centre
 
 var g = null                             ## the QoLGame
 var _rng := RandomNumberGenerator.new()
@@ -207,7 +207,7 @@ func draw(idx: Dictionary, cv: Array) -> bool:
 	var x := _ld(r + 0x38, 4, true) / 256.0
 	var y := _ld(r + 0x3C, 4, true) / 256.0 - HEAD
 	var secs := (_fuse + 59) / 60
-	var ps := 3 if _pop > 0 else 2
+	var ps := 2 if _pop > 0 else 1                     # part 41: one size smaller (was 2 / 3)
 	var nh := 7 * ps + 2                                # the countdown's height (outline included)
 	var sx := clampf(floorf(cv[2] + z * (x - cv[0])), 12.0, 244.0)
 	var sy := floorf(cv[3] + z * (y - cv[1]))
@@ -216,11 +216,11 @@ func draw(idx: Dictionary, cv: Array) -> bool:
 		sy += 24.0 - top
 	sy = minf(sy, 184.0 - _h * SCALE * 0.5)
 	var blink := secs <= 3 and (_fuse / 5) % 2 == 0
-	# the bomb: sparks frames 0-2 (feet still), 1.5x, red-tinted while blinking
+	# the bomb: sparks frames 0-2 (feet still), 1:1, red-tinted while blinking
 	var f := (_age / 3) % 3
 	var s := 16.0 * SCALE
-	var tx := sx - _w * SCALE * 0.5
-	var ty := sy - _h * SCALE * 0.5
+	var tx := floorf(sx - _w * SCALE * 0.5)            # whole pixels: crisp
+	var ty := floorf(sy - _h * SCALE * 0.5)
 	g.io_write(0x4000440, 4, 2)
 	g.io_write(0x4000444, 4, 0)
 	for v in [s, 0.0, 0.0, 0.0, s, 0.0, 0.0, 0.0, 1.0, tx, ty, 38.0]:

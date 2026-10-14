@@ -14,7 +14,8 @@ const CHEATS := ["no_cooldown", "infinite_health", "one_hit_ko", "infinite_ki", 
 	"boss_characters", "random_characters", "infinite_assists", "assist_spam", "random_music", "character_shuffle",
 	"chaos_shuffle", "stage_shuffle", "triple_ki", "attack_spam", "hard_mode", "random_stage", "green_demon", "bomb_rain",
 	"ultra_instinct", "randomizer", "flightless", "smash_knockback",   # part 39
-	"hot_potato", "ricochet_ki"]   # part 40
+	"hot_potato", "ricochet_ki",   # part 40
+	"vampire", "time_skip", "dragon_balls"]   # part 41
 var music_seed := 0                       ## RANDOM MUSIC: the current shuffle (a new one each time it is switched on)
 var cheats := {}
 var music: bool = true

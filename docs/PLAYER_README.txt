@@ -17,7 +17,7 @@ CONTROLS - KEYBOARD (default; change them in the settings menu: SETTINGS 2 -> CO
   A ................... L       (power up, e.g. Goku's Kaioken)
   D ................... R       (charge ki; R+A / R+B = special moves)
   Enter ............... Start   (pause)
-  Backspace ........... Select  (not used in battle)
+  Backspace ........... Select  (not used in battle; the TIME SKIP cheat uses it)
   Mouse (lower screen)  Touch screen (Team Arts, calling your support, menus)
   F3 .................. FPS counter on/off       F11 ..... Fullscreen on/off
 
@@ -129,7 +129,7 @@ LAN MULTIPLAYER (MULTIPLAYER ON, VS BATTLE -> LAN; two PCs / Steam Decks on the 
     "WAITING FOR PLAYER" appears when the other PC falls behind (slow Wi-Fi, a loading hitch); a dropped connection
     shows CONNECTION LOST after a few seconds and both players are back in the room / LAN page.
 
-CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; they act for player 1 only)
+CHEATS (settings pages 5-10, sorted by theme; all OFF unless you turn them on; they act for player 1 only)
   While any cheat is on, Z-Battle scores are not put in the HI-SCORE RANKING and ALL-STAR / ENDLESS runs are not
   recorded (settings and weird stuff don't count).
  Page 5 FIGHTING
@@ -140,13 +140,6 @@ CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; th
                      attack is still firing (a beam that gets cut short keeps going for a second).
   ATTACK SPAM ...... attacks restart at once and every hit connects: spam heavy attacks, dash attacks and combos
                      (supers, throws and team attacks still play out in full).
-  ULTRA INSTINCT ... a parry, like Super Smash Bros. Ultimate and Street Fighter III: tap B (guard) just as an
-                     attack reaches you: the first 5 frames after the tap catch it. A caught hit does nothing to
-                     you, the battle freezes for a moment, your fighter flashes silver-blue and the enemy who
-                     attacked is stunned (ki blasts fly back the other way; beams and super parts pass through
-                     you). Tap B in neutral, while moving or guarding - not while you are being hit. A tap that
-                     catches nothing flashes your fighter red and you can't parry again for half a second.
-                     Holding B still guards as usual.
  Page 6 KI & ASSISTS
   INFINITE KI ...... the ki gauge stays at 200 %: ki blasts and supers cost nothing.
   KI HOMING ........ player 1's ki blasts curve toward the enemy (beams are not affected).
@@ -208,9 +201,33 @@ CHEATS (settings pages 5-9, sorted by theme; all OFF unless you turn them on; th
                      it. Land a hit on the other team to pass the bomb to them (it can't come straight back). When
                      the countdown reaches 0 it explodes on whoever holds it: 30 % of max HP and a knock-down
                      (guarding doesn't help). A new bomb comes a few seconds later. Both teams.
-WEIRD STUFF (settings pages 10-12, after the cheats; all OFF unless you turn them on; for fun)
- Page 10: BEVEL EMBOSS, TOUCH FUZZY, GAME BOY, MIRROR MODE, SCREEN SHAKE, CRT TV. Page 11: BLOOD, AFTERIMAGES,
- 2ND FIDDLE, EPIC MODE, FLASHY KI, KO CONFETTI. Page 12: RAINBOW KI.
+  DRAGON BALL HUNT . the seven Dragon Balls (the game's own art) appear one at a time somewhere in the picture,
+                     floating. Fly into one to grab it for your team; the balls you hold show in seven slots
+                     above your ki gauge (a small marker at the screen edge points to a ball out of the
+                     picture). A hit of about a ki blast or harder makes your team drop its last ball - it flies
+                     out and blinks gold for a moment before anyone can grab it (the other team first). A team
+                     with all seven summons the wish: its fighter's HP and the team's ki fill up completely, the
+                     balls fly away and the hunt starts over. Both teams (the CPU grabs balls it passes).
+ Page 10 POWERS
+  ULTRA INSTINCT ... a parry, like Super Smash Bros. Ultimate and Street Fighter III: tap B (guard) just as an
+                     attack reaches you: the first 5 frames after the tap catch it. A caught hit does nothing to
+                     you, the battle freezes for a moment, your fighter flashes silver-blue and the enemy who
+                     attacked is stunned (ki blasts fly back the other way; beams and super parts pass through
+                     you). Tap B in neutral, while moving or guarding - not while you are being hit. A tap that
+                     catches nothing flashes your fighter red and you can't parry again for half a second.
+                     Holding B still guards as usual.
+  VAMPIRE .......... every hit drains life: the attacking team's fighter heals 40 % of the HP the hit took
+                     (green sparks fly from the victim to it, a green "+" number shows the heal). Both teams -
+                     long fights and big comebacks. (A fighter can't heal past its max HP.)
+  TIME SKIP ........ press SELECT with at least 100 % ki to stop the enemy's time for 2 seconds (it costs 100 %):
+                     the picture turns violet, the enemy fighter turns grey and stands still - with its support
+                     and its shots in the air - while you keep moving, hitting and shooting. Every hit lands; the
+                     enemy only reacts when time runs again. It ends early if the enemy is knocked out or grabbed,
+                     or when you start a throw or a super. The CPU uses it too when it has the ki and is close.
+                     (ALL-STAR / ENDLESS: while TIME SKIP is on, SELECT is TIME SKIP's; use hearts by tapping them.)
+WEIRD STUFF (settings pages 11-13, after the cheats; all OFF unless you turn them on; for fun)
+ Page 11: BEVEL EMBOSS, TOUCH FUZZY, GAME BOY, MIRROR MODE, SCREEN SHAKE, CRT TV. Page 12: BLOOD, AFTERIMAGES,
+ 2ND FIDDLE, EPIC MODE, FLASHY KI, KO CONFETTI. Page 13: RAINBOW KI.
   BEVEL EMBOSS ..... every picture gets a Photoshop-style bevel & emboss (light top-left edges, shadowed
                      bottom-right), menus included (the port's own settings menu stays flat so it stays readable).
   TOUCH FUZZY ...... in every battle (Story, Z-Battle, Maximum, Practice, Free Battle...): a slow rainbow shimmer

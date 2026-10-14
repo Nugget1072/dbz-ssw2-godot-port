@@ -5,7 +5,7 @@ extends Control
 ## a black title plate, black rows with orange trim and bold italic labels, and orange hexagon buttons (current
 ## value in red, cursor = white hexagon). Every button works with the D-pad (Up/Down row, Left/Right button, A or
 ## Start = press, B = back, L / R = page) and with a tap (touch / mouse). Pages: "main" .. "main3" (settings,
-## pages 1-3), "cheats".."cheats5" (pages 5-9, by theme: CHEAT_PAGES), "weird".."weird3" (pages 10-12, WEIRD_PAGES), "mpset" (page 4, MULTIPLAYER), "jukebox", "confirm" (window size), "controls1" + "controls2"
+## pages 1-3), "cheats".."cheats6" (pages 5-10, by theme: CHEAT_PAGES), "weird".."weird3" (pages 11-13, WEIRD_PAGES), "mpset" (page 4, MULTIPLAYER), "jukebox", "confirm" (window size), "controls1" + "controls2"
 ## (CONTROLS, part 16) + "controls3" (MOUSE CURSOR: the gamepad cursor of the touch screen, QoLCursor, part 24). Row 0 of every page but the jukebox is the header: page arrows + EXIT (controls: BACK).
 
 const TRIM := Color8(190, 125, 28)          ## orange lines along the black bands (Option screen)
@@ -18,7 +18,7 @@ const CONFIRM_SECONDS := 10
 const ROW_Y := 31
 const ROW_PITCH := 27
 const HEX_H := 24
-const PAGES := ["main", "main2", "main3", "mpset", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "weird", "weird2", "weird3"]   ## the pages the header's arrows flip through (settings, then cheats)
+const PAGES := ["main", "main2", "main3", "mpset", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "cheats6", "weird", "weird2", "weird3"]   ## the pages the header's arrows flip through (settings, then cheats)
 const CPAGES := ["controls1", "controls2", "controls3"]   ## CONTROLS: 7 rows per page (smaller rows than the other pages)
 const CROW_Y := 37                         ## CONTROLS: first row (the KEY / PAD captions sit above it)
 const CROW_PITCH := 22
@@ -34,7 +34,7 @@ const BUTTON_HELP := {
 	"ds_l": "Power up (e.g. Goku's Kaioken):\nstronger while the ki gauge\ndrains. (BOSS CHARACTERS cheat:\nhold it while picking.)",
 	"ds_r": "Charge ki while held.\nR+A, R+B: special moves.",
 	"ds_start": "Pause the battle.\nMenus: confirm.",
-	"ds_select": "Not used in battle.",
+	"ds_select": "Not used in battle by the game.\nTIME SKIP cheat: skip time.\nALL-STAR / ENDLESS: use a heart\n(by tap while TIME SKIP is on).",   # part 41
 	"ds_up": "Fly up. Menus: cursor up.",
 	"ds_down": "Fly down. Menus: cursor down.",
 	"ds_left": "Fly left. Menus: cursor left.",
@@ -57,7 +57,6 @@ const CHEAT_PAGES := {
 		["one_hit_ko", "ONE-HIT KO", "Every hit from player 1 knocks\nout the enemy fighter it hits.\n(Guarded hits do normal damage.)"],
 		["no_cooldown", "NO COOLDOWN", "Attacks can be used again at once:\nki blasts and super attacks start\neven while another attack is\nstill firing. (Player 1 only.)"],
 		["attack_spam", "ATTACK SPAM", "Attacks restart at once and\nevery hit connects: spam heavy\nattacks, dash attacks, combos.\n(Supers and throws still play\nout in full.)"],
-		["ultra_instinct", "ULTRA INSTINCT", "Tap B just as a hit comes\n(5 frames!) to PARRY it: no\ndamage, the attacker is stunned\nand ki blasts fly back. A tap\nthat parries nothing: red flash."],   # part 39
 	]],
 	"cheats2": ["KI & ASSISTS", [
 		["infinite_ki", "INFINITE KI", "Player 1's ki gauge stays full\n(200%): ki blasts and super\nattacks cost nothing."],
@@ -86,6 +85,12 @@ const CHEAT_PAGES := {
 		["flightless", "FLIGHTLESS", "Nobody can fly! Fighters in\nthe air fall fast to the\nground; UP is a jump. Supers\nstill work in the air.\n(Both teams.)"],   # part 39 (part 40: higher jump)
 		["smash_knockback", "SMASH KNOCKBACK", "Hurt fighters fly farther, like\nSmash Bros, even off the screen!\nOff screen they lose HP until\nthey come back (a marker shows\nwhere). (Both teams.)"],   # part 39 (part 40: off the camera)
 		["hot_potato", "HOT POTATO", "A lit bomb lands on a fighter.\nHit the other team to pass it\non! When the countdown hits 0\nit explodes on whoever holds\nit (30% of max HP)."],   # part 40
+		["dragon_balls", "DRAGON BALL HUNT", "The 7 Dragon Balls appear one\nby one: fly into them to grab\nthem. Getting hit drops one!\nAll 7: Shenron restores your\nHP and ki. (Both teams.)"],   # part 41
+	]],
+	"cheats6": ["POWERS", [   # part 41 (ULTRA INSTINCT moved here from FIGHTING)
+		["ultra_instinct", "ULTRA INSTINCT", "Tap B just as a hit comes\n(5 frames!) to PARRY it: no\ndamage, the attacker is stunned\nand ki blasts fly back. A tap\nthat parries nothing: red flash."],   # part 39 (page 5 until part 41)
+		["vampire", "VAMPIRE", "Every hit drains life: the\nattacker heals 40% of the\ndamage it deals (green sparks\nfly back to it). Both teams.\nLong fights, wild comebacks!"],   # part 41
+		["time_skip", "TIME SKIP", "Press SELECT with 100% ki to\nskip time: the enemy freezes\nfor 2 seconds while you keep\nmoving and hitting. The CPU\ncan do it too! (Costs 100%.)"],   # part 41
 	]],
 }
 ## WEIRD SETTINGS (part 21, page 7, after the cheats): [QoLSettings field, label, description]
@@ -177,7 +182,7 @@ func _process(delta: float) -> void:
 func _build() -> void:
 	_rows = []
 	match page:
-		"main", "main2", "main3", "mpset", "confirm", "lbconfirm", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "weird", "weird2", "weird3", "controls1", "controls2", "controls3":
+		"main", "main2", "main3", "mpset", "confirm", "lbconfirm", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "cheats6", "weird", "weird2", "weird3", "controls1", "controls2", "controls3":
 			_rows.append({"label": "", "desc": "", "buttons": [
 				{"id": "pg_prev", "text": "", "rect": Rect2(126, 4, 24, 20)},   # part 24 QA: 36 px between the arrows
 				{"id": "pg_next", "text": "", "rect": Rect2(186, 4, 24, 20)},   # for the counter ("10/10" is 34 px)
@@ -187,7 +192,7 @@ func _build() -> void:
 			for w in WEIRD_PAGES[page][1]:
 				_add_row(w[1], [["wset:%s:1" % w[0], "ON"], ["wset:%s:0" % w[0], "OFF"]], w[2])
 			_layout_main()
-		"cheats", "cheats2", "cheats3", "cheats4", "cheats5":
+		"cheats", "cheats2", "cheats3", "cheats4", "cheats5", "cheats6":
 			for c in CHEAT_PAGES[page][1]:
 				var bs := [["cheat:%s:1" % c[0], "ON"], ["cheat:%s:0" % c[0], "OFF"]]
 				if c[0] == "boss_characters":
@@ -436,7 +441,7 @@ func focus_desc() -> String:
 	if page in CPAGES:
 		return _controls_desc()
 	if cur_id().begins_with("pg_"):
-		return "1-3 settings, 4 big changes.\nCheats: 5 fighting, 6 ki, 7\ncharacters, 8 stage & music,\n9 challenges. 10-12 weird.\nL and R change the page too."
+		return "1-3 settings, 4 big changes.\nCheats: 5 fighting, 6 ki, 7 char-\nacters, 8 stage & music, 9 chal-\nlenges, 10 powers. 11-13 weird.\nL and R change the page too."
 	return _rows[row]["desc"] if row < _rows.size() else ""
 
 
@@ -729,7 +734,7 @@ func frame_input(newly: int, down: int, tap: Vector2i) -> void:
 		if not page in CPAGES and page != "lbconfirm":   # (those play it in _press: one sound, part 24 QA)
 			qol.se(QoLController.SE_BACK)
 		match page:
-			"main", "main2", "main3", "mpset", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "weird", "weird2", "weird3": close()
+			"main", "main2", "main3", "mpset", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "cheats6", "weird", "weird2", "weird3": close()
 			"controls1", "controls2", "controls3": _press("cback")
 			"jukebox": _leave_jukebox()
 			"confirm": _undo_window()
@@ -784,7 +789,7 @@ func _draw() -> void:
 	match page:
 		"controls1", "controls2", "controls3":
 			_draw_controls()
-		"main", "main2", "main3", "mpset", "confirm", "lbconfirm", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "weird", "weird2", "weird3":
+		"main", "main2", "main3", "mpset", "confirm", "lbconfirm", "cheats", "cheats2", "cheats3", "cheats4", "cheats5", "cheats6", "weird", "weird2", "weird3":
 			_plate("BIG CHANGES" if page == "mpset" else CHEAT_PAGES[page][0] if CHEAT_PAGES.has(page) else (WEIRD_PAGES[page][0] if WEIRD_PAGES.has(page) else ("SETTINGS 3" if page == "main3" else ("SETTINGS 2" if page == "main2" or page == "lbconfirm" else "SETTINGS"))))
 			var modal := page == "confirm" or page == "lbconfirm"
 			for r in (_rows.size() - (1 if modal else 0)):

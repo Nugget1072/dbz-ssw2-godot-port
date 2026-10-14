@@ -129,7 +129,7 @@ func filter(newly: int, touch: Vector2i, new_touch: bool) -> Array:
 					if allstar.dbg:
 						print("AS f%d heart %d tapped" % [qol.game.frames, i])
 	var keys := 0
-	if (newly & 4) != 0:                       # SELECT: the first lit heart
+	if (newly & 4) != 0 and not qol.settings.cheat("time_skip"):   # SELECT: the first lit heart (part 41: TIME SKIP's while that cheat is on; hearts by tap)
 		keys = 4
 		if allstar.heart_req < 0:
 			for i in 3:

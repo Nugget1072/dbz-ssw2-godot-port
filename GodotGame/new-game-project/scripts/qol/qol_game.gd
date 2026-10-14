@@ -46,6 +46,17 @@ func _on(name: String) -> bool:
 # ------------------------------------------------------------------------------------------------ damage
 ## FUN_020293A4(fighter, damage, type): the only place fighters lose HP from hits
 func f_020293a4(param_1: int = 0, param_2: int = 0, param_3: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	if (_vp_coll or _db_coll) and param_2 > 0 and not _vp_in:   # part 41 VAMPIRE / DRAGON BALL HUNT: the HP really lost
+		_vp_in = true                                  # (measured around the whole call: the cheats below count)
+		var hp0: int = _ld(param_1 + 0x24A, 2, true)
+		var rv := f_020293a4(param_1, param_2, param_3, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+		_vp_in = false
+		var lost := hp0 - maxi(_ld(param_1 + 0x24A, 2, true), 0)
+		if _vp_coll:
+			_vp.hit(param_1, lost)
+		if _db_coll:
+			_db.hit(param_1, lost)
+		return rv
 	if _kb_on and param_2 > 0:
 		_kb_hit[param_1] = true                         # part 39 SMASH KNOCKBACK: scaled after the collision pass
 	if _hp_coll and param_2 > 0:
@@ -98,6 +109,17 @@ func f_0202954c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 		if _hp == null:
 			_hp = _POTATO_GD.new(self, _bomb_img)
 		_hp.tick(_port_frame())                        # part 40 HOT POTATO (once per battle frame)
+	if cheats != null and _on("dragon_balls"):
+		if _db == null:
+			_db = _DB_GD.new(self)
+		_db.tick(_port_frame())                        # part 41 DRAGON BALL HUNT (once per battle frame)
+	if cheats != null and _on("time_skip"):
+		if _ts == null:
+			_ts = _TS_GD.new(self)
+		_ts.tick(_port_frame())                        # part 41 TIME SKIP (once per battle frame: Select, countdown)
+		if _ts.frozen(param_1):
+			_ts.freeze_step(param_1)                   # the frozen side's fighter: hittable, nothing else
+			return 0
 	if cheats != null:
 		_c39_tick(param_1)                             # part 39 FLIGHTLESS / ULTRA INSTINCT / RANDOMIZER (active fighters)
 	if cheats != null and _helped(param_1):            # part 27: side 0, and side 1 in an MP battle
@@ -317,6 +339,12 @@ func f_0202a40c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 	_kb_free.clear()                                   # part 40 SMASH KNOCKBACK
 	_kb_off.clear()
 	_kb_flash.clear()
+	if _vp != null:
+		_vp.reset()                                    # part 41 VAMPIRE
+	if _db != null:
+		_db.reset()                                    # part 41 DRAGON BALL HUNT
+	if _ts != null:
+		_ts.reset()                                    # part 41 TIME SKIP
 	if cheats == null:
 		return r
 	var teams: int = _ld(TEAMS, 4, false)
@@ -572,6 +600,9 @@ func f_020277ac(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4:
 
 ## FUN_020294B8(record): the slot's assist runs each battle frame; the copies run right after it
 func f_020294b8(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	if _ts != null and _ts.frozen(param_1) and _on("time_skip"):
+		f_02019328(param_1)                            # part 41 TIME SKIP: the frozen side's support only drawn
+		return 0
 	if not _in_clones and _mp_on():                     # part 29 (`# ---- MP DUAL ASSISTS`)
 		return _mda_run(param_1, param_2, param_3, param_4)
 	var r := super.f_020294b8(param_1, param_2, param_3, param_4, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
@@ -2825,6 +2856,12 @@ func _fx_draw(fx: Variant) -> void:
 		drew = _hp.draw(idx, cv) or drew                # part 40 HOT POTATO bomb + countdown
 	if not _kb_off.is_empty() and _on("smash_knockback"):
 		drew = _kb_draw() or drew                       # part 40 SMASH KNOCKBACK edge markers
+	if _vp != null and _on("vampire"):
+		drew = _vp.draw(idx, cv) or drew                # part 41 VAMPIRE sparks, pulse, +N
+	if _db != null and _on("dragon_balls"):
+		drew = _db.draw(idx, cv) or drew                # part 41 DRAGON BALL HUNT balls, HUD, wish
+	if _ts != null and _on("time_skip"):
+		drew = _ts.draw(idx, cv) or drew                # part 41 TIME SKIP tint, skipper, rings
 	if cheats.damage_numbers:
 		drew = _dn_frame(cv) or drew                    # part 24 DAMAGE NUMBERS (on top of everything)
 	if drew:
@@ -3009,7 +3046,8 @@ func _fx_any() -> bool:
 	return cheats.blood or cheats.afterimages or cheats.flashy_ki or cheats.ko_confetti \
 		or cheats.damage_numbers or cheats.rainbow_ki \
 		or cheats.bomb_rain or _on("green_demon") \
-		or _on("ultra_instinct") or _on("smash_knockback") or _on("hot_potato")   # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON, part 39
+		or _on("ultra_instinct") or _on("smash_knockback") or _on("hot_potato") \
+		or _on("vampire") or _on("dragon_balls") or _on("time_skip")   # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON, parts 39-41
 
 
 ## the fighter records that can be on screen (both teams, ASSIST SPAM copies)
@@ -3456,6 +3494,7 @@ const DN_FONT := [
 	["#####", "   ##", "  ## ", "  ## ", " ##  ", " ##  ", " ##  "],
 	[" ### ", "## ##", "## ##", " ### ", "## ##", "## ##", " ### "],
 	[" ### ", "## ##", "## ##", " ####", "   ##", "   ##", " ### "],
+	["     ", "  #  ", "  #  ", "#####", "  #  ", "  #  ", "     "],   # part 41: "+" (character ':', VAMPIRE)
 ]
 const RK_PERIOD := 36.0
 const RK_SLOT_PHASE := 0.085
@@ -3561,7 +3600,7 @@ func _rk_obj(o: int) -> int:
 # --- damage numbers
 func _dn_init() -> void:
 	_dn_glyphs.clear()
-	for d in 10:
+	for d in DN_FONT.size():
 		var bm: Array = DN_FONT[d]
 		var fill := func(x: int, y: int) -> bool:
 			return y >= 0 and y < 7 and x >= 0 and x < 5 and (bm[y] as String)[x] == "#"
@@ -6388,6 +6427,11 @@ func _kb_apply() -> void:
 ## FUN_02019594(a, b): camera mode 0 (centre, zoom, tether pull). Part 40: with a launched fighter the pull is undone
 ## and the centre stays near the other fighter.
 func f_02019594(param_1: int = 0, param_2: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	if _ts != null and _ts.active():                   # part 41 TIME SKIP: the tether cannot move the frozen fighter
+		var h: Array = _ts.hold_before()
+		var rt := super.f_02019594(param_1, param_2, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+		_ts.hold_after(h)
+		return rt
 	if cheats == null or _kb_free.is_empty() or not _on("smash_knockback"):
 		return super.f_02019594(param_1, param_2, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 	var pos := [_ld(param_1 + 0x38, 4, true), _ld(param_1 + 0x3C, 4, true), _ld(param_2 + 0x38, 4, true), _ld(param_2 + 0x3C, 4, true)]
@@ -6473,22 +6517,25 @@ func _kb_draw() -> bool:
 			continue
 		var s := _kb_screen(f)
 		var mx := clampf(s.x, 18.0, 238.0)
-		var my := clampf(s.y, 62.0, 174.0)               # (below the HUD and the RUSH counter)
+		var my := clampf(s.y, 71.0, 174.0)               # (below the HUD and the RUSH counter, y 32-56)
 		var d := (s - Vector2(mx, my)).normalized()
 		var red: bool = _kb_flash.has(f)
-		_fx_box(mx - 15, my - 15, 30, 30, 0x0D9F if red else 0x02DF, 0x80C0 | (31 << 16) | (0x21 << 24), 44, 0x0E00)   # rim
+		mx = floorf(mx)
+		my = floorf(my)
+		_fx_box(mx - 14, my - 14, 28, 28, 0x0D9F if red else 0x02DF, 0x80C0 | (31 << 16) | (0x21 << 24), 44, 0x0E00)   # rim
 		_fx_box(mx - 13, my - 13, 26, 26, 0x0006 if red else 0x0842, 0x80C0 | (31 << 16) | (0x21 << 24), 45, 0x0E01)   # box
-		var m := [24.0, 0.0, 0.0, 0.0, 24.0, 0.0, 0.0, 0.0, 1.0, mx, my, 46.0]
+		# part 41: the icon 1:1 (its texture is 32x32 with the 24x24 face at the top left: the quad's centre +4, +4)
+		var m := [32.0, 0.0, 0.0, 0.0, 32.0, 0.0, 0.0, 0.0, 1.0, mx + 4.0, my + 4.0, 46.0]
 		_spr_emit(p, m, 0x80C0 | (31 << 16) | (0x21 << 24), 0x7FFF if not red else 0x4E7F)
 		for k in 3:                                    # the arrow: three shrinking squares outward
-			var c := Vector2(mx, my) + d * (19.0 + k * 3.0)
+			var c := Vector2(mx, my) + d * (18.0 + k * 3.0)
 			var w := 5 - k * 2
 			_fx_box(floorf(c.x - w * 0.5), floorf(c.y - w * 0.5), w, w, 0x02DF, 0x80C0 | (31 << 16) | (0x21 << 24), 46, 0x0E02 + k)
 		drew = true
 	return drew
 
 # ---- ULTRA INSTINCT (part 39) ---------------------------------------------------------------------------------------
-## Cheat ULTRA INSTINCT (page 5 FIGHTING, `cheats=ultra_instinct`): the parry; everything is in
+## Cheat ULTRA INSTINCT (page 10 POWERS since part 41, page 5 before; `cheats=ultra_instinct`): the parry; everything is in
 ## scripts/qol/qol_ultra.gd. Hooks here: f_0202954C (tick for player 1's active fighter, both players' in MP),
 ## f_0201E5BC (before / after the collision pass), f_0202A40C (reset), _fx_any / _fx_draw (its flashes).
 const _ULTRA_GD := preload("res://scripts/qol/qol_ultra.gd")
@@ -6502,16 +6549,24 @@ func f_0201e5bc(_x0: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int
 	var ui: bool = _ui != null and _on("ultra_instinct") and _ui.busy()
 	var kb := _on("smash_knockback")
 	var hp: bool = _hp != null and _on("hot_potato") and _hp.any()
-	if not ui and not kb and not hp:
+	var vp := _on("vampire")
+	var db: bool = _db != null and _on("dragon_balls")
+	if not ui and not kb and not hp and not vp and not db:
 		return super.f_0201e5bc(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 	if ui:
 		_ui.before()
 	_kb_hit.clear()
 	_kb_on = kb
 	_hp_coll = hp
+	if vp and _vp == null:
+		_vp = _VAMP_GD.new(self)
+	_vp_coll = vp
+	_db_coll = db
 	var r := super.f_0201e5bc(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
 	_kb_on = false
 	_hp_coll = false
+	_vp_coll = false
+	_db_coll = false
 	if ui:
 		_ui.after()
 	if kb:
@@ -6812,6 +6867,55 @@ func _se_test() -> void:
 const _POTATO_GD := preload("res://scripts/qol/qol_potato.gd")
 var _hp = null                           ## created the first time a battle frame runs with the cheat on
 var _hp_coll := false                    ## inside the collision pass with a bomb lit
+
+
+# ---- VAMPIRE (part 41) ---------------------------------------------------------------------------------------------
+## Cheat VAMPIRE (page 5 FIGHTING, `cheats=vampire`): everything is in scripts/qol/qol_vampire.gd; hooks here:
+## f_0201E5BC (`_vp_coll` while the collision pass runs) + f_020293A4 (hit(): the HP a fighter really lost in the pass,
+## measured around the whole damage call incl. the other damage cheats), f_0202A40C (reset), _fx_any / _fx_draw.
+const _VAMP_GD := preload("res://scripts/qol/qol_vampire.gd")
+var _vp = null                           ## created the first time a collision pass runs with the cheat on
+var _vp_coll := false                    ## inside the collision pass with the cheat on
+var _vp_in := false                      ## inside the measured damage call (also DRAGON BALL HUNT's)
+
+
+# ---- TIME SKIP (part 41) -------------------------------------------------------------------------------------------
+## Cheat TIME SKIP (page 10 POWERS, `cheats=time_skip`): everything is in scripts/qol/qol_timeskip.gd; hooks here:
+## f_0202954C (tick once per battle frame; the frozen side's fighter runs freeze_step instead), f_020294B8 (its support
+## only drawn), f_02021F54 (its objects frozen around the effect loop), f_0201E224 / f_02019594 (body push / tether
+## cannot move it), f_0202A40C (reset), _fx_any / _fx_draw (tint, skipper copy, rings).
+const _TS_GD := preload("res://scripts/qol/qol_timeskip.gd")
+var _ts = null                           ## created the first time a battle frame runs with the cheat on
+
+
+## FUN_02021F54: the effect loop (48 object slots + 8 aura slots: handler, VM, attach, life, draw)
+func f_02021f54(_x0: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	if _ts == null or not _ts.active():
+		return super.f_02021f54(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	_ts.objects_before()
+	var r := super.f_02021f54(_x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	_ts.objects_after()
+	return r
+
+
+## FUN_0201E224(p1, p2): the active fighters' body push-apart
+func f_0201e224(param_1: int = 0, param_2: int = 0, _x2: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	if _ts == null or not _ts.active():
+		return super.f_0201e224(param_1, param_2, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	var h: Array = _ts.hold_before()
+	var r := super.f_0201e224(param_1, param_2, _x2, _x3, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	_ts.hold_after(h)
+	return r
+
+
+# ---- DRAGON BALL HUNT (part 41) -------------------------------------------------------------------------------------
+## Cheat DRAGON BALL HUNT (page 9 CHALLENGES, `cheats=dragon_balls`): everything is in scripts/qol/qol_dragonballs.gd;
+## hooks here: f_0202954C (tick once per battle frame), f_0201E5BC (`_db_coll`) + f_020293A4 (hit(): the HP lost, as
+## VAMPIRE measures it: a big hit drops a ball), f_0202A40C (reset), _fx_any / _fx_draw. The art is the game's own
+## (read from the player's ROM), kept in the shared texture block (qol_texblock.gd, part 41: 12 KiB).
+const _DB_GD := preload("res://scripts/qol/qol_dragonballs.gd")
+var _db = null                           ## created the first time a battle frame runs with the cheat on
+var _db_coll := false                    ## inside the collision pass with the cheat on
 
 
 # ---- RICOCHET KI (part 40) ------------------------------------------------------------------------------------------

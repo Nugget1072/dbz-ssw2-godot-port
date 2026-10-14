@@ -311,7 +311,7 @@ func _update_top() -> void:
 		top.show_text("VS BATTLE", "LOCAL: two players on this PC,\nwith the keyboard and / or\ngamepads.\nLAN: against a friend's PC on\nyour network (HOST / JOIN).")
 	else:
 		var n := settings.cheats_on()
-		top.show_text("SETTINGS", "Change the game's settings." + ("" if n == 0 else "\n\nCheats on: %d (menu pages 5-9)." % n))   # part 24 QA: pages moved, text ran out of the box
+		top.show_text("SETTINGS", "Change the game's settings." + ("" if n == 0 else "\n\nCheats on: %d (menu pages 5-10)." % n))   # part 24 QA: pages moved, text ran out of the box
 
 
 ## keys that work anywhere in the game: F3 frame-rate counter, F11 full screen (both saved)

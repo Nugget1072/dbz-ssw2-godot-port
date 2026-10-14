@@ -105,3 +105,7 @@ Session 1, part 2 (cloud sandbox, Linux) — same rule as above, nothing written
 
 2026-10-13 (part 40):
 - Nothing new outside SupersonicMain (scratch scripts only in Claude Code's temp scratchpad).
+
+2026-10-13 (part 41):
+- Nothing new outside SupersonicMain (scratch scripts only in Claude Code's temp scratchpad; the research agents'
+  notes and Dragon Ball preview PNGs are in local/, git-ignored).

@@ -1,6 +1,6 @@
 # HANDOFF — state of the port
 
-_Last updated: 2026-10-13 (part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
+_Last updated: 2026-10-13 (part 41 — cheats VAMPIRE, TIME SKIP, DRAGON BALL HUNT, new cheat page POWERS, marker / bomb sizes fixed; part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
 sessions on the user's PC; part 35 was the last Cowork part: `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
 Per-part history: `docs/HISTORY.md`.
 
@@ -10,7 +10,7 @@ Z-Battle series, Maximum, Free Battle, Practice, Data File, Options, VS host scr
 original sound driver. The user plays it on Windows (RTX 4070 laptop) from `finished/` ("almost perfect visually and
 plays very well") and on a Steam Deck under Proton. The exported folder is portable and contains no game data (the exe
 finds the player's ROM in its own folder under any name). On top: the QoL layer behind Mode Select's centre (PORT) tile —
-12 menu pages (settings 1-3, BIG CHANGES = MULTIPLAYER + PERFORMANCE + NEW GAMEMODES, cheats 5-9, WEIRD STUFF 10-12),
+13 menu pages (settings 1-3, BIG CHANGES = MULTIPLAYER + PERFORMANCE + NEW GAMEMODES, cheats 5-10, WEIRD STUFF 11-13),
 LOCAL MULTIPLAYER (parts 27-29), LAN MULTIPLAYER (parts 30-32, lockstep), PERFORMANCE MODE (part 32), NEW GAMEMODES
 ALL-STAR (parts 34-35) and ENDLESS (part 38). Map of all of it:
 `docs/QOL_ARCHITECTURE.md`.
@@ -177,7 +177,7 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
   as ALL-STAR).
 
 ## Part 39: four new cheats (2026-10-13) — DONE
-- **ULTRA INSTINCT** (page 5 FIGHTING, row 6; `scripts/qol/qol_ultra.gd`): a Smash Ultimate / SF3-style parry. A fresh B
+- **ULTRA INSTINCT** (page 5 FIGHTING row 6; page 10 POWERS since part 41; `scripts/qol/qol_ultra.gd`): a Smash Ultimate / SF3-style parry. A fresh B
   tap in neutral / moving / guarding opens a 5-frame window; an enemy attack box touching the fighter then is parried
   (the fighter is left out of that collision pass): no damage, 12-frame hit stop, the game's guard spark, SE 0x21 (the
   tag-in "shing", chosen by analysing all 50 battle sounds: DATA_NOTES part 39), a silver-blue silhouette of the fighter
@@ -213,3 +213,29 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
 - V (TESTING 31): logs + captures of each, LAN pair lan_cmp exit 0 with all of them, menu previews, offcheck PASS.
   Facts: DATA_NOTES "part 40 findings". Debug flags: `p1hp p2hp rzult fldbg kbdbg hpdbg hpseed hpfuse hpwait rcdbg`.
 - Open: tuning after the user plays (off-camera damage rate, potato fuse / damage, bounce count).
+
+## Part 41: marker / bomb sizes + VAMPIRE, TIME SKIP, DRAGON BALL HUNT (2026-10-13) — DONE
+- **SMASH KNOCKBACK marker** (user: icon badly sized in its box): the face icon's texture is 32x32 with the 24x24 face at
+  its top left; it was squeezed into 24 px (face 18 px in a corner of a 30 px box). Now drawn 1:1 (crisp, 24 px) in a
+  28 px box, and kept below the RUSH counter.
+- **HOT POTATO size** (user: weirdly sized): the 11x12 bomb was drawn 1.5x (uneven pixels): now 1:1 on whole pixels,
+  the countdown one digit size smaller (5x7; pops 2x on each new second).
+- **New cheat page 10 POWERS** (pages now 13: weird stuff 11-13; header help text updated): ULTRA INSTINCT (moved from
+  FIGHTING, which was full), VAMPIRE, TIME SKIP. DRAGON BALL HUNT = CHALLENGES row 6.
+- **VAMPIRE** (`qol_vampire.gd`): every hit heals the attacking team's fighter 2/5 of the HP it took (measured around
+  FUN_020293A4 inside the collision pass), green sparks victim → healer, a light green pulse, a green "+N". Both teams.
+- **TIME SKIP** (`qol_timeskip.gd`, Hit's Time Skip): SELECT (no battle use in the game; research: DATA_NOTES part 41)
+  with 100 % ki stops the enemy for 120 battle frames: its fighter skips FUN_0202954C but stays hittable, its support /
+  objects frozen (the game's object freeze bit), body push / tether cannot move it; violet tint, the skipper drawn in
+  its colours, the frozen fighter stone grey, rings in / out. Ends early on KO / grab / the skipper's throw or super.
+  The CPU uses it too (seeded). In ALL-STAR / ENDLESS SELECT is TIME SKIP's while it is on (hearts by tap).
+- **DRAGON BALL HUNT** (`qol_dragonballs.gd`): the game's own Dragon Balls (clear-event texture, decoded from the
+  player's ROM at runtime, 24 / 12 px 16-colour textures in the port texture block, grown to 12 KiB) appear one at a
+  time; touching grabs for the team, a 400+ HP hit drops the last one, all seven = wish (HP + ki full). HUD: 7 slots per
+  team above the ki gauges; edge marker for a ball off the picture.
+- Helpers: two research agents (time freeze + battle controls; Dragon Ball art) — their findings are in DATA_NOTES part
+  41. Test gotcha found: unquoted `cheats=a,b` inside PowerShell `Start-Job` loses `b` (TESTING 32).
+- V (TESTING 32): logs + captures of each, all-cheat stress run, LAN pair lan_cmp exit 0 (heals, skips both ways, balls),
+  menu previews, offcheck PASS. Debug flags `vpdbg tsdbg tscpu tsauto tsseed dbdbg dbseed dbwait dbgive dbhere texgap`.
+- Open: tuning after the user plays (heal 40 %, skip length / cost / CPU chance, ball drop threshold); TIME SKIP during
+  throws / grab supers / beam struggles on the frozen side is cut short by design (untested combinations end the skip).
