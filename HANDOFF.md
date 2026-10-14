@@ -294,6 +294,12 @@ cheats, one with Kid Gohan (not SSJ2 Gohan) parrying Final Boss SSJ Goku's whole
 - V: offcheck PASS after the removal (21/21 + 1382 CHT, 221/221); export + the exe's offcheck battle vs the baseline
   21/21; `showcase.py` twice = every frame identical (deterministic); clips checked frame by frame (contact sheets).
   The zip is written with Python's zipfile (forward-slash paths; PowerShell 5.1's Compress-Archive writes backslashes).
+- **GitHub release v1.0** (private like the repo): https://github.com/Nugget1072/dbz-ssw2-godot-port/releases/tag/v1.0
+  = the zip + the same five files loose, text = docs/RELEASE_NOTES.md. Made with the GitHub CLI (`tools/gh/`,
+  git-ignored, signed in by the user with a device code; `tools\gh\bin\gh.exe release …`). V: the release downloaded
+  again = zip contents byte-identical to the loose files; unpacked + a renamed ROM copy: no ROM → "Game ROM not found"
+  screen, first run creates DBZ_SSW2_Port.sav + settings.cfg, boots to MODE SELECT, PORT menu by mouse, offcheck
+  battle 21/21; a fresh `gh repo clone` + save100.sav + `ssw2.py export` → battle 21/21. ROM copies deleted after.
 - `local/` pruned on the user's request (~1.8 GB of old runs); kept: baselines, release zip, research notes, prevbg.png,
   the history-rewrite bundle. Not done: a LICENSE (the user's decision).
 - For a public release later: `scripts/gen/` is a machine translation of the game's program code (kept by the user's

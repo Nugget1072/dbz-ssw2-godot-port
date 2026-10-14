@@ -122,3 +122,9 @@ Session 1, part 2 (cloud sandbox, Linux) — same rule as above, nothing written
   ffmpeg.exe (4.2.1, libx264 + aac), via FFMPEG= for
   `ssw2.py clip`. Nothing downloaded or installed. Scratch scripts (contact sheets, wav check) only in Claude
   Code's temp scratchpad. Videos, release zip: local/release/ (git-ignored, game footage).
+2026-10-14 (part 44, GitHub release v1.0):
+- With the user's permission, downloaded the official GitHub CLI 2.102.0 (gh_2.102.0_windows_amd64.zip, SHA-256
+  checked against the release's checksums.txt) into tools/gh/ (git-ignored). The user signed it in with a one-time
+  device code in Chrome (git credentials NOT configured). gh keeps its login in the Windows Credential Manager and
+  its settings in %APPDATA%\GitHub CLI\ (outside the folder). Remove with: tools\gh\bin\gh.exe auth logout.
+- Release test copies (downloaded release + a copy of the user's ROM): local/reltest/ (git-ignored).

@@ -12,6 +12,7 @@ extras. **Bring your own ROM**: the download contains no game data.
 
 ### Install
 1. Unpack `DBZ_SSW2_Port_v1.0_windows.zip` anywhere (Windows 10/11 x64; Steam Deck / Linux: run the exe with Proton).
+   (The same files are also offered one by one: put the exe, the DLL and the .txt files in one folder.)
 2. Put your own dump of the European cartridge (game code ADBP, any file name) next to `DBZ_SSW2_Port.exe`.
 3. Run `DBZ_SSW2_Port.exe`. Everything is unlocked. Controls and all options: `README.txt`.
 

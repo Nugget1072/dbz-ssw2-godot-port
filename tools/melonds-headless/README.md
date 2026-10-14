@@ -2,6 +2,11 @@
 
 Frame-exact, scriptable melonDS 1.1 core used as ground truth for the port (GPLv3 like melonDS).
 
+**License / source:** `libmelonds_headless.so` is melonDS 1.1 (GPL-3.0, (c) the melonDS team,
+https://melonds.kuribo64.net) linked with `melonds_headless.cpp` (also GPL-3.0). It is built by `build.sh` from the
+unmodified upstream source, tag `1.1` of https://github.com/melonDS-emu/melonDS. This test tool is separate from the
+game: the port itself contains no melonDS code.
+
 - `melonds_headless.cpp` — tiny C API over the melonDS core (init, set input, run frames, read screens/RAM, savestates, audio)
 - `build.sh` — builds `libmelonds_headless.so` on Linux
 - `mh.py` — Python wrapper (`MH(rom, sav)`, `.run(n)`, `.press([...])`, `.touch(x,y)`, `.screens()`, `.u32(addr)`, `.save_state()`)

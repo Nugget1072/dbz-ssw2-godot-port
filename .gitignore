@@ -9,6 +9,7 @@ build/
 tools/Godot_v4.7.2-stable_win64.exe/
 tools/Python3.14.8/
 tools/melonDS-1.1-windows-x86_64/
+tools/gh/
 __pycache__/
 *.pyc
 reference/states/
