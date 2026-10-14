@@ -564,7 +564,8 @@ func _press(id: String) -> void:
 			if core != null and core.has_method("reset_leaderboards"):
 				qol.on_game_thread(core.reset_leaderboards)
 				_notice_lb = "HI-SCORES RESET"
-			QoLAllStarRecords.reset_files()            # part 38: the ALL-STAR / ENDLESS records too
+			QoLAllStarRecords.reset_files()            # part 38: the ALL-STAR / ENDLESS records too (part 43: BOSS RUSH)
+			QoLTournamentPage.reset_file()             # part 43: the TOURNAMENT titles
 			page = "main2"
 			_build()
 			_focus_value(_rows.size() - 1)

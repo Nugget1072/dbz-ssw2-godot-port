@@ -6,6 +6,11 @@ how the systems fit together now: `docs/QOL_ARCHITECTURE.md`; decoded facts per 
 page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in QOL_ARCHITECTURE.md).
 
 ## Per part (details in DATA_NOTES / transpiler notes)
+- **Part 43** — *gamemodes BOSS RUSH + TOURNAMENT (2026-10-14)*: the Gamemode menu's two EMPTY slots filled (4th bar
+  in free texture memory). BOSS RUSH = ALL-STAR's battle against the 18 boss versions, one heart, boss BGMs, BOSS RUSH
+  RECORDS; TOURNAMENT (`qol_tournament.gd`, `qol_tournament_page.gd`) = an 8-team bracket of separate battles, the
+  battle scene held at state 0 while the bracket page shows, CPU matches rolled, titles file; 1 player for now.
+  ALLSTAR_DESIGN 8 / 9, TESTING 34, DATA_NOTES `part 43 findings`.
 - **Part 42** — *page order, three cheats, bug hunt (2026-10-14)*: POWERS before CHALLENGES (pages 9 / 10), slower
   Dragon Balls, NONDIRECTIONAL (held direction picks the super variant / fires the ultimate), Z-VANISH
   (`qol_zvanish.gd`, escape a hit stun behind the attacker), BODY CHANGE (`qol_bodychange.gd`, HP swap every 20 s);

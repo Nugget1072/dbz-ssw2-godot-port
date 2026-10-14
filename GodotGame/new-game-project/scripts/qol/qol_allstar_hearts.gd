@@ -97,7 +97,7 @@ static func _heart(k: int) -> Image:
 ## after every game frame (QoLController.after_step, game thread parked)
 func frame(core) -> void:
 	var on: bool = allstar != null and allstar.active and allstar.stage == QoLAllStar.BATTLE and core.r8(SCENE) == 0 \
-		and qol.game.display.battle_on_screen()
+		and allstar.mode != QoLAllStar.TOURNAMENT and qol.game.display.battle_on_screen()   # (part 43: no hearts there)
 	if on:
 		var key := str(allstar.hearts)
 		var mb: int = core.IO.decode_u16(0x106C if (core.IO.decode_u16(0x304) & 0x8000) != 0 else 0x6C)
@@ -114,13 +114,18 @@ func frame(core) -> void:
 		queue_redraw()
 
 
+## hearts shown: part 43 BOSS RUSH has one
+func _count() -> int:
+	return 1 if allstar != null and allstar.mode == QoLAllStar.BOSSRUSH else 3
+
+
 ## main thread, before each game frame (QoLController.filter_input): [swallow touch, swallow keys mask]
 func filter(newly: int, touch: Vector2i, new_touch: bool) -> Array:
 	if not shown or allstar == null or qol.machine.core.r8(SCENE + 1) == 9:   # (paused: the game's input)
 		return [false, 0]
 	var take_touch := false
 	if new_touch and touch.x >= 0:
-		for i in 3:
+		for i in _count():
 			var r := Rect2i(HIT.position + Vector2i(X0[i], Y0), HIT.size)   # (lower-screen coordinates, as the touch)
 			if r.has_point(touch):
 				take_touch = true
@@ -147,7 +152,7 @@ func _draw() -> void:
 	var m := Color(1, 1, 1)
 	if _fade < 0.0:
 		m = Color(1 + _fade, 1 + _fade, 1 + _fade)
-	for i in 3:
+	for i in _count():
 		draw_texture(_tex[0 if allstar.hearts[i] else 1], Vector2(X0[i], 192 + Y0), m)
 		if _fade > 0.0:
 			draw_rect(Rect2(X0[i], 192 + Y0, W, HH), Color(1, 1, 1, _fade))

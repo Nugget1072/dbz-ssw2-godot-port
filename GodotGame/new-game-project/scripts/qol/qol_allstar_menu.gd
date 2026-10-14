@@ -12,6 +12,9 @@ extends RefCounted
 ##   labelled EMPTY (QoLGame f_0205495c draws it for slots 2-3), +0x6000 = the Hard bar labelled ENDLESS (part 38;
 ##   slot 1). Letters: the bars' heavy 15-row font; M and R are copied from the Mania bar's "Mania Rank" (read before
 ##   that texture is relabelled), the others are the port's own in the same style (stems 4 px).
+##   Part 43: +0x4000 is labelled BOSS RUSH (slot 2) and a 4th bar, TOURNAMENT (slot 3), is written to the free texture
+##   memory at +BAR_TOUR (QoLGame f_0205495c points the second bar object's texture handle there for its slot-3 draw).
+##   A label wider than the field is set with the game's own 1-column letter gap.
 ## Runs on the main thread after each game frame (QoLController `# ---- ALLSTAR`), like QoLButton: the texture is
 ## checked whenever its VRAM bank was written or remapped, and rewritten when it differs.
 
@@ -25,7 +28,8 @@ const LRIGHT := 74                   ## last column of the label text (STORY MOD
 const BAR_ALL := 0x2000
 const BAR_EMPTY := 0x4000
 const BAR_MANIA := 0x6000
-const BROW := 128                    ## bytes per bar texture row (256 texels)
+const BAR_TOUR := 0x8000             ## part 43: the 4th bar (TOURNAMENT), free texture memory after the Mania bar
+const BROW := 128                   ## bytes per bar texture row (256 texels)
 const BTOP := 27                     ## bar text rows 27..41 (capitals 15 rows)
 const BH := 15
 
@@ -65,8 +69,19 @@ const BAR_GLYPHS := {
 		"5555....5555", "5555....5555", "5555....5555"],
 	"R": ["55555553.", "55555555c", "555555555", "5555.5555", "5555.5555", "5555.555c", "55555553.", "55555555.",
 		"555555553", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555"],
+	## part 43 (BOSS RUSH, TOURNAMENT)
+	"B": ["55555553.", "55555555c", "555555555", "5555.5555", "5555.5555", "5555.555c", "55555553.", "55555555.",
+		"555555553", "5555.5555", "5555.5555", "5555.5555", "555555555", "55555555c", "55555553."],
+	"O": [".3555553.", "c5555555c", "555555555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555",
+		"5555.5555", "5555.5555", "5555.5555", "5555.5555", "555555555", "c5555555c", ".3555553."],
+	"U": ["5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555",
+		"5555.5555", "5555.5555", "5555.5555", "5555.5555", "555555555", "c5555555c", ".3555553."],
+	"H": ["5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "555555555", "555555555",
+		"555555555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555", "5555.5555"],
+	" ": [".....", ".....", ".....", ".....", ".....", ".....", ".....", ".....", ".....", ".....", ".....", ".....",
+		".....", ".....", "....."],
 }
-const BAR_GAP := 2                   ## columns between capitals
+const BAR_GAP := 2                   ## columns between capitals (1, the game's own gap, when a label would not fit)
 
 var dbg := false
 var _tile_seen: Array = [-1, -1, -1]
@@ -75,6 +90,8 @@ var _bar_seen: Array = [-1, -1, -1]
 var _bar_all := PackedByteArray()    ## the two bar textures as they should be (0x2000 bytes each)
 var _bar_empty := PackedByteArray()
 var _bar_endless := PackedByteArray()  ## part 38: the Mania bar's texture (+0x6000) = the Hard bar labelled ENDLESS
+var _bar_tour := PackedByteArray()   ## part 43: the Hard bar labelled TOURNAMENT (at +BAR_TOUR); _bar_empty = BOSS RUSH
+var tour_free := -1                  ## part 43: +BAR_TOUR was empty (1) / in use (0) before the first write (-1 unknown)
 ## part 34 phase 4: the header plate (texture +0x1000, 256x32 4-bit, palette 0 = black 3 .. white 0xF greys): its
 ## "COURSE SELECT" re-lettered (QoLAllStarRecords.retitle, the same heavy italic capitals as the records page title)
 const HDR := 0x1000
@@ -189,8 +206,14 @@ func bars_frame(core, on: bool) -> void:
 		var font := BAR_GLYPHS.duplicate()
 		_mania_letters(bank.slice(o + BAR_MANIA, o + BAR_MANIA + 0x2000), font)   # (before the Mania bar is relabelled)
 		_bar_all = _bar_label(hard, "ALL-STAR", font)
-		_bar_empty = _bar_label(hard, "EMPTY", font)
+		_bar_empty = _bar_label(hard, "BOSS RUSH", font)   # part 43 (was EMPTY)
 		_bar_endless = _bar_label(hard, "ENDLESS", font)
+		_bar_tour = _bar_label(hard, "TOURNAMENT", font)   # part 43
+	if tour_free < 0:                    # part 43: the 4th bar's memory: nothing of the scene's there (checked once)
+		var z := bank.slice(o + BAR_TOUR, o + BAR_TOUR + 0x2000)
+		tour_free = 1 if z.count(0) == z.size() or z == _bar_tour else 0
+		if dbg:
+			print("AS Gamemode menu: texture +%x %s" % [BAR_TOUR, "free" if tour_free == 1 else "IN USE (no 4th bar)"])
 	if _hdr.is_empty():                  # part 34 phase 4: header relabel (built once from the game's own plate)
 		var h := bank.slice(o + HDR, o + HDR + 0x1000)
 		if _hdr_ok(h):
@@ -202,9 +225,9 @@ func bars_frame(core, on: bool) -> void:
 						print("AS Gamemode menu header: %s" % txt)
 					break
 	var wrote := false
-	for k in 3:
-		var at: int = o + [BAR_ALL, BAR_EMPTY, BAR_MANIA][k]
-		var want: PackedByteArray = [_bar_all, _bar_empty, _bar_endless][k]
+	for k in (4 if tour_free == 1 else 3):
+		var at: int = o + [BAR_ALL, BAR_EMPTY, BAR_MANIA, BAR_TOUR][k]
+		var want: PackedByteArray = [_bar_all, _bar_empty, _bar_endless, _bar_tour][k]
 		if bank.slice(at, at + 0x2000) != want:
 			DSHardware.blit(bank, at, want, 0, 0x2000)
 			wrote = true
@@ -303,6 +326,12 @@ static func _bar_label(src: PackedByteArray, text: String, font: Dictionary) -> 
 			if _nib(t, 0, BROW, x, y) != 1:
 				_set_nib(t, 0, BROW, x, y, 1)
 	var cx := f.x                                    # 2 yellow columns after the triangle, as the game's labels
+	var gap := BAR_GAP
+	var w := -gap
+	for ch in text:
+		w += (font[ch][0] as String).length() + gap
+	if cx + w > f.y + 1:                             # part 43: too wide -> the game's own 1-column gap
+		gap = 1
 	for ch in text:
 		var g: Array = font[ch]
 		for y in BH:
@@ -311,5 +340,7 @@ static func _bar_label(src: PackedByteArray, text: String, font: Dictionary) -> 
 				var c := line.substr(x, 1)
 				if c != ".":
 					_set_nib(t, 0, BROW, cx + x, BTOP + y, c.hex_to_int())
-		cx += (g[0] as String).length() + BAR_GAP
+		cx += (g[0] as String).length() + gap
+	if Game.args.has("asdbg"):
+		print("AS bar label '%s': columns %d..%d (field %d..%d, gap %d)" % [text, f.x, cx - gap - 1, f.x, f.y, gap])
 	return t

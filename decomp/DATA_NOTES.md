@@ -3365,3 +3365,31 @@ KO swap, pause, WIN; zoom 0 + mirror; zoom 4), `sky_built.png` = the built BG3 p
   passes; Down at level -> Goku's Spirit Bomb, Right with red HP below the enemy -> ultimate), Z-VANISH (the prototype
   above as a cheat: B edge in 0xF-0x12, 50 %, afterimage), BODY CHANGE (HP shares swapped every 1200 battle frames, the
   life bars follow by themselves). All LAN-identical (p42_lan1 / p42_lan2), no script error in the local-MP mixes. | H |
+
+## Session 2, part 43 findings (Boss Rush, Tournament) — V = port verified, C = code read
+Evidence: local/runs br1-br3, tn1-tn3, gm1 (ssw2.py; `asdbg tndbg`), preview `tour` (tn_*). Design: docs/ALLSTAR_DESIGN.md 8 / 9.
+- **Scene function return value** (C `FUN_02000xxx` NitroMain loop, ds_game.gd ~364; V tn1 first try): the scene
+  update FUN_020010F4 returns the scene function's result and the main loop breaks when it is 0 -> the game restarts
+  at the title (V: "scene 0 -> f"). A scene function the port holds must return non-zero (1). | H |
+- **Holding the battle scene** (V tn1-tn3): FUN_02013064 (scene 0) not called while its state byte 0x020DD4C5 is 0
+  (right after FUN_02001014(0); the previous scene's teardown done, nothing of the battle loaded) waits safely any number
+  of frames; afterwards it starts normally (party read at FUN_020140C8 then). FUN_02001014(4) from that state goes to
+  the team select cleanly (QUIT). | H |
+- **Battle -> battle** (V tn1): a won Free Battle asks scene 10 (results); asking scene 0 instead starts a fresh battle
+  (new stage / teams from the party block, VS screen, music) -- three in a row without leaks or errors. | H |
+- **CPU level reaches the AI after the loader** (C FUN_02013D60, ds_game.gd 13569-13635): the battle init calls the
+  loader FUN_0202A40C (which writes the Option-difficulty level for modes 0 / 1 / 5 at its end, FUN_0200231C), then
+  FUN_0200230C() -> FUN_0202EEAC(G+0x1BC18, level, G+0x7E68) (AI init); so a level written in the loader's post-hook
+  is the one the AI gets. Other readers in battle: ds_game.gd ~30350 / ~30941 (AI routines). V tn1: 3 -> 3 / 5 / 7. | H |
+- **Course select texture handles** (V gm1): bar object +0x18's handle +8 = 0x4000 (texture offset in slot 0, not an
+  address); bank 0 +0x8000..+0x9FFF is all zero in scene 0xB (free); pointing the handle at +0x8000 for one
+  FUN_0200AEBC draw (restored after) shows a 4th bar there (TOURNAMENT). Hard bar label field = columns 65..173. | H |
+- **Boss versions in an All-Star battle** (V br1): `_make_boss` on the loaded / reloaded side-1 records gives HP 21000
+  (levels 1-2), Broly 26000, Cell / SSJ Goku 32000 (= docs/BOSS_CHARACTERS.txt) with the global boss level 0; 16
+  reloads, heap free 1.01-1.29 MB without a trend, archives 8-9, cache 24. | H |
+- **Boss BGMs** (V br1): STRM 16 / 17 play through the All-Star music switch (FUN_0200FDE4(0) + FUN_0200FE48(n)); BOSS1
+  (16) ends at sample 1038513 and the rotation then switches to 17. | H |
+- **Records page letters** (V br3): the tab font (white) has P / D / N, so B (P over D's lower half) and H (N's stems +
+  a bar) read as the font's own; the ranking plate's italic capitals have R / D / O: B (R top half + D lower half) and
+  U (O's middle row carried up 0.25 px per row) set "BOSS RUSH RECORDS" in the plate's own style; the port's heavy
+  fallback (retitle) does not fit that title. | H |

@@ -422,3 +422,28 @@ Contact sheets: a scratch Godot script (Image.get_region + blit_rect, NEAREST zo
     bottom centre between the ki gauges; VAMPIRE's "+N" reached the HUD / RUSH band → kept to y 64-150; a Dragon Ball's
     edge marker sat on the HUD row → kept above y 140.
 - Off: `offcheck` PASS.
+
+## 34. Part 43 (BOSS RUSH, TOURNAMENT)
+A-spam inputs: PowerShell `((0..N) | % { "$(4200 + $_*12):A:3" }) -join ','` (Start-Job: quote the comma lists).
+- BOSS RUSH whole run: `ssw2.py run br1 --battle --headless --to 16000 --inputs "<A spam>" allstar=1 bossrush=1
+  "cheats=one_hit_ko,infinite_health,infinite_ki,ki_homing" asdbg turbo` → `AS f… boss: record … id … level … hp …` for
+  all 18 (21000 / Broly 26000 / Cell, SSJ Goku 32000), 16 swaps, `music switch #1: 5 -> 16 (boss rush)`, `battle end …
+  result win … 18/18`, records open BOSS RUSH. HUD / heart: `br2 --every 100 --from 4000 --to 7600 … brstart=16` (p4400:
+  "16/18", one heart). Records page: `br3 --every 50 --from 2500 --to 2600 --inputs "100:Right:1" brrecdemo=2450
+  asdbg` (an empty `--inputs ""` breaks game_ds.gd's inputs parse) → tab BOSS RUSH, plate BOSS RUSH RECORDS (zoom 6x).
+- TOURNAMENT whole run: `tn1 --battle --headless --to 18000 --inputs "<A spam from 3400>" allstar=1 tournament=1
+  tnseed=5 "cheats=one_hit_ko,infinite_health,infinite_ki,ki_homing" asdbg tndbg turbo` → `TN draw`, page open / FIGHT
+  / the battle setup AFTER "the battle loads", QF / SF / F won, `CPU level 3 -> 3 / 5 / 7`, `scene 0 -> 0 (asked a)`
+  twice, champion → `scene 0 -> 4`. Loss: `tn3 … "3420:A:4,<A from 14000>" tnseed=9 cheats=one_hit_ko` → `player 1
+  lost`, the rest rolled, `scene 0 -> 4 (asked 14)`, page out → OK.
+- Menu path (captures): `gm1 --every 25 --from 2850 --to 4300 --inputs "2141:Start:4,2396:T128/120:6,2560:Right:4,
+  2590:Right:4,2620:Down:4,2660:A:4,2900:Down:4,2950:Down:4,3000:Down:4,3100:A:4,3350:A:4,3420:Right:4,3450:A:4,
+  3520:Right:4,3550:A:4,3650:Start:4,3700:A:4" newmodes=1 asdbg tndbg` → p3075 the 4 bars (ALL-STAR / ENDLESS / BOSS
+  RUSH / TOURNAMENT) + TOURNAMENT text, `texture +8000 free`, `4th bar on`; p3800 bracket page. tn2 = gm1 + QUIT
+  (Right, A = CONFIRM, A) → select → picks + GO → page → FIGHT → battle.
+- Page states: `qol_preview.tscn -- rom=… out=… tour tnseed=5 tnrec=<scratch>` → tn_qf / blink / quit (CONFIRM) /
+  fade / sf / final / champion / out_qf / out_sf.
+- ALL-STAR unchanged: `asr_new` (this code) vs `asr_old` (`git worktree add --detach local\wt42 f16f72f`, env GODOT /
+  ROM / SAV / SSW2_OUT, `ssw2.py import` there): `allstar=1 asstart=22 … asfakewin=9:59 asrec=<file>` one-hit-KO runs →
+  identical AS lines except the art log's white letters (+ "BH") and plate letters (+ "BU").
+- Off: `offcheck` PASS.

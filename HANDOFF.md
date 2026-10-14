@@ -1,6 +1,6 @@
 # HANDOFF — state of the port
 
-_Last updated: 2026-10-14 (part 42 — POWERS before CHALLENGES, slower Dragon Balls, cheats NONDIRECTIONAL, Z-VANISH, BODY CHANGE, cheat-mix bug hunt in local MP + LAN; part 41 — cheats VAMPIRE, TIME SKIP, DRAGON BALL HUNT, new cheat page POWERS, marker / bomb sizes fixed; part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
+_Last updated: 2026-10-14 (part 43 — gamemodes BOSS RUSH and TOURNAMENT; part 42 — POWERS before CHALLENGES, slower Dragon Balls, cheats NONDIRECTIONAL, Z-VANISH, BODY CHANGE, cheat-mix bug hunt in local MP + LAN; part 41 — cheats VAMPIRE, TIME SKIP, DRAGON BALL HUNT, new cheat page POWERS, marker / bomb sizes fixed; part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
 sessions on the user's PC; part 35 was the last Cowork part: `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
 Per-part history: `docs/HISTORY.md`.
 
@@ -12,7 +12,7 @@ plays very well") and on a Steam Deck under Proton. The exported folder is porta
 finds the player's ROM in its own folder under any name). On top: the QoL layer behind Mode Select's centre (PORT) tile —
 13 menu pages (settings 1-3, BIG CHANGES = MULTIPLAYER + PERFORMANCE + NEW GAMEMODES, cheats 5-10, WEIRD STUFF 11-13),
 LOCAL MULTIPLAYER (parts 27-29), LAN MULTIPLAYER (parts 30-32, lockstep), PERFORMANCE MODE (part 32), NEW GAMEMODES
-ALL-STAR (parts 34-35) and ENDLESS (part 38). Map of all of it:
+ALL-STAR (parts 34-35), ENDLESS (part 38), BOSS RUSH and TOURNAMENT (part 43). Map of all of it:
 `docs/QOL_ARCHITECTURE.md`.
 
 ## How it works (details: decomp/notes/transpiler.md, decomp/DATA_NOTES.md via DATA_NOTES_INDEX.md)
@@ -74,8 +74,8 @@ functions (off = `super`), `QoLController` + `QoLMenu` etc. (`docs/QOL_ARCHITECT
 4. Z-Battle course end / Maximum end / Dragon Balls screens: play through (or `poke=` the progress) and compare
    with melonDS.
 5. 3D exactness: per-span attribute interpolation (pass the polygon's vertices/planes to the shader).
-6. Fill the two EMPTY Gamemode slots when the user asks (the menu, routing and session classes are reusable; ENDLESS
-   shows how a mode reuses them: a flag on QoLAllStar + a few branches, ALLSTAR_DESIGN 7).
+6. TOURNAMENT for 2 players (local MP / LAN) when the user asks (ALLSTAR_DESIGN 9 "Not yet"). All four Gamemode slots
+   are used (part 43); a 5th mode would need a scrolling / paged Gamemode menu.
 
 ## All-Star (parts 34-35) — DONE
 NEW GAMEMODES setting, GAMEMODE tile, 4-slot Gamemode menu ("GAMEMODE SELECT"), All-Star team select + routing,
@@ -256,3 +256,21 @@ low on the screen; the preview's built-in-font fallback errors when the ROM is n
 - Helpers: two research agents (super variants; vanish mechanics) — DATA_NOTES part 42, local/research_*.md.
 - Open: tuning (vanish cost / CPU chance, swap interval, ball timing); NONDIRECTIONAL diagonals as tilted level supers
   (index 5 / 10) not offered (untested).
+
+## Part 43: gamemodes BOSS RUSH + TOURNAMENT (2026-10-14) — DONE
+User asked for gamemode ideas (6 offered), picked BOSS RUSH and TOURNAMENT (TOURNAMENT 1 player first). Design + status:
+docs/ALLSTAR_DESIGN.md 8 / 9; facts DATA_NOTES part 43; tests TESTING 34.
+- **Gamemode menu**: the two EMPTY slots are BOSS RUSH (+0x4000 bar) and TOURNAMENT (a 4th bar written to free texture
+  memory +0x8000; the second bar object's texture handle is pointed there for slot 3's draw). `QoLAllStar.mode` =
+  the slot (ALLSTAR / ENDLESS / BOSSRUSH / TOURNAMENT); `start(mode)`.
+- **BOSS RUSH**: ALL-STAR's battle against the 18 fighters with a boss version, levels 1 → 3, SSJ Goku last, each the
+  game's own boss version (`_make_boss`, in `battle_bosses` for the dash fix); one heart; boss BGMs; BOSS RUSH RECORDS
+  (`bossrush_records.cfg`; tab / plate letters B / H / U put together from the game's own letters).
+- **TOURNAMENT**: `QoLTournament` (8-team seeded bracket, CPU matches rolled by team max HP) + `QoLTournamentPage`
+  (bracket page, both screens, keys + taps, FIGHT / QUIT-CONFIRM / OK) + QoLGame `# ---- TOURNAMENT` (battle scene held
+  at state 0 while the page shows; won → 10 rerouted to a new battle; CPU level +0 / 2 / 4 per round; titles in
+  `tournament_records.cfg`).
+- V: br1 (18 bosses, win, records), tn1 (QF / SF / F won), tn3 (lost → knocked out), gm1 / tn2 (menu path, QUIT),
+  preview `tour`, ALL-STAR / ENDLESS A/B against part 42 (git worktree): identical AS lines; offcheck PASS.
+- Open: TOURNAMENT for 2 players (local MP / LAN: MP routing puts the second human on side 1 only, the bracket would
+  need the LAN snapshot); BOSS RUSH / TOURNAMENT difficulty tuning from real play.

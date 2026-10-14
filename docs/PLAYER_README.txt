@@ -61,7 +61,7 @@ SETTINGS (new in this port)
                      bring the camera closer while the fighters are near each other (both always stay on screen).
                      The far background layers keep their size.
   HI-SCORES - RESET  puts the Z-Battle HI-SCORE RANKING back to the game's own list (100000 ... 60000) and saves,
-                     and clears the ALL-STAR and ENDLESS records (see NEW GAMEMODES). It asks "ARE YOU SURE?" first
+                     and clears the ALL-STAR, ENDLESS, BOSS RUSH and TOURNAMENT records (see NEW GAMEMODES). It asks "ARE YOU SURE?" first
                      (YES / NO; NO is selected first, Z (B) = NO). Nothing else in your save changes (story, unlocks).
   Page 3 ("SETTINGS 3"):
   AUTO SKIP ........ ON: Story Mode dialogue and narration scenes skip themselves (the game's own SKIP button is
@@ -130,8 +130,8 @@ LAN MULTIPLAYER (MULTIPLAYER ON, VS BATTLE -> LAN; two PCs / Steam Decks on the 
     shows CONNECTION LOST after a few seconds and both players are back in the room / LAN page.
 
 CHEATS (settings pages 5-10, sorted by theme; all OFF unless you turn them on; they act for player 1 only)
-  While any cheat is on, Z-Battle scores are not put in the HI-SCORE RANKING and ALL-STAR / ENDLESS runs are not
-  recorded (settings and weird stuff don't count).
+  While any cheat is on, Z-Battle scores are not put in the HI-SCORE RANKING and ALL-STAR / ENDLESS / BOSS RUSH runs
+  and TOURNAMENT titles are not recorded (settings and weird stuff don't count).
  Page 5 FIGHTING
   INFINITE HEALTH .. player 1's team takes no damage (hits still land, the life bar stays full).
   HARD MODE ........ enemy attacks do double damage to you, and enemies have double health (they take half damage).
@@ -284,10 +284,10 @@ FUN FACTS
   - The wobbly "MODE SELECT" bar was a polygon-clipping detail: the DS clips a 4-sided shape as one piece, not two triangles.
   - Its last stray pixels only showed on real graphics cards: they rebuild long thin triangles from rounded corners.
 
-NEW GAMEMODES / ALL-STAR / ENDLESS (settings page 4, BIG CHANGES -> NEW GAMEMODES; OFF by default)
+NEW GAMEMODES / ALL-STAR / ENDLESS / BOSS RUSH / TOURNAMENT (settings page 4, BIG CHANGES -> NEW GAMEMODES; OFF by default)
   With NEW GAMEMODES ON, Mode Select's FREE BATTLE tile becomes GAMEMODE (Free Battle is not reachable while it is
-  on; every other mode is unchanged). GAMEMODE opens a 4-slot menu: ALL-STAR, ENDLESS (the last two slots are EMPTY
-  for now); Up / Down + A, or tap a slot and tap it again; B goes back. ALL-STAR: pick your team (up to 3, a support counts as one) and confirm with GO. Then fight all 26 playable
+  on; every other mode is unchanged). GAMEMODE opens a 4-slot menu: ALL-STAR, ENDLESS, BOSS RUSH, TOURNAMENT;
+  Up / Down + A, or tap a slot and tap it again; B goes back. ALL-STAR: pick your team (up to 3, a support counts as one) and confirm with GO. Then fight all 26 playable
   characters one after another in story order: Goku, Krillin, Piccolo, Gohan (Kid), Vegeta, Ginyu, Frieza, SSJ Goku,
   Cooler, Mecha Frieza, Trunks (Teen), Trunks (Super), Metal Cooler, Dr. Gero, SSJ Vegeta, Android 18, Cell (2nd
   form), Cell, Broly, Gohan (Super 2), Gohan (Teen), Majin Vegeta, Majin Buu, Gotenks, Gotenks (Super 3), Kid Buu.
@@ -319,6 +319,21 @@ NEW GAMEMODES / ALL-STAR / ENDLESS (settings page 4, BIG CHANGES -> NEW GAMEMODE
   Records are kept in endless_records.cfg next to the exe; nothing is recorded while cheats are on. A / START / B
   or Character Select returns to the team select (the pause menu's Return to Character Select does too, without a
   record); B there -> the GAMEMODE menu.
+  BOSS RUSH: pick your team the same way, then fight all 18 bosses of the game one after another in one long battle
+  in the Time Chamber, each as the game's own boss version (boss HP, stats and boss-only moves, as with the BOSS
+  CHARACTERS cheat): first Goku, Vegeta, Ginyu, Mecha Frieza, Dr. Gero and Cell (2nd form); then Frieza, Cooler,
+  Trunks, SSJ Vegeta, SSJ2 Gohan, Majin Vegeta, Majin Buu, Gotenks and Kid Buu; then Cell, Broly and finally the
+  Final Boss SSJ Goku. Your HP carries over from enemy to enemy and you have only ONE heart. The game's boss themes
+  play. The clock and n/18 are at the top. Win -> the BOSS RUSH RECORDS screen (like ALL-STAR's: fastest clear times,
+  bossrush_records.cfg next to the exe); lose -> back to the team select.
+  TOURNAMENT: pick your team, press GO, and your team enters a bracket of 8 teams (7 CPU teams of 3 random fighters,
+  none of yours). The bracket screen shows the matches (bottom) and your next match (top): press A / START or tap
+  FIGHT! to fight it (Left / Right choose a button; QUIT, pressed twice (QUIT, then CONFIRM), or B twice, leaves the
+  tournament). Each match is a normal battle on its own stage with full HP, the game's timer, tags and Team Arts;
+  the CPU gets stronger every round (quarter-final, semi-final, final). The other matches are decided when yours
+  ends (the stronger team wins more often). Win the final -> CHAMPION! with your tournaments won and your fastest
+  tournament (tournament_records.cfg; not with cheats on); lose a match -> KNOCKED OUT, and the bracket shows who
+  went on to win. OK (A / START / B or tap) -> back to the team select. For now TOURNAMENT is for one player.
 
 PERFORMANCE (settings page 4, BIG CHANGES; OFF by default)
   For slow PCs and the Steam Deck. ON: the next game frame is computed while the current picture is uploaded and

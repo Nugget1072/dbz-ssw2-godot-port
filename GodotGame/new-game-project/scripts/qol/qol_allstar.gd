@@ -14,8 +14,18 @@ extends RefCounted
 ## Part 38 ENDLESS (docs/ALLSTAR_DESIGN.md section 7) is a session of the same kind with `endless` set: the same menu
 ## routing, select, battle rules, stage, music and hearts, but a never-ending random enemy list (`at()`), and the
 ## battle only ends when player 1's team is out -> the ENDLESS RECORDS page.
+##
+## Part 43: `mode` names the session (ALLSTAR / ENDLESS / BOSSRUSH / TOURNAMENT = Gamemode menu slot 0..3; `endless` stays
+## as the ENDLESS flag the older code reads). BOSS RUSH (docs/ALLSTAR_DESIGN.md 8) is ALL-STAR's battle with BOSS_ORDER
+## as the enemies, each made the game's boss at BOSS_LEVELS (QoLGame `# ---- BOSS RUSH`), one heart, boss music.
+## TOURNAMENT (design 9) is a bracket of 8 teams fought as separate normal battles (QoLTournament holds the bracket).
 
 enum { NONE, MENU, SELECT, BATTLE, RECORDS }
+enum { ALLSTAR, ENDLESS, BOSSRUSH, TOURNAMENT }   ## part 43: `mode` = the Gamemode menu slot
+const MODE_NAMES := ["ALL-STAR", "ENDLESS", "BOSS RUSH", "TOURNAMENT"]
+## part 43 BOSS RUSH: every fighter the game has a boss version of (BOSS_CHARACTERS.txt), weakest level first, each
+## level in story order, the Final Boss SSJ Goku last (the Expert course's final battle)
+const BOSS_ORDER := [0, 6, 12, 11, 13, 25, 10, 18, 8, 7, 2, 21, 16, 9, 17, 15, 20, 1]
 
 ## Fighters 0-25 in story order (design 1.4): the enemies come in this order. `asorder=a,b,c` replaces it.
 const ROSTER := [0, 4, 5, 24, 6, 12, 10, 1, 18, 11, 22, 8, 19, 13, 7, 14, 25, 15, 20, 2, 3, 21, 16, 23, 9, 17]
@@ -54,6 +64,9 @@ var p1_support := 38                ## P1's support at the end of that battle (u
 ## part 38 ENDLESS: each new enemy is random among the 26 fighters but never one of the two before it (so the two
 ## CPU fighters on the field always differ and nobody comes twice in a row); a new list every battle
 var endless := false                ## this session is ENDLESS (Gamemode menu slot 1, or `allstar=1 endless=1`)
+var mode := ALLSTAR                 ## part 43: the session's mode (set by start())
+var debug_mode := -1                ## part 43 `bossrush=1` / `tournament=1` (with `allstar=1`): that mode instead
+var tour: QoLTournament = null      ## part 43: the TOURNAMENT bracket (made at the first tournament start)
 var _as_order: Array = ROSTER.duplicate()   ## ALL-STAR's order (ROSTER or `asorder=`), put back when ALL-STAR starts
 var _as_start := 0                          ## ALL-STAR's start index (`asstart=`); ENDLESS always starts at 0
 var _rng := RandomNumberGenerator.new()
@@ -76,19 +89,55 @@ func _init() -> void:
 	if Game.args.has("allstar") and Game.flag("allstar") != "0":
 		debug_battle = true             # the session becomes active at the first Free Battle start (QoLGame f_020140c8)
 	debug_endless = Game.args.has("endless") and Game.flag("endless") != "0"
+	if Game.args.has("bossrush") and Game.flag("bossrush") != "0":
+		debug_mode = BOSSRUSH
+	elif Game.args.has("tournament") and Game.flag("tournament") != "0":
+		debug_mode = TOURNAMENT
+	elif debug_endless:
+		debug_mode = ENDLESS
 
 
-## the session starts (ALL-STAR or, part 38, ENDLESS chosen on the Gamemode menu)
-func start(is_endless := false) -> void:
+## the session starts (ALL-STAR or, part 38, ENDLESS chosen on the Gamemode menu; part 43: any mode, by slot)
+func start(m: Variant = false) -> void:
+	if m is bool:
+		m = ENDLESS if m else ALLSTAR
+	mode = clampi(int(m), ALLSTAR, TOURNAMENT)
 	active = true
 	stage = SELECT
 	battles = 0
 	result = ""
-	endless = is_endless
-	start_index = 0 if endless else _as_start
-	if not endless:
+	endless = mode == ENDLESS
+	start_index = _as_start if mode == ALLSTAR else 0
+	if mode == ALLSTAR:
 		order = _as_order.duplicate()
-	_log("session start (%s)" % ("ENDLESS" if endless else "ALL-STAR"))
+	elif mode == BOSSRUSH:
+		order = _br_order()
+		start_index = clampi(int(Game.flag("brstart", "0")), 0, order.size() - 1)
+	elif mode == TOURNAMENT:
+		if tour == null:
+			tour = QoLTournament.new()
+		tour.clear()
+	_log("session start (%s)" % MODE_NAMES[mode])
+
+
+## part 43: BOSS RUSH's enemies (`brorder=a,b,c`: ids with a boss version only, debug)
+func _br_order() -> Array:
+	if Game.args.has("brorder"):
+		var ids: Array = []
+		for s in Game.flag("brorder").split(",", false):
+			if int(s) in BOSS_ORDER:
+				ids.append(int(s))
+		if not ids.is_empty():
+			return ids
+	return BOSS_ORDER.duplicate()
+
+
+func is_bossrush() -> bool:
+	return active and mode == BOSSRUSH
+
+
+func is_tournament() -> bool:
+	return active and mode == TOURNAMENT
 
 
 ## the session ends (back to Mode Select)
@@ -101,6 +150,7 @@ func end() -> void:
 	menu_cursor = 0
 	menu_note = ""
 	endless = false
+	mode = ALLSTAR
 
 
 ## a battle starts (QoLGame f_020140c8 pre-hook, before the party is written): counters back to the start
@@ -142,4 +192,5 @@ func total() -> int:
 
 func _log(s: String) -> void:
 	if dbg:
-		print("AS %s (stage %d index %d beaten %d result %s%s)" % [s, stage, index, beaten, result, " ENDLESS" if endless else ""])
+		print("AS %s (stage %d index %d beaten %d result %s%s)" % [s, stage, index, beaten, result, " ENDLESS" if endless else
+			(" " + MODE_NAMES[mode] if mode > ENDLESS else "")])

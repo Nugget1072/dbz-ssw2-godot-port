@@ -156,6 +156,12 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 | `esrec=PATH` | ENDLESS records file for the run (default `endless_records.cfg` next to the exe / user://; capture runs without it read / write none) |
 | `esfake=N[:M:SS[:hearts]]` | the next ENDLESS records page counts as a cheat-free run with N enemies beaten (and that time / hearts) |
 | `esrecdemo=F` | open the ENDLESS RECORDS page at port frame F without a battle (12 enemies, 08:21 unless `esfake=`; cheats rule kept unless `esfake=`) |
+| `bossrush=1` (with `allstar=1`) | part 43: that btnrun Free Battle is a BOSS RUSH battle (18 bosses at their boss levels, one heart; `asdbg` logs `AS f… boss: record … id … level … hp …`) |
+| `brstart=N` · `brorder=a,b,c` | BOSS RUSH: first enemy = index N of the boss order / a custom order (ids with a boss version); the run is then "Practice / Not Recorded" |
+| `brrec=PATH` · `brrecdemo=F` | BOSS RUSH records file for the run (default `bossrush_records.cfg` next to the exe / user://; capture runs without it: none) · open the BOSS RUSH RECORDS page at port frame F without a battle (with `asfakewin=` as ALL-STAR's) |
+| `tournament=1` (with `allstar=1`) | part 43: the btnrun Free Battle's P1 team enters a TOURNAMENT (bracket page first; FIGHT = A) |
+| `tnseed=N` · `tndbg` | TOURNAMENT draw / roll seed (N + the draw number; default random) · `TN …` lines: draw, round results and rolls, bracket page open / FIGHT / QUIT / OK |
+| `tnrec=PATH` | TOURNAMENT titles file for the run (default `tournament_records.cfg` next to the exe / user://; capture runs without it: none) |
 | `assky=0` · `asrays=1` | All-Star battle without the space sky (comparisons) · keep the Time Chamber's light-ray curtain (3D objects 5 / 6) |
 | `asskypng=FILE` · `asskylog` | All-Star sky (part 35): write the built 256x256 BG3 sky (twinkle at t = 0) as a PNG when it is built · with `asdbg`, `AS f… skylog: st … BG3CNT … ofs … BG2 ofs … DISPCNT … BLDCNT … BLDALPHA … BLDY … MB …` every 10 frames (`asdbg` alone logs `sky: built N tiles (… dropped), ramp …, palette 32..188, … stars + … glints, … us`) |
 
@@ -163,4 +169,4 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 `cmp_gx.gd gx=DIR/gx.bin` · `dump_gx.gd gx=… frame=K` · `bench_gx.gd gx=… [native] [reps]` · `dbg_gx.gd` (`dump`, `show`,
 `tris`, `texdump`, `hookval`, `frames`) · `dbg_snd.gd` / `dsstats.gd` (`frames`, `every`) · `lockstep.gd` (`ref`, `out`,
 `rom`, `frames`, `break=ADDR[:N]`, `cardlog`, `pxilog`, `hang_ms`, `trace`) · `check_rom.gd file=PATH` ·
-`qol_preview.tscn -- rom=ROM bg=CAPTURE.png out=DIR [mp fakepads=2 | lan | asrec [asdbg]]` (`asrec`: the ALL-STAR RECORDS page in 11 table states, part 35, + the ENDLESS RECORDS page `es_*`, part 38) · `assets=DIR` (converted-asset folder of the legacy scenes, `scripts/core/assets.gd`).
+`qol_preview.tscn -- rom=ROM bg=CAPTURE.png out=DIR [mp fakepads=2 | lan | asrec [asdbg] | tour tnseed=N tnrec=FILE]` (`asrec`: the ALL-STAR RECORDS page in 11 table states, part 35, + the ENDLESS RECORDS page `es_*`, part 38; `tour`: the TOURNAMENT bracket page through a tournament, `tn_*`, part 43 — give `tnrec=` a scratch file: the champion state writes a title) · `assets=DIR` (converted-asset folder of the legacy scenes, `scripts/core/assets.gd`).

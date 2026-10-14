@@ -109,6 +109,9 @@ func _ready() -> void:
 	if a.has("asrec"):
 		_asrec_states(rom, root2, font)
 		return
+	if a.has("tour"):
+		_tour_states(rom, root2, font)
+		return
 	_menu.focus_changed.connect(func(): _top.show_text(_menu.focus_title(), _menu.focus_desc()) if _menu.visible else _top.show_text("SETTINGS", "Change the game's settings."))
 	_states = [
 		["tile", func(): _menu.visible = false; _top.show_text("SETTINGS", "Change the game's settings.")],
@@ -455,3 +458,47 @@ func _asrec_states(rom: PackedByteArray, root2: Node, font: QoLFont) -> void:
 
 var X: Callable                                ## part 38: ENDLESS entry (beaten, m, s, hearts, ids)
 var efull: Array = []
+
+
+## part 43: the TOURNAMENT bracket page (QoLTournamentPage) through a whole tournament (args: tour tnseed=N
+## tnrec=SCRATCH_FILE [tndbg]); the art comes from a QoLAllStarRecords like the game's
+class TnStub:
+	var allstar := QoLAllStar.new()
+	var font: QoLFont
+	var settings := QoLSettings.new()
+	var as_records: QoLAllStarRecords
+	var _block_keys := 0
+	var _block_touch := false
+	func se(_id: int) -> void: pass
+
+
+func _tour_states(rom: PackedByteArray, root2: Node, font: QoLFont) -> void:
+	_menu.visible = false
+	_top.visible = false
+	var st := TnStub.new()
+	st.font = font
+	st.as_records = QoLAllStarRecords.new()
+	st.as_records.setup(st, rom)
+	var page := QoLTournamentPage.new()
+	page.setup(st)
+	root2.add_child(page)
+	st.allstar.start(QoLAllStar.TOURNAMENT)
+	var t: QoLTournament = st.allstar.tour
+	var O := func(tt: int) -> void:
+		page._open()
+		page._phase = 1
+		page._t = tt
+		page._ht = tt
+		page.queue_redraw()
+	_states = [
+		["tn_qf", func(): t.draw([0, 5, 6], 38); O.call(16)],
+		["tn_qf_blink", func(): page._ht = 26; page.queue_redraw()],
+		["tn_qf_quit", func(): page._press_button(1, "preview")],
+		["tn_qf_fade", func(): page._phase = 0; page._t = 6; page.queue_redraw()],
+		["tn_sf", func(): t.p1_result(true, 3000); O.call(16)],
+		["tn_final", func(): t.p1_result(true, 3600); O.call(16)],
+		["tn_champion", func(): t.p1_result(true, 4100); O.call(16)],
+		["tn_out_qf", func(): t.draw([20, 14, 31], 31); t.p1_result(false, 2000); O.call(16)],
+		["tn_out_sf", func(): t.draw([9, 15, 1], 38); t.p1_result(true, 2000); t.p1_result(false, 2500); O.call(16)],
+		["tn_end", func(): pass],
+	]

@@ -73,6 +73,7 @@ const GLINT_Y1 := 130
 const GLINT_COLS := [[255, 255, 255], [200, 220, 255], [255, 240, 200], [255, 210, 160], [220, 230, 255], [255, 250, 235]]
 const RAY_TEX := 3                       ## stage 4: texture of the light-ray curtain objects
 const POOL := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]   ## stage BGM streams (stage s -> s+1, 2 -> 4, 3 -> 3)
+const BOSS_POOL := [16, 17]          ## part 43 BOSS RUSH: the game's two boss themes (BOSS1 / BOSS2), from the first FIGHT
 
 var g                                    ## QoLGame
 var dbg := Game.args.has("asdbg")
@@ -671,6 +672,9 @@ func _music_tick(st: int) -> void:
 		_log("music: track %d restarted at %d ms (asmseek, %s s before the end)" % [id, ms, str(e[1])])
 		_m_last = -1
 		return
+	if fight and a.mode == QoLAllStar.BOSSRUSH and not id in BOSS_POOL and not _m_id in BOSS_POOL and _m_pending == "":
+		_switch(id, "boss rush")                       # part 43: a boss theme from the first FIGHT on
+		return
 	if id != _m_id or _m_last < 0:
 		_m_id = id
 		_m_last = pos
@@ -709,7 +713,8 @@ func _music_tick(st: int) -> void:
 
 
 func _switch(cur: int, why: String) -> void:
-	var pool: Array = POOL.filter(func(n): return n != cur and g.as_strm_info.has(n))
+	var boss: bool = g.allstar.mode == QoLAllStar.BOSSRUSH
+	var pool: Array = (BOSS_POOL if boss else POOL).filter(func(n): return n != cur and g.as_strm_info.has(n))
 	if pool.is_empty():
 		return
 	var n: int = pool[_rng.randi_range(0, pool.size() - 1)]

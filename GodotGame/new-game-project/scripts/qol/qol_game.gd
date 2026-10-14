@@ -357,6 +357,9 @@ func f_0202a40c(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: i
 		_bc.reset()                                    # part 42 BODY CHANGE
 	if _zv != null:
 		_zv.reset()                                    # part 42 Z-VANISH
+	if allstar != null and allstar.active:
+		_br_loaded()                                   # part 43 BOSS RUSH: the first two enemies as bosses (`# ---- BOSS RUSH`)
+		_tn_loaded()                                   # part 43 TOURNAMENT: this round's CPU level (`# ---- TOURNAMENT`)
 	if cheats == null:
 		return r
 	var teams: int = _ld(TEAMS, 4, false)
@@ -472,6 +475,7 @@ func _script_ops(c: int, want: int) -> Array:
 func f_020140c8(param_1: int = 0, param_2: int = 0, param_3: int = 0, _x3: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
 	_lan_battle_start()                                # part 30: a LAN battle: the sync of LAN_DESIGN 1.2 (`# ---- LAN CORE`)
 	_mp_battle_start()                                 # part 27: `mpbattle=1` (debug) / per-battle MP state
+	_tn_battle_setup()                                 # part 43: a TOURNAMENT battle: both teams, stage (`# ---- TOURNAMENT`)
 	if cheats != null and _on("random_characters") and _party_saved.is_empty() and _ld(GAME_MODE, 4, false) != 2:
 		_randomize_party()
 		if _mp_on() and _party_saved2.is_empty():
@@ -5580,7 +5584,7 @@ var _asb_hp_at: Array = []               ## debug `ashp=F:k:HP`: [port frame, P1
 
 func _asb_session() -> bool:
 	return allstar != null and allstar.active and _ld(GAME_MODE, 4, false) == 5 and (mp == null or not mp.active) \
-		and (lan == null or not lan.in_battle)
+		and (lan == null or not lan.in_battle) and allstar.mode != QoLAllStar.TOURNAMENT   # (part 43: normal battles)
 
 
 func _asb_log(s: String) -> void:
@@ -5595,7 +5599,7 @@ func _asb_battle_setup() -> void:
 		return
 	_asb_on = true
 	allstar.battle_reset()
-	allstar.hearts = [true, true, true]
+	allstar.hearts = [true, false, false] if allstar.mode == QoLAllStar.BOSSRUSH else [true, true, true]   # part 43: one heart
 	allstar.heart_req = -1
 	allstar.done = false
 	allstar.done_frame = -1
@@ -5634,7 +5638,8 @@ func _asb_battle_setup() -> void:
 			_asb_heart_at.append([int(q[0]), int(q[1]) if q.size() > 1 else -1])
 	_asb_hud_reset()
 	_ass_reset()                                       # part 34 phase 3 (`# ---- ALLSTAR STAGE`)
-	_asb_log("battle start%s: enemies %d, %d (index %d of %d) P1 %s heap %s" % [" (ENDLESS)" if allstar.endless else "", a, b,
+	_asb_log("battle start%s: enemies %d, %d (index %d of %d) P1 %s heap %s" % [" (ENDLESS)" if allstar.endless else
+		(" (BOSS RUSH)" if allstar.mode == QoLAllStar.BOSSRUSH else ""), a, b,
 		allstar.index, allstar.total(), str(allstar.p1_ids), str(_heap_free())])
 
 
@@ -5649,6 +5654,8 @@ func _asb_battle_started() -> void:
 ## FUN_020010F4: NitroMain's scene update (once per game frame); the All-Star battle tick after it
 func f_020010f4(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
 	var r := super.f_020010f4(param_1, param_2, param_3, param_4, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+	if _tn_on:
+		_tn_tick()                                     # part 43 TOURNAMENT: the battle's clock (`# ---- TOURNAMENT`)
 	if _asb_on:
 		_asb_tick()
 		if _asb_on:
@@ -5753,6 +5760,7 @@ func _asb_load(r: int, k: int) -> void:
 				_st(r + 0xFC, 4, pal + 0x100)
 				f_02010ae0(_ld(r + 0x10A, 2, false), pal + 0x100, 0x100)
 				break
+	_br_boss(r)                                        # part 43 BOSS RUSH: the reloaded enemy is the boss version too
 	var mx: int = _ld(_ld(r + 0x50, 4, false), 2, false)   # the new character's own max HP (as FUN_0202A094)
 	_st(r + 0x24C, 2, mx)
 	_st(r + 0x24A, 2, mx)
@@ -6132,6 +6140,8 @@ const GM_TASK := 0x020DE5A0              ## u32 -> scene 0xB draw task; +0x30 = 
 const GM_SLOTS := [Vector2i(160, 44), Vector2i(149, 85), Vector2i(138, 126), Vector2i(127, 167)]
 const GM_CURSOR_DX := 15
 var _gm_from := -1                       ## the scene before a teardown's FUN_02001014(2)
+var gm_tour_tex := false                 ## part 43: QoLAllStarMenu wrote the 4th bar (TOURNAMENT) to +BAR_TOUR (main thread)
+var _gm_tour_logged := false
 
 
 ## the Gamemode menu runs: scene 0xB entered from the GAMEMODE tile (QoLAllStar.MENU), NEW GAMEMODES on
@@ -6175,10 +6185,20 @@ func f_0205495c(param_1: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4:
 	var pal2 := _ld(o2 + 4, 1, false)
 	_st(o1 + 4, 1, _ld(o0 + 4, 1, false))             # (a closed course's bar may use another palette)
 	_st(o2 + 4, 1, _ld(o0 + 4, 1, false))
+	var h1 := _ld(o1, 4, false)                       # part 43: the second bar's texture handle (+8 = texture offset)
+	var t1 := _ld(h1 + 8, 4, false)
+	var tour: bool = gm_tour_tex and t1 == QoLAllStarMenu.BAR_EMPTY
+	if allstar.dbg and tour != _gm_tour_logged:
+		_gm_tour_logged = tour
+		print("AS Gamemode menu: 4th bar %s (bar 1 texture offset %x)" % ["on" if tour else "off", t1])
 	for i in 4:
 		var o := o0 if i == 0 else (o2 if i == 1 else o1)
+		if i == 3 and tour:                            # part 43: slot 3 = the 4th bar (TOURNAMENT) at +BAR_TOUR
+			_st(h1 + 8, 4, QoLAllStarMenu.BAR_TOUR)
 		_gm_pos(o, GM_SLOTS[i].x, GM_SLOTS[i].y, 20)
 		f_0200aebc(o)
+	if tour:
+		_st(h1 + 8, 4, t1)
 	_st(o1 + 4, 1, pal1)
 	_st(o2 + 4, 1, pal2)
 	f_0200aebc(_ld(q + 0x20, 4, false))
@@ -6234,12 +6254,12 @@ func f_0204dd8c(_x0: int = 0, _x1: int = 0, _x2: int = 0, _x3: int = 0, _x4: int
 
 
 func _gm_decide() -> int:
-	if allstar.menu_cursor > 1:                        # EMPTY: nothing here yet
+	if allstar.menu_cursor == 3 and not gm_tour_tex:   # part 43: (no 4th bar shown: TOURNAMENT would look like BOSS RUSH)
 		f_0200ff9c(0, 0xD)
 		return 1
 	f_0200ff9c(0, 2)
 	_st(GM_EXIT, 1, 3)
-	allstar._log("Gamemode menu: %s" % ("ENDLESS" if allstar.menu_cursor == 1 else "ALL-STAR"))
+	allstar._log("Gamemode menu: %s" % QoLAllStar.MODE_NAMES[clampi(allstar.menu_cursor, 0, 3)])
 	return 0
 
 
@@ -6256,7 +6276,9 @@ func _gm_route(param_1: int) -> int:
 	var to := param_1 & 0xFF
 	if allstar.debug_battle and not allstar.active and (to == 0 or to == 0x13) and _ld(GAME_MODE, 4, false) == 5 \
 			and (mp == null or not mp.active) and (lan == null or lan.state == QoLLan.IDLE):
-		allstar.start(allstar.debug_endless)           # allstar=1: this Free Battle is an All-Star (endless=1: ENDLESS) battle
+		allstar.start(maxi(allstar.debug_mode, 0))     # allstar=1: this Free Battle is an All-Star (endless=1: ENDLESS) battle
+		if allstar.mode == QoLAllStar.TOURNAMENT:      # part 43 (`tournament=1`): the bracket around the Free Battle's P1 team
+			allstar.tour.hold = true
 	if not allstar.active and allstar.stage != QoLAllStar.MENU:
 		return param_1
 	if to == 2 and cur != 2:                           # the team select's teardown (FUN_02066230) asks for scene 2
@@ -6274,12 +6296,12 @@ func _gm_route(param_1: int) -> int:
 			if allstar.stage == QoLAllStar.MENU:
 				if to == 4:
 					f_0200297c(QoLAllStar.GAME_MODE)
-					allstar.start(allstar.menu_cursor == 1)   # part 38: slot 1 = ENDLESS
+					allstar.start(clampi(allstar.menu_cursor, 0, 3))   # part 38: slot 1 = ENDLESS; part 43: 2 / 3
 				else:
 					allstar.end()
 		4:
 			if to == 6:                                # B with nothing picked: the Gamemode menu again
-				var mc: int = 1 if allstar.endless else 0  # (part 38: the cursor back on the mode left)
+				var mc: int = allstar.mode                 # (part 38: the cursor back on the mode left)
 				allstar.end()
 				if cheats != null and cheats.new_gamemodes:
 					allstar.menu_cursor = mc
@@ -6289,8 +6311,13 @@ func _gm_route(param_1: int) -> int:
 					nto = 0xB
 			elif to != 0:
 				allstar.end()
+			elif allstar.mode == QoLAllStar.TOURNAMENT:    # part 43: GO = a new tournament; the bracket page first
+				allstar.tour.clear()
+				allstar.tour.hold = true
 		0:
-			if to in [0x14, 10, 3, 0xD]:
+			if allstar.mode == QoLAllStar.TOURNAMENT and to in [0x14, 10, 4]:
+				nto = _tn_route(to)                        # part 43 (`# ---- TOURNAMENT`)
+			elif to in [0x14, 10, 3, 0xD]:
 				if allstar.result == "":
 					allstar.result = "lose" if to == 0x14 else ("win" if to == 10 else "quit")
 				_asr_win(to)                           # part 34 phase 4: a win -> records page (`# ---- ALLSTAR RECORDS`)
@@ -6323,6 +6350,154 @@ func _asr_win(to: int) -> void:
 	allstar.p1_support = _ld(PARTY_SUPPORT, 4, false)
 	allstar.records_req = true
 	allstar._log("%s -> records page (support %d)" % [allstar.result, allstar.p1_support])
+
+
+# ---- BOSS RUSH (part 43) ---------------------------------------------------------------------------------------------
+## BOSS RUSH (Gamemode menu slot 2; docs/ALLSTAR_DESIGN.md 8): an All-Star battle (`_asb_on`: one long battle in the Time
+## Chamber, P1's HP carried, the enemy bench reloaded) whose enemies are QoLAllStar.BOSS_ORDER, every one the game's own
+## boss version at its BOSS_LEVELS level, as the BOSS CHARACTERS cheat makes it (_make_boss: the level's parameter
+## block = boss HP / stats / ki costs, the boss-only script branches): the two the loader brings in after FUN_0202A40C,
+## every reloaded one in _asb_load. All are in battle_bosses (the level-3 dash fix f_0202c1d4). One heart; the boss
+## BGMs (QoLAllStarStage); the BOSS RUSH RECORDS page after a win. Nothing outside a Boss Rush battle.
+func _br_on() -> bool:
+	return _asb_on and allstar != null and allstar.mode == QoLAllStar.BOSSRUSH
+
+
+## FUN_0202A40C post: the enemy records the loader filled
+func _br_loaded() -> void:
+	if not _br_on():
+		return
+	var t1: int = _ld(TEAMS, 4, false) + 0x8E8
+	for k in clampi(_ld(t1 + 0x8C9, 1, false), 0, 3):
+		_br_boss(t1 + k * 0x2D8)
+
+
+## side-1 record r (just loaded) -> its boss version (none for an id without one)
+func _br_boss(r: int) -> void:
+	if not _br_on():
+		return
+	for i in range(battle_bosses.size() - 1, -1, -1):
+		if battle_bosses[i][0] == r:
+			battle_bosses.remove_at(i)
+	var id: int = _ld(r + 5, 1, false)
+	if not BOSS_LEVELS.has(id):
+		return
+	var lv: int = BOSS_LEVELS[id]
+	_make_boss(r, lv)
+	battle_bosses.append([r, lv])
+	_asb_log("boss: record %x id %d level %d hp %d" % [r, id, lv, _ld(r + 0x24A, 2, true)])
+
+
+# ---- TOURNAMENT (part 43) --------------------------------------------------------------------------------------------
+## TOURNAMENT (Gamemode menu slot 3; docs/ALLSTAR_DESIGN.md 9): the All-Star select's team (GO) enters an 8-team bracket
+## (QoLTournament, allstar.tour); every match of player 1 is a normal Free Battle (mode 5: the game's timer, tags, Team
+## Arts, supports; full HP) against the bracket's CPU team on the round's stage, the CPU level raised per round. Flow:
+## GO (4 -> 0) -> the battle scene waits at its state 0 (f_02013064: nothing loaded yet) while the bracket page
+## (QoLTournamentPage) shows; FIGHT lets it load. A won match asks for the results (10): rerouted to a new battle (0)
+## that waits for the page again (next round), or -- the final won / a match lost (0x14) -- to the team select (4) with
+## the page over it. QUIT on the page (or the pause menu's Return to Character Select) leaves for the select.
+var _tn_on := false                       ## this battle is a tournament battle (decided at FUN_020140C8)
+var _tn_frames := 0                       ## game frames of this battle's fight (the champion's time)
+
+
+## FUN_02013064: the battle scene. TOURNAMENT: waits at its first state (nothing started, the select already torn
+## down) while the bracket page shows; the bracket is drawn there for a new tournament (P1's team is committed now)
+func f_02013064(param_1: int = 0, param_2: int = 0, param_3: int = 0, param_4: int = 0, _x4: int = 0, _x5: int = 0, _x6: int = 0, _x7: int = 0, _x8: int = 0, _x9: int = 0, _x10: int = 0, _x11: int = 0) -> int:
+	if allstar != null and allstar.tour != null and allstar.tour.hold and allstar.is_tournament() \
+			and _ld(BATTLE_STATE, 1, false) == 0:
+		return _tn_held()
+	return super.f_02013064(param_1, param_2, param_3, param_4, _x4, _x5, _x6, _x7, _x8, _x9, _x10, _x11)
+
+
+func _tn_held() -> int:
+	var t: QoLTournament = allstar.tour
+	if not t.drawn():
+		var ids: Array = []
+		for k in clampi(_ld(PARTY_COUNT, 1, false), 1, 3):
+			ids.append(_ld(PARTY + k * 4, 4, false))
+		t.draw(ids, _ld(PARTY_SUPPORT, 4, false))
+		t.page_req = true
+	if t.quit_req:                                     # QUIT on the page: back to the team select
+		t.quit_req = false
+		t.hold = false
+		t.clear()
+		allstar.result = "quit"
+		allstar.stage = QoLAllStar.SELECT
+		f_0200297c(QoLAllStar.GAME_MODE)
+		f_02001014(4)
+		allstar._log("tournament: QUIT on the bracket page -> team select")
+	return 1                                           # (0 would end NitroMain's scene loop: soft reset to the title)
+
+
+## FUN_020140C8 pre: a tournament battle -> player 1's team, this round's CPU team and stage in the party block (first
+## of the battle-start steps: RANDOM CHARACTERS / RANDOM STAGE still apply to it)
+func _tn_battle_setup() -> void:
+	_tn_on = false
+	if allstar == null or not allstar.is_tournament() or allstar.tour == null or allstar.tour.state != "on" \
+			or _ld(GAME_MODE, 4, false) != 5 or (mp != null and mp.active) or (lan != null and lan.in_battle):
+		return
+	var t: QoLTournament = allstar.tour
+	var opp := t.opponent()
+	if opp < 0:
+		return
+	_tn_on = true
+	_tn_frames = 0
+	allstar.stage = QoLAllStar.BATTLE
+	allstar.battles += 1
+	var p1: Array = t.teams[t.p1_slot]
+	for k in 3:
+		_st(PARTY + k * 4, 4, p1[k] if k < p1.size() else 38)
+	_st(PARTY_SUPPORT, 4, t.p1_support)
+	_st(PARTY_COUNT, 1, p1.size())
+	var o: Array = t.teams[opp]
+	for k in 3:
+		_st(PARTY + 0xC + k * 4, 4, o[k] if k < o.size() else 38)
+	_st(PARTY_SUPPORT + 4, 4, 38)                      # (the CPU teams have no support)
+	_st(PARTY_COUNT + 1, 1, o.size())
+	_st(0x020DD54A, 1, int(t.stages[t.round]))
+	_st(0x020DD510, 1, 0)                              # boss level 0
+	boss_teams[1] = {}
+	allstar._log("tournament battle: round %d (%s) P1 %s support %d vs slot %d %s, stage %d" % [t.round,
+		QoLTournament.ROUND_NAMES[t.round], str(p1), t.p1_support, opp, str(o), t.stages[t.round]])
+
+
+## FUN_0202A40C post: this round's CPU level (the loader set the Option difficulty's; the AI reads it afterwards)
+func _tn_loaded() -> void:
+	if not _tn_on:
+		return
+	var base: int = _ld(0x020DD552, 1, false)
+	var lv: int = allstar.tour.cpu_level(base)
+	_st(0x020DD552, 1, lv)
+	allstar._log("tournament: CPU level %d -> %d" % [base, lv])
+
+
+func _tn_tick() -> void:
+	if _ld(GM_SCENE, 1, false) != 0 or allstar == null or not allstar.is_tournament():
+		_tn_on = false
+		return
+	if _ld(BATTLE_STATE, 1, false) in [7, 8, 0xA, 0xB, 0xC, 0xD, 0xE]:
+		_tn_frames += 1
+
+
+## _gm_route, battle scene -> 10 (won) / 0x14 (lost) / 4 (QUIT on the held page): the next scene
+func _tn_route(to: int) -> int:
+	var t: QoLTournament = allstar.tour
+	_tn_on = false
+	if to == 4 or t.state != "on":
+		allstar.stage = QoLAllStar.SELECT
+		return 4
+	t.p1_result(to == 10, _tn_frames)
+	allstar.result = "win" if to == 10 else "lose"
+	t.page_req = true
+	if t.state == "on":                                # next round: a new battle, held for the bracket page
+		t.hold = true
+		allstar.stage = QoLAllStar.BATTLE
+		allstar._log("tournament: round won -> next battle (round %d)" % t.round)
+		return 0
+	f_0200297c(QoLAllStar.GAME_MODE)
+	allstar.stage = QoLAllStar.SELECT
+	allstar._log("tournament over: %s -> team select" % t.state)
+	return 4
 
 
 # ---- FLIGHTLESS (part 39) -------------------------------------------------------------------------------------------

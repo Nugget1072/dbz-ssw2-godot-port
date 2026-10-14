@@ -198,3 +198,15 @@ RAM addresses / decoded facts: `decomp/DATA_NOTES.md` (index: `decomp/DATA_NOTES
   `_banner_word` = GAME OVER in the WINNER band's own typeface (`harvest_cc`, `_make_m`, `_shrink`), `_make_d`; shared:
   `_packed` digits, GFont.contour title spacing, `_label_room`) and
   `endless_records.cfg` (`path(true)`, `before_e`). Preview: `tools/qol_preview.gd asrec` states `es_*`.
+- Part 43 (docs/ALLSTAR_DESIGN.md 8 / 9): `QoLAllStar.mode` (ALLSTAR / ENDLESS / BOSSRUSH / TOURNAMENT = Gamemode menu
+  slot; `start(mode)`), slots 2-3 = BOSS RUSH (texture +0x4000) / TOURNAMENT (QoLAllStarMenu writes a 4th bar at
+  +0x8000; `f_0205495c` points the second bar object's texture handle there for slot 3).
+  - BOSS RUSH: QoLGame `# ---- BOSS RUSH (part 43)` (`_br_loaded` from the `f_0202a40c` post-hook, `_br_boss` from
+    `_asb_load`: `_make_boss` + `battle_bosses`), `QoLAllStar.BOSS_ORDER`, one heart (`QoLAllStarHearts._count`), boss
+    BGMs (`QoLAllStarStage.BOSS_POOL`), `QoLAllStarRecords.bossrush` (+ `_make_b` / `_make_h` / `_stack` / `_make_u`
+    letters, `bossrush_records.cfg` = `path(2)`).
+  - TOURNAMENT: `QoLTournament` (`qol_tournament.gd`, `QoLAllStar.tour`: draw, rolls, rounds, `hold` / `page_req` /
+    `quit_req`), `QoLTournamentPage` (`qol_tournament_page.gd`, QoLController `tour_page`: `frame` in `after_step`,
+    `filter` first in `filter_input`; bracket page + `tournament_records.cfg`), QoLGame `# ---- TOURNAMENT (part 43)`
+    (`f_02013064` hold, `_tn_battle_setup` first in `f_020140c8`, `_tn_loaded` CPU level, `_tn_tick`, `_tn_route` from
+    `_gm_route`). Preview: `tools/qol_preview.gd tour` states `tn_*`.

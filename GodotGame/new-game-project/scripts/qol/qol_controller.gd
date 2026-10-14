@@ -36,6 +36,7 @@ var crt: QoLCrt                              ## WEIRD 3 CRT TV (part 25)
 var mp_panel: QoLMpPanel                     ## part 27 MP battle lower screen; route(mp) = per-half battle taps
 var as_hearts: QoLAllStarHearts              ## part 34 ALL-STAR battle: the three hearts under "Team Arts"
 var as_records: QoLAllStarRecords            ## part 34 ALL-STAR records page after a win (both screens)
+var tour_page: QoLTournamentPage             ## part 43 TOURNAMENT bracket page (both screens)
 var lan_panel: QoLLanPanel                   ## part 30 phase 3: LAN battle (guest's side-1 panel, PING) / select bands
 var mp_menu: QoLMpMenu                       ## part 27 VS menu LOCAL / LAN overlay + controller setup page
 var mp_cursors: Array = []                   ## part 27 the players' gamepad cursors (red P1, blue P2)
@@ -131,6 +132,9 @@ func setup(g, m: DSMachine, rom: PackedByteArray) -> void:
 	as_records = QoLAllStarRecords.new()    # part 34: ALL-STAR records page (nothing until a won All-Star battle)
 	as_records.setup(self, rom)
 	g.screen_root.add_child(as_records)
+	tour_page = QoLTournamentPage.new()      # part 43: TOURNAMENT bracket page (nothing outside a tournament)
+	tour_page.setup(self)
+	g.screen_root.add_child(tour_page)
 	lan_panel = QoLLanPanel.new()           # part 30 phase 3: guest's panel, PING, WAITING bands (nothing without LAN)
 	lan_panel.setup(self)
 	g.screen_root.add_child(lan_panel)
@@ -179,6 +183,8 @@ func filter_input(keys: int, ext: int, touch: Vector2i) -> Array:
 		_block_touch = false
 	if as_records.shown:                     # part 34: the ALL-STAR records page takes every button / tap
 		return as_records.filter(newly, down, touch, new_touch)
+	if tour_page.shown:                      # part 43: the TOURNAMENT bracket page too
+		return tour_page.filter(newly, down, touch, new_touch)
 	if lan_menu != null and lan_menu.is_open():   # part 30: the LAN pages take every button / tap
 		return _lan_input(newly, down, touch, new_touch)
 	if lan.sel_on() and not lan.lockstep and not lan.aborting and not lan.in_battle:   # part 30 phase 3: LAN select / stage
@@ -239,6 +245,7 @@ func after_step() -> void:
 	mp_panel.frame(core)                 # part 27: MP battle lower screen (nothing outside an MP battle)
 	as_hearts.frame(core)                # part 34: ALL-STAR hearts (nothing outside an All-Star battle)
 	as_records.frame(core)               # part 34: ALL-STAR records page (opens after a won All-Star battle)
+	tour_page.frame(core)                # part 43: TOURNAMENT bracket page (opens when the game thread asks)
 	_mp_after(core)                      # part 27: VS menu overlay / setup page / session end (off: one test)
 	if lan.busy():
 		lan.after_step(core)             # part 30: LAN battle start / checksums / end (IDLE: one test)
@@ -933,9 +940,10 @@ var _top_gm := false                 ## the Mode Select box shows the GAMEMODE t
 const AS_TEXTS := [
 	["ALL-STAR", "Fight all 26 characters, one after\nanother in story order, in one long\nbattle in the Time Chamber. Lose\nand you start over from the\ncharacter select!"],
 	["ENDLESS", "Random enemies, one after\nanother, with no end, in the\nTime Chamber. How many can you\nbeat? When your team is out,\nyour run goes on the records!"],   # part 38
-	["EMPTY", "Nothing here yet:\nmore game modes may come in a\nlater version of the port."],
+	["BOSS RUSH", "All 18 bosses, one after another,\nin one long battle in the Time\nChamber, the final boss last.\nYour HP carries over and you\nhave only one heart!"],   # part 43
+	["TOURNAMENT", "Your team against 7 CPU teams\nin a bracket: quarter-final,\nsemi-final, final. Each match is\na fresh battle and the CPU gets\nstronger every round!"],   # part 43
 ]
-const AS_TILE_TEXT := ["GAMEMODE", "New game modes made for the\nport: ALL-STAR (the whole cast\nin a row), ENDLESS (random\nenemies with no end) and more\nto come."]
+const AS_TILE_TEXT := ["GAMEMODE", "New game modes made for the\nport: ALL-STAR, ENDLESS, BOSS\nRUSH and TOURNAMENT."]
 
 
 func _as_setup(g) -> void:
@@ -965,10 +973,12 @@ func _as_after(core) -> void:
 	_top_gm = gm_tile
 	var menu_on: bool = on and allstar.stage == QoLAllStar.MENU and core.r8(0x020DD4C4) == 0xB
 	as_menu.bars_frame(core, menu_on)
+	if core is QoLGame:
+		core.gm_tour_tex = as_menu.tour_free == 1      # part 43: the 4th bar (TOURNAMENT) is in texture memory
 	var st: int = core.r8(0x020DE554) if menu_on else 0
 	var show := menu_on and st >= 5 and st <= 9
 	if show:
-		var t: Array = AS_TEXTS[mini(allstar.menu_cursor, 2)]
+		var t: Array = AS_TEXTS[clampi(allstar.menu_cursor, 0, 3)]
 		as_top.show_text(t[0], t[1])
 		var swap: bool = (core.IO.decode_u16(0x304) & 0x8000) != 0
 		var bu := _mp_bright(core, 0 if swap else 0x1000)

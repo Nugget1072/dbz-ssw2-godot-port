@@ -37,9 +37,14 @@ extends Node2D
 ## "Character Select" label has 3 px room before the plate's inner frame (`_label_room`). File `endless_records.cfg` (`esrec=PATH`), [records] r1..r5 = {"beaten",
 ## "frames", "ids", "hearts", "date"}, sorted by most enemies, then shorter time, fewer hearts, older entry; a run that
 ## beat nobody is not ranked; nothing is written while cheats are on.
+## Part 43 BOSS RUSH RECORDS (`bossrush`, set at open from QoLAllStar.mode): ALL-STAR's page after a won Boss Rush
+## (time + hearts, Enemies n/18), tab "BOSS RUSH" (B = the tab font's P over D's lower half, H = N's stems + a bar),
+## ranking plate "BOSS RUSH RECORDS" (the plate's capitals lack B / U: the port's italic capitals, retitle()); file
+## `bossrush_records.cfg` (`brrec=PATH`), the same entries as ALL-STAR's; not after `brstart=` / `brorder=`.
 
 const FILE := "allstar_records.cfg"
 const FILE_ENDLESS := "endless_records.cfg"  ## part 38
+const FILE_BOSS := "bossrush_records.cfg"    ## part 43
 const BEATEN_MAX := 99999                    ## part 38: ENDLESS enemies beaten (file check / display)
 const MAX := 5
 const FPS := 59.8261
@@ -122,6 +127,8 @@ var new_rank := -1                           ## 0..4 = this run's row in `table`
 var note := ""                               ## "" saved / "cheats" / "partial" / "out" (not in the top 5) / "nofile" (write failed)
 var saved := false
 var endless := false                         ## part 38: this page is the ENDLESS RECORDS page
+var bossrush := false                        ## part 43: this page is the BOSS RUSH RECORDS page
+var _plate_top_b                             ## part 43: the plate lettered "BOSS RUSH RECORDS"
 var _ok := false                             ## ROM art found
 var _built := false
 var _task := -1                              ## WorkerThreadPool task building the art (started with the session)
@@ -368,6 +375,8 @@ func setup(q, r: PackedByteArray) -> void:
 		_demo_at = int(Game.flag("asrecdemo"))
 	elif Game.args.has("esrecdemo"):
 		_demo_at = int(Game.flag("esrecdemo"))
+	elif Game.args.has("brrecdemo"):                  # part 43: the BOSS RUSH page
+		_demo_at = int(Game.flag("brrecdemo"))
 
 
 ## the art is cut from the ROM in a worker thread as soon as an All-Star session is running (nothing otherwise; a
@@ -404,6 +413,8 @@ func _textures() -> void:
 		_plate_top = ImageTexture.create_from_image(_plate_top)
 	if _plate_top_e is Image:
 		_plate_top_e = ImageTexture.create_from_image(_plate_top_e)
+	if _plate_top_b is Image:
+		_plate_top_b = ImageTexture.create_from_image(_plate_top_b)
 	if _button is Image:
 		_button = ImageTexture.create_from_image(_button)
 	if _cursor is Image:
@@ -413,17 +424,22 @@ func _textures() -> void:
 
 
 # ------------------------------------------------------------------------------------------------ records file
-## the file's name / its debug flag per mode (part 38: ENDLESS has its own file)
-static func _file(e: bool) -> String:
-	return FILE_ENDLESS if e else FILE
+## the file's name / its debug flag per mode (part 38: ENDLESS has its own file; part 43: `e` may be the mode, 2 = BOSS
+## RUSH)
+static func _mi(e: Variant) -> int:
+	return int(e) if e is int else (1 if e else 0)
 
 
-static func _flag(e: bool) -> String:
-	return "esrec" if e else "asrec"
+static func _file(e: Variant) -> String:
+	return [FILE, FILE_ENDLESS, FILE_BOSS][clampi(_mi(e), 0, 2)]
 
 
-## "" = no file (captures without `asrec=` / `esrec=`)
-static func path(e := false) -> String:
+static func _flag(e: Variant) -> String:
+	return ["asrec", "esrec", "brrec"][clampi(_mi(e), 0, 2)]
+
+
+## "" = no file (captures without `asrec=` / `esrec=` / `brrec=`)
+static func path(e: Variant = false) -> String:
 	if Game.args.has(_flag(e)):
 		return Game.flag(_flag(e))
 	if Game.args.has("capture"):
@@ -435,7 +451,7 @@ static func path(e := false) -> String:
 
 ## part 38 (settings HI-SCORES RESET): both records files removed (and their user:// copies of a read-only exe folder)
 static func reset_files() -> void:
-	for e in [false, true]:
+	for e in [0, 1, 2]:
 		var ps := [path(e)]
 		if OS.has_feature("template") and not Game.args.has(_flag(e)):
 			ps.append("user://" + _file(e))
@@ -445,7 +461,7 @@ static func reset_files() -> void:
 
 
 ## the valid entries of the file, best first (at most MAX); [entries, damaged]
-static func load_table(p: String, e := false) -> Array:
+static func load_table(p: String, e: Variant = false) -> Array:
 	var out: Array = []
 	if p == "":
 		return [out, false]
@@ -457,10 +473,10 @@ static func load_table(p: String, e := false) -> Array:
 		return [out, err != ERR_FILE_NOT_FOUND and FileAccess.file_exists(p)]
 	if c.has_section("records"):
 		for k in c.get_section_keys("records"):
-			var x := entry_from(c.get_value("records", k, null), e)
+			var x := entry_from(c.get_value("records", k, null), _mi(e) == 1)
 			if not x.is_empty():
 				out.append(x)
-	out.sort_custom(before_e if e else before)
+	out.sort_custom(before_e if _mi(e) == 1 else before)
 	if out.size() > MAX:
 		out.resize(MAX)
 	return [out, false]
@@ -533,7 +549,7 @@ static func rank_of(t: Array, e: Dictionary, endless_order := false) -> int:
 	return mini(r, MAX)
 
 
-static func save_table(p: String, t: Array, damaged: bool, e := false) -> bool:
+static func save_table(p: String, t: Array, damaged: bool, e: Variant = false) -> bool:
 	if p == "":
 		return false
 	if damaged and FileAccess.file_exists(p):
@@ -582,11 +598,13 @@ func frame(_core) -> void:
 
 func _open(demo: bool) -> void:
 	endless = (allstar != null and allstar.endless) or (demo and Game.args.has("esrecdemo"))
+	bossrush = not endless and ((allstar != null and allstar.mode == QoLAllStar.BOSSRUSH) or (demo and Game.args.has("brrecdemo")))
 	if endless:
 		_open_endless(demo)
 		return
+	var m := 2 if bossrush else 0                      # part 43: BOSS RUSH's own file
 	var cheats: int = qol.settings.cheats_on()
-	var full := allstar != null and allstar.start_index == 0 and allstar.order == QoLAllStar.ROSTER
+	var full := allstar != null and allstar.start_index == 0 and allstar.order == (QoLAllStar.BOSS_ORDER if bossrush else QoLAllStar.ROSTER)
 	var ids: Array = []
 	for i in ((allstar.p1_ids + [allstar.p1_support]) if allstar != null else []):   # fighters, then the support
 		if int(i) >= 0 and int(i) < 37 and ids.size() < 3:
@@ -606,7 +624,7 @@ func _open(demo: bool) -> void:
 	if e.ids.is_empty():
 		e.ids = [0, 5, 6] if not Game.args.has("asp1") else Array(Array(Game.flag("asp1").split(",")).map(func(s): return clampi(int(s), 0, 36)))
 	entry = e
-	var ld := load_table(path())
+	var ld := load_table(path(m), m)
 	table = ld[0]
 	new_rank = -1
 	saved = false
@@ -624,11 +642,11 @@ func _open(demo: bool) -> void:
 			if table.size() > MAX:
 				table.resize(MAX)
 			new_rank = r
-			saved = save_table(path(), table, ld[1])
+			saved = save_table(path(m), table, ld[1], m)
 			if not saved:
 				note = "nofile"
-	_log("open: time %s (%d frames) hearts %d ids %s cheats %d full %s -> rank %d saved %s note '%s' file '%s' damaged %s table %s" % [
-		time_text(e.frames), e.frames, e.hearts, str(e.ids), cheats, full, new_rank + 1, saved, note, path(), ld[1],
+	_log("open%s: time %s (%d frames) hearts %d ids %s cheats %d full %s -> rank %d saved %s note '%s' file '%s' damaged %s table %s" % [
+		" BOSS RUSH" if bossrush else "", time_text(e.frames), e.frames, e.hearts, str(e.ids), cheats, full, new_rank + 1, saved, note, path(m), ld[1],
 		str(table.map(func(x): return "%s/%d/%s" % [time_text(x.frames), x.hearts, str(x.ids)]))])
 	show_page()
 
@@ -827,6 +845,11 @@ func _load_art() -> void:
 		elif s[0] == "e":
 			base_y = b
 	_pfont.finish(0, 6)
+	if not _pfont.has("B") and _pfont.has("R") and _pfont.has("D"):   # part 43 (BOSS RUSH RECORDS): R's bowl over D's lower half
+		var pb := _stack(_pfont, "R", "D", 0.5)
+		_pfont.add("B", pb[0], pb[1])
+	if not _pfont.has("U") and _pfont.has("O"):        # O with its straight middle carried up the slant (open top)
+		_pfont.add("U", _make_u(_pfont), int(_pfont.glyphs["O"][1]))
 	_pfont.contour = true                              # part 38: outline spacing (see GFont.contour)
 	_pfont.gap = PLATE_GAP
 	_pfont.space = PLATE_SPACE
@@ -843,6 +866,12 @@ func _load_art() -> void:
 		retitle(raw, 256, 5, 1, [1, 0xB, 0xD, 0xC, 0xF], "ENDLESS RECORDS")
 		top_e = lin4(raw, 256)
 	_plate_top_e = top_e.image(ppal)
+	var top_b := plate.copy()                          # part 43: BOSS RUSH RECORDS (the plate has no B / U: retitle)
+	if base_y < 0 or not plate_title(top_b, _pfont, base_y, "BOSS RUSH RECORDS"):
+		var raw := _member(pk, "e_hi_score.ntft")
+		retitle(raw, 256, 5, 1, [1, 0xB, 0xD, 0xC, 0xF], "BOSS RUSH RECORDS")
+		top_b = lin4(raw, 256)
+	_plate_top_b = top_b.image(ppal)
 	# OK plate + the results' cursor (frame + triangle), rows 2-7 left out (plain plate yellow)
 	var cpal := _pal(_member(pk, "e_continue.ntfp"))
 	_button = _label_room(lin4(_member(pk, "e_charasele.ntft"), 256).rows(BTN_ROWS), 3).image(cpal)
@@ -933,6 +962,11 @@ func _make_table_glyphs() -> void:
 		_wfont.add("-", _template(["bccccb", "dffffd", "2dddd2"]), 5)
 	if _wfont.has("O") and _wfont.has("L") and not _wfont.has("D"):   # part 38 (tab "ENDLESS")
 		_wfont.add("D", _make_d(_wfont), int(_wfont.glyphs["O"][1]))
+	if _wfont.has("P") and _wfont.has("D") and not _wfont.has("B"):   # part 43 (tab "BOSS RUSH")
+		var bb := _make_b(_wfont)
+		_wfont.add("B", bb[0], bb[1])
+	if _wfont.has("N") and not _wfont.has("H"):
+		_wfont.add("H", _make_h(_wfont), int(_wfont.glyphs["N"][1]))
 
 
 ## part 38: the "Character Select" plate's label moved `dx` px left inside the plate: in the game's art (V e_charasele:
@@ -1025,6 +1059,81 @@ static func _make_d(f: GFont) -> Canvas:
 	for y in o.h:
 		for x in half:
 			c.s(x, y, l.g(x, y - dy) if x < stem else o.g(half, y))
+	return c
+
+
+## part 43: a capital B for a font that has P and D: P (stem + upper bowl, whose lower bar is the B's middle bar) over
+## D's lower half (the lower bowl and the bottom bar). [Canvas, dy]
+static func _make_b(f: GFont) -> Array:
+	var p: Canvas = f.glyphs["P"][0]
+	var d: Canvas = f.glyphs["D"][0]
+	var py := int(f.glyphs["P"][1])
+	var dy := int(f.glyphs["D"][1])
+	var half := d.crop(0, d.h / 2, d.w, d.h - d.h / 2)
+	return _union([[p, 0, py], [half, 0, dy + d.h / 2]], f.rank)
+
+
+## part 43: a letter made of glyph `a`'s rows above `split` (a fraction of the cap height) and glyph `b`'s rows from
+## there down, both at their own left edge (italic capitals of one plate share the slant row by row). [Canvas, dy]
+static func _stack(f: GFont, a: String, b: String, split: float) -> Array:
+	var ca: Canvas = f.glyphs[a][0]
+	var cb: Canvas = f.glyphs[b][0]
+	var ya := int(f.glyphs[a][1])
+	var yb := int(f.glyphs[b][1])
+	var top := mini(ya, yb)
+	var cut := top + int(round(maxf(ca.h, cb.h) * split))   # the first row taken from b (font coordinates)
+	var pa := ca.crop(0, 0, ca.w, clampi(cut - ya, 1, ca.h))
+	var rb := clampi(cut - yb, 0, cb.h - 1)
+	var pb := cb.crop(0, rb, cb.w, cb.h - rb)
+	return _union([[pa, 0, ya], [pb, 0, yb + rb]], f.rank)
+
+
+## part 43: an italic capital U from O: every row above O's middle row is that middle row (the two straight sides),
+## moved right by the plate's slant (IT_SLANT px per row up), so the top is open and the sides run on to the cap line
+static func _make_u(f: GFont) -> Canvas:
+	var o: Canvas = f.glyphs["O"][0]
+	var c := o.copy()
+	var m := o.h / 2
+	for y in m:
+		var dx := int(round((m - y) * IT_SLANT))
+		for x in o.w:
+			c.s(x, y, 0)
+		for x in o.w:
+			var v := o.g(x, m)
+			if v != 0 and x + dx < o.w:
+				c.s(x + dx, y, v)
+	return c
+
+
+## part 43: a capital H for a font that has N: N's two stems (its full-height columns at both sides), the diagonal
+## between them replaced by a bar across the middle rows in the strokes' shades
+static func _make_h(f: GFont) -> Canvas:
+	var n: Canvas = f.glyphs["N"][0]
+	var full := func(x: int) -> bool:
+		var k := 0
+		for y in n.h:
+			if f.rank[n.g(x, y)] > 0:
+				k += 1
+		return k * 10 >= n.h * 9
+	var l := 0                                          # the left stem's columns
+	while l < n.w and not full.call(l):
+		l += 1
+	while l < n.w and full.call(l):
+		l += 1
+	var r := n.w - 1                                    # the right stem's first column
+	while r > l and not full.call(r):
+		r -= 1
+	while r > l and full.call(r):
+		r -= 1
+	var c := n.copy()
+	var ym := n.h / 2
+	for y in n.h:
+		for x in range(l, r + 1):
+			c.s(x, y, 0)
+	for x in range(l - 1, r + 2):                       # the bar (white core, edge shades), joining both stems
+		_put_max(c, x, ym - 1, 0xC, f.rank)
+		_put_max(c, x, ym, 0xF, f.rank)
+		_put_max(c, x, ym + 1, 0xD, f.rank)
 	return c
 
 
@@ -1510,6 +1619,8 @@ func _build_page() -> void:
 			if u.g(x, y) != 0:
 				u.s(x, y, 1)
 	var tab := "ENDLESS" if endless and _wfont.missing("ENDLESS") == "" else "ALL-STAR"
+	if bossrush:                                       # part 43 (B and H put together in _make_table_glyphs)
+		tab = "BOSS RUSH" if _wfont.missing("BOSS RUSH") == "" else ("BOSSES" if _wfont.missing("BOSSES") == "" else "RUSH")
 	_wfont.draw(u, 251 - _wfont.width(tab), 10, tab)
 	var lines := _table_lines()
 	for k in lines.size():
@@ -1635,7 +1746,8 @@ func _table_lines() -> Array:
 	var rank := "-"
 	if new_rank >= 0:
 		rank = "%d%s" % [new_rank + 1, ORD[new_rank]]
-	var total: int = allstar.total() if allstar != null and allstar.has_method("total") else QoLAllStar.ROSTER.size()
+	var total: int = allstar.total() if allstar != null and allstar.active else \
+		(QoLAllStar.BOSS_ORDER.size() if bossrush else QoLAllStar.ROSTER.size())
 	var beaten := total                                # a win = the last enemy beaten
 	if allstar != null and allstar.beaten > 0:
 		beaten = mini(total, allstar.start_index + allstar.beaten)
@@ -1796,7 +1908,8 @@ func _draw() -> void:
 		_draw_top()
 		_draw_low()
 	else:
-		font.draw(self, Vector2(18, 80), "ENDLESS RECORDS" if endless else "ALL-STAR RECORDS", WHITE, QoLFont.HEAVY, Color.BLACK)
+		font.draw(self, Vector2(18, 80), "ENDLESS RECORDS" if endless else ("BOSS RUSH RECORDS" if bossrush else "ALL-STAR RECORDS"),
+			WHITE, QoLFont.HEAVY, Color.BLACK)
 		font.draw(self, Vector2(18, 100), ("Enemies %d  Time " % int(entry.get("beaten", 0)) if endless else "Clear time ") \
 			+ time_text(entry.get("frames", 1)), WHITE, QoLFont.BOLD, Color.BLACK)
 		font.draw(self, Vector2(18, 192 + 160), "Press A", YELLOW, QoLFont.BOLD, Color.BLACK)
@@ -1818,7 +1931,7 @@ func _draw_top() -> void:
 
 func _draw_low() -> void:
 	var o := 192
-	var pt = _plate_top_e if endless else _plate_top
+	var pt = _plate_top_e if endless else (_plate_top_b if bossrush else _plate_top)
 	if pt != null:
 		draw_texture(pt, Vector2(0, o + TITLE_Y))
 	for i in MAX:

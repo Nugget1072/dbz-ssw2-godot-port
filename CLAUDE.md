@@ -86,6 +86,9 @@ user's art. Legacy, unused: `scenes/battle/`, `scripts/{battle,ui,audio,pilot}/`
 - Keep at most 2 game instances running at once (memory); kill only the processes you started.
 - Running `ssw2.py` inside a PowerShell `Start-Job`: QUOTE comma lists (`"cheats=a,b"`); unquoted, everything after the
   first comma is lost (part 41: looked like non-determinism; parallel runs are deterministic).
+- A QoLGame override of a scene function (`f_02013064` etc.) that skips the game must return non-zero: 0 ends
+  NitroMain's scene loop = soft reset to the title (part 43). `ssw2.py run --inputs ""` breaks the inputs parse: give
+  a dummy input (`"100:Right:1"`).
 
 ## Where to read next
 | Need | Read |

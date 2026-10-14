@@ -23,6 +23,8 @@ Confidence: V = seen in a port run (capture / probe), C = code read (Ghidra C / 
 
 Everything is inert unless `QoLSettings.new_gamemodes` is on AND (for the battle parts) an All-Star session is active
 (`QoLAllStar.active`), so with the setting off every override is `super` only (off-identity tests, section 7).
+The Gamemode menu's four slots: ALL-STAR (this design), ENDLESS (section 7, part 38), BOSS RUSH (section 8, part 43),
+TOURNAMENT (section 9, part 43).
 
 ## 1. Facts per research question (short; details + addresses in DATA_NOTES part 34)
 
@@ -483,3 +485,67 @@ QoLAllStarMenu (ENDLESS bar), QoLAllStarRecords (`endless`), QoLController `AS_T
   code = the part-37 code (V asnew / asold: identical AS lines for an `allstar=1 asstart=22` one-hit-KO battle incl.
   the records page; only the art log's new white "D"). MP / LAN never start a session (`_asb_session` / tile checks).
 - Flags: `endless=1` (+ `allstar=1`), `esseed=N`, `esrec=PATH`, `esfake=N[:M:SS[:h]]`, `esrecdemo=F`.
+
+## 8. BOSS RUSH (part 43) — status: DONE
+Third NEW GAMEMODES mode (Gamemode menu slot 2): ALL-STAR's battle with the game's bosses. Facts: DATA_NOTES "part 43
+findings (Boss Rush, Tournament)". Code: `QoLAllStar.mode` / `BOSS_ORDER` (qol_allstar.gd), QoLGame `# ---- BOSS RUSH
+(part 43)` (`_br_loaded`, `_br_boss`), QoLAllStarStage (`BOSS_POOL`), QoLAllStarHearts (`_count`), QoLAllStarRecords
+(`bossrush`), QoLAllStarMenu (BOSS RUSH bar), QoLController `AS_TEXTS[2]`.
+- **Session**: `QoLAllStar.mode` (ALLSTAR / ENDLESS / BOSSRUSH / TOURNAMENT = the Gamemode menu slot; `endless` kept as
+  the ENDLESS flag), `start(mode)`; `_gm_route` 0xB -> 4 starts the cursor's mode, B on the select returns the cursor
+  to it. Enemies = `BOSS_ORDER` = every id with a boss version (docs/BOSS_CHARACTERS.txt), level 1 first, each level in
+  story order, the Final Boss SSJ Goku last: 0 6 12 11 13 25 | 10 18 8 7 2 21 16 9 17 | 15 20 1 (18).
+- **Battle** = an All-Star battle (`_asb_on`: Time Chamber, rolling 2-member P2 team, P1's HP carried, CPU tag / Team
+  Arts refused, clock, HUD "n/18"). Every enemy record becomes the game's own boss version at `BOSS_LEVELS[id]` with
+  `_make_boss` (the BOSS CHARACTERS cheat's: the level's parameter block -> boss HP 21000 / 26000 / 32000, stats, ki
+  costs; opcode 0x92 boss branches -> gotos): the two loaded by the battle loader in its post-hook (`_br_loaded`), every
+  reloaded one in `_asb_load` before its max HP is read (`_br_boss`). All are in `battle_bosses`, so the level-3 dash
+  fix (`f_0202c1d4`) covers Cell / Broly / SSJ Goku. The global boss level stays 0 (the game's FUN_0202117C would give
+  every CPU fighter one level). One heart (hearts = [true, false, false]; QoLAllStarHearts draws only the first).
+  Music: the first FIGHT switches the stage BGM to a boss theme; the rotation then picks from BOSS_POOL (16 / 17).
+- **End**: as ALL-STAR (won: results -> select + BOSS RUSH RECORDS page; lost: Game Over -> select).
+- **Records**: QoLAllStarRecords with `bossrush`: ALL-STAR's page (time + hearts, Enemies n/18, WINNER banner), tab
+  "BOSS RUSH" (the white tab font has no B / H: B = P over D's lower half `_make_b`, H = N's stems + a bar `_make_h`),
+  plate "BOSS RUSH RECORDS" in the plate's own italic capitals (B = R's top half over D's lower half `_stack`, U = O
+  with its straight middle row carried up the slant `_make_u`). File `bossrush_records.cfg` (`brrec=PATH`), the
+  ALL-STAR entry format; "Practice / Not Recorded" after `brstart=` / `brorder=`; HI-SCORES RESET removes it too.
+- **V**: br1 (headless, one-hit KO + infinite health / ki + ki homing, A spam): all 18 bosses at their levels (HP 21000
+  x15, Cell 32000, Broly 26000, SSJ Goku 32000), 16 swaps, clock 02:00, win -> records page; music 5 -> 16 at the first
+  FIGHT, 16 -> 17 at the track's end. br2 captures: HUD "16/18" + one heart. br3 (`brrecdemo`): the records page.
+- Flags: `bossrush=1` (+ `allstar=1`), `brstart=N`, `brorder=a,b,c` (ids with a boss version), `brrec=PATH`,
+  `brrecdemo=F`.
+
+## 9. TOURNAMENT (part 43) — status: DONE (1 player; 2 players = a later part)
+Fourth NEW GAMEMODES mode (Gamemode menu slot 3). Code: QoLTournament (qol_tournament.gd: the bracket), QoLTournamentPage
+(qol_tournament_page.gd: the bracket page), QoLGame `# ---- TOURNAMENT (part 43)`, QoLAllStarMenu (4th bar).
+- **Menu**: the Gamemode menu draws slot 3 with the second bar object whose texture handle (+8 = texture offset,
+  0x4000) is pointed at +0x8000 for that draw only (`f_0205495c`); QoLAllStarMenu writes the Hard bar labelled
+  TOURNAMENT there (free in scene 0xB: checked once, `tour_free`; else slot 3 is refused with the buzzer). Port bar
+  letters B / O / U / H / space added; a label wider than the field (TOURNAMENT) uses the game's 1-column letter gap.
+- **Bracket** (QoLTournament): 8 teams: player 1's (the select's picks + support) at a random slot, 7 CPU teams of 3
+  different fighters (21 of the 26, none of player 1's); a stage per round (0-14); seeded (`tnseed=N`). Player 1's
+  matches are fought; the other matches of a round are rolled when player 1's ends, weighted by the teams' total max
+  HP (DATA_NOTES part 34 table) -- the game has no CPU-vs-CPU battle. Player 1 out -> the rest is rolled too.
+- **Flow**: select GO (4 -> 0) -> `tour.hold`: the battle scene's function `f_02013064` returns 1 without running while
+  the scene state is 0 (nothing loaded; 0 would end NitroMain's loop = soft reset) and draws the bracket there (P1's
+  party is committed by then) -> the page opens; FIGHT (after the page's fade-out) clears `hold`. Battle start
+  (`f_020140c8`, first step): P1 = its team / support, P2 = the opponent (3, no support), the round's stage, boss level
+  0; after the loader the CPU level = the Option level + 0 / 2 / 4 (max 10; FUN_02013D60 hands it to the AI init after
+  the loader). A normal Free Battle: the game's timer, tags, Team Arts, supports, no hearts, no All-Star rules
+  (`_asb_session` excludes the mode). Won (results, 10) -> rerouted to a new battle (0) held for the page (next round);
+  the final won / a match lost (0x14) -> the team select (4) with the page over it (CHAMPION! / KNOCKED OUT, OK).
+  QUIT (pressed twice: QUIT -> CONFIRM) -> the held scene asks scene 4. Pause exits as ALL-STAR.
+- **Page** (QoLTournamentPage, both screens, z 900, the records page's ROM art: hexagons, face icons, CharFace256
+  portraits; port heavy capitals): upper = round name, P1's portraits | VS + "ROUND n/3" | the opponent's (mirrored),
+  footer TITLES WON / BEST; lower = "TOURNAMENT" band, the bracket (two columns of 4 entries of 3 face icons, the whole
+  bracket's lines grey, won paths yellow, P1's entry yellow + "1P", the match about to be fought blinking, beaten teams
+  dimmed, the champion's leader face in the centre), buttons FIGHT! / QUIT or OK. Keys: Left / Right, A / START, B
+  (= QUIT, again = quit; over: OK); taps on the buttons. Takes every key / tap while shown.
+- **Titles**: `tournament_records.cfg` (`tnrec=PATH`): titles = n, best = {"frames", "ids", "date"} (the fastest
+  tournament won, its battles' fight time); nothing while cheats are on; HI-SCORES RESET removes it.
+- **V**: tn1 (debug start, one-hit KO, A spam): QF / SF / F won, CPU level 3 -> 3 / 5 / 7, 10 -> 0 reroutes, champion ->
+  select; tn3: QF lost -> the rest rolled -> KNOCKED OUT page (0x14 -> 4) -> OK; gm1 / tn2 (menu path): bars, TOURNAMENT
+  -> select -> GO -> page; QUIT -> CONFIRM -> select; GO again -> FIGHT -> battle. Preview `tour` states (tn_*).
+- **Not yet**: 2 human players (local MP / LAN): the MP routing puts the second human on side 1 only; a later part.
+- Flags: `tournament=1` (+ `allstar=1`: the btnrun Free Battle's P1 team enters a bracket), `tnseed=N`, `tndbg`,
+  `tnrec=PATH`.
