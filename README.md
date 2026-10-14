@@ -1,5 +1,9 @@
 # DBZ Supersonic Warriors 2 — Godot port
 
+> **Disclaimer: this is "AI slop".** Everything in this repository — the decompilation and translation tooling, the
+> port's code, the extras, the tests and the docs — was made by AI (Claude, Anthropic), with one exception: the PORT
+> button graphic (`GodotGame/new-game-project/assets_qol/port_button.png`) was drawn by the project's owner.
+
 A faithful PC port of *Dragon Ball Z: Supersonic Warriors 2* (Nintendo DS, European cartridge) in Godot 4.7.2.
 The game's own ARM9 program and ARM7 sound driver were decompiled and machine-translated to GDScript and run on an
 emulated DS at register level; Godot draws both screens from the emulated video hardware. Every mode of the original
