@@ -8,7 +8,7 @@
 The game itself only needs Godot. The reverse-engineering and verification tools run best on Linux (that is
 where they were built: an Anthropic cloud sandbox, Ubuntu 24.04, 2 cores, no GPU). Nothing here is downloaded
 into the game; everything except the user's ROM is open source. Record anything installed outside this folder
-in `WORK_OUTSIDE_FOLDER.txt`.
+in `docs/WORK_OUTSIDE_FOLDER.txt`.
 
 ## Already in this folder (Windows)
 | Tool | Path | Used for |
@@ -35,7 +35,7 @@ The Windows DLL is linked statically (`-static`): it only imports KERNEL32 and t
 Windows 10/11. Without the native library the game still runs (GDScript fallbacks), much slower.
 
 ## Pipelines
-- **Assets** (legacy scenes + reference): `python3 decomp/tools/build_all.py` → `decomp/extract/`, `assets/`.
+- **Assets** (reverse-engineering tools + reference): `python3 decomp/tools/build_all.py` → `decomp/extract/`, `assets/`.
 - **Translation**: `tools/linux/regen.sh [gen|ghidra|all]` → `scripts/gen/ds_game.gd` (ARM9);
   `decomp/tools/transpile/run7.sh` → `ds_game7.gd` (ARM7). Details: `decomp/notes/transpiler.md`.
 - **Lockstep references**: `python3 tools/melonds-headless/lockstep_ref.py` (see its header; large, keep outside git).

@@ -18,7 +18,6 @@ config/custom_user_dir_name="DBZSSW2Port"
 Game="*res://scripts/core/game.gd"
 Assets="*res://scripts/core/assets.gd"
 Pilot="*res://scripts/pilot/pilot.gd"
-Sound="*res://scripts/audio/sound.gd"
 
 [display]
 

@@ -30,7 +30,7 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 | `qoldump=F` | sound-driver state at frame F |
 | `sndlog` · `sndstat` · `sndcnt=F` | sound logs (sndstat / sndcnt force the GDScript mixer) |
 | `nocache` | rebuild every VRAM texture every frame |
-| `scene=…` (`scripts/core/boot.gd`), `p1=` `p2=` `p2_cpu=` `stage=` `single_screen=1` (`Game`), `pilot` `shots` `mute` | legacy pre-translation scenes / pilot (unused by the game) |
+| `scene=…` (`scripts/core/boot.gd`, default the game), `single_screen=1` (`Game`), `pilot` `shots` `mute` | start scene / pilot (scripted test input, `scripts/pilot/pilot.gd`) |
 
 ## Pacing, performance, profiling
 | Flag | Meaning |

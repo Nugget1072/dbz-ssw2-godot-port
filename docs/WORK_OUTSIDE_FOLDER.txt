@@ -113,3 +113,12 @@ Session 1, part 2 (cloud sandbox, Linux) — same rule as above, nothing written
 2026-10-14 (part 42):
 - Nothing new outside SupersonicMain (scratch scripts only in Claude Code's temp scratchpad, incl. the research agent's
   supers.py ROM parse; research notes in local/, git-ignored).
+
+2026-10-14 (part 43, gamemodes):
+- Nothing new outside SupersonicMain (scratch scripts only in Claude Code's temp scratchpad).
+
+2026-10-14 (part 44, release clean-up + showcase videos):
+- Used (read-only, not changed) an ffmpeg that was already on the PC, inside another program's folder:
+  ffmpeg.exe (4.2.1, libx264 + aac), via FFMPEG= for
+  `ssw2.py clip`. Nothing downloaded or installed. Scratch scripts (contact sheets, wav check) only in Claude
+  Code's temp scratchpad. Videos, release zip: local/release/ (git-ignored, game footage).

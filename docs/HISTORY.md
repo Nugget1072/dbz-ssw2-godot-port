@@ -6,6 +6,12 @@ how the systems fit together now: `docs/QOL_ARCHITECTURE.md`; decoded facts per 
 page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in QOL_ARCHITECTURE.md).
 
 ## Per part (details in DATA_NOTES / transpiler notes)
+- **Part 44** — *release clean-up + showcase clips (2026-10-14)*: the pre-translation hand-built scenes removed
+  (`scenes/battle/`, `scripts/{battle,ui,audio}/`, the `Sound` autoload, 3 unused shaders, an orphan .uid; `Game`'s
+  legacy match flags), historical docs to `docs/archive/`, `WORK_OUTSIDE_FOLDER.txt` to `docs/`, README.md rewritten
+  as the GitHub front page, `docs/RELEASE_NOTES.md` draft, `ssw2.py clip` (MP4 of an every-frame capture + its
+  audio.wav) and `tools/test/showcase.py` (four cheat clips: ULTRA INSTINCT Kid Gohan vs Final Boss SSJ Goku with
+  real parry taps, TIME SKIP, RANDOMIZER, Z-VANISH), a release zip without ROM / personal files; `local/` pruned.
 - **Part 43** — *gamemodes BOSS RUSH + TOURNAMENT (2026-10-14)*: the Gamemode menu's two EMPTY slots filled (4th bar
   in free texture memory). BOSS RUSH = ALL-STAR's battle against the 18 boss versions, one heart, boss BGMs, BOSS RUSH
   RECORDS; TOURNAMENT (`qol_tournament.gd`, `qol_tournament_page.gd`) = an 8-team bracket of separate battles, the

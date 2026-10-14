@@ -23,7 +23,7 @@ here; nothing from the old sandbox is required. Start every session with `CLAUDE
 |---|---|
 | Godot 4.7.2 | already in `tools/Godot_v4.7.2-stable_win64.exe/` (use the `_console.exe` from scripts: it prints output) |
 | Python 3.14 | already in `tools/Python3.14.8/` (stdlib is enough for `tools/test/ssw2.py`; the Linux tools in `tools/linux/` also want `pip install pillow numpy`) |
-| Export templates 4.7.2 | Godot editor → Editor → Manage Export Templates → Download (installs to `%APPDATA%\Godot\export_templates\4.7.2.stable\`, outside the folder: note it in `WORK_OUTSIDE_FOLDER.txt`). Already installed on the user's PC (checked part 36) |
+| Export templates 4.7.2 | Godot editor → Editor → Manage Export Templates → Download (installs to `%APPDATA%\Godot\export_templates\4.7.2.stable\`, outside the folder: note it in `docs/WORK_OUTSIDE_FOLDER.txt`). Already installed on the user's PC (checked part 36) |
 | The ROM | the user's European dump (code ADBP) in `finished/` (any `.nds` name; git-ignored) |
 | The 100% save | `GodotGame/new-game-project/data/save100.sav` (present; git-ignored) |
 | git | the folder is a git repository from part 35 on (`.gitignore` keeps ROM-derived data out — check `git status` before every commit). On the user's PC `git` is **not on PATH**: the only git is the one bundled with GitHub Desktop, `%LOCALAPPDATA%\GitHubDesktop\app-<version>\resources\app\git\cmd\git.exe` (part 36: `app-3.6.6`; the version folder changes when GitHub Desktop updates). Call it by full path, or install Git for Windows to get `git` on PATH |
@@ -43,6 +43,7 @@ also works for `ssw2.py` (stdlib only), but write the full path in scripts.
 | Off-identity check (after every change) | `py tools\test\ssw2.py offcheck` (or `/offcheck`) |
 | Record this PC's baselines (once, on the delivered state, before changing anything) | `py tools\test\ssw2.py baseline` |
 | Compare two capture folders | `py tools\test\ssw2.py pngdiff DIR_A DIR_B` |
+| MP4 clip of an every-frame capture (+ its sound) | `py tools\test\ssw2.py clip RUN --from F --to T --out X.mp4` (ffmpeg via `FFMPEG=`); release clips: `py tools\test\showcase.py` (TESTING 35) |
 | Export + copy README / BUGFIXES into `finished/` | `py tools\test\ssw2.py export` (close running game instances first) |
 | Capture run of the exported exe | `finished\DBZ_SSW2_Port.exe -- quit_at=2400 capture=<ABSOLUTE path>\local\exe_cap cap_every=200 cap_to=2400` (a relative `capture=` lands next to the exe, in `finished\`). It reads the player's `finished\DBZ_SSW2_Port.sav` but (part 37) never writes it unless `save=` is given. To compare with editor runs pass the same flags as `ssw2.py` (`sav=`/`save=` a copy, a fresh `qolcfg=`, `rtc=`): exe and editor are then frame-identical (part 37: 21/21 battle PNGs) |
 | Play / edit in the editor | `tools\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64.exe --path GodotGame\new-game-project` |

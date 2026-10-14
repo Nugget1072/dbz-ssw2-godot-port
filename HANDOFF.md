@@ -1,6 +1,6 @@
 # HANDOFF — state of the port
 
-_Last updated: 2026-10-14 (part 43 — gamemodes BOSS RUSH and TOURNAMENT; part 42 — POWERS before CHALLENGES, slower Dragon Balls, cheats NONDIRECTIONAL, Z-VANISH, BODY CHANGE, cheat-mix bug hunt in local MP + LAN; part 41 — cheats VAMPIRE, TIME SKIP, DRAGON BALL HUNT, new cheat page POWERS, marker / bomb sizes fixed; part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
+_Last updated: 2026-10-14 (part 44 — release clean-up, README / release notes, showcase clips; part 43 — gamemodes BOSS RUSH and TOURNAMENT; part 42 — POWERS before CHALLENGES, slower Dragon Balls, cheats NONDIRECTIONAL, Z-VANISH, BODY CHANGE, cheat-mix bug hunt in local MP + LAN; part 41 — cheats VAMPIRE, TIME SKIP, DRAGON BALL HUNT, new cheat page POWERS, marker / bomb sizes fixed; part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
 sessions on the user's PC; part 35 was the last Cowork part: `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
 Per-part history: `docs/HISTORY.md`.
 
@@ -274,3 +274,28 @@ docs/ALLSTAR_DESIGN.md 8 / 9; facts DATA_NOTES part 43; tests TESTING 34.
   preview `tour`, ALL-STAR / ENDLESS A/B against part 42 (git worktree): identical AS lines; offcheck PASS.
 - Open: TOURNAMENT for 2 players (local MP / LAN: MP routing puts the second human on side 1 only, the bracket would
   need the LAN snapshot); BOSS RUSH / TOURNAMENT difficulty tuning from real play.
+
+## Part 44: release clean-up + showcase clips (2026-10-14) — DONE
+User: clean up the repo / folders for a GitHub release (repo stays private) and record 3-4 short clips of the best
+cheats, one with Kid Gohan (not SSJ2 Gohan) parrying Final Boss SSJ Goku's whole super with ULTRA INSTINCT.
+- **Removed** (unused since the translated game took over; git history has them): `scenes/battle/`,
+  `scripts/{battle,ui,audio}/`, the `Sound` autoload, shaders `ds_bg` / `ds_textbg` / `palette_sprite`, the orphan
+  `ds_main_loop.gd.uid`, `Game`'s `p1` / `p2` / `stage` / `p2_cpu` flags. `Pilot` stays (scripted test input).
+- **Docs**: README.md = GitHub front page (features, play, build, clips, legal); `docs/RELEASE_NOTES.md` = release text
+  draft; `docs/archive/` (HANDOFF_ARCHIVE_part8, PROJECT_BRIEF, ROM_REMIX_ONBOARDING); `docs/WORK_OUTSIDE_FOLDER.txt`.
+- **Clips** (`local/release/videos/`, game footage, never in git): `ssw2.py clip` (every-frame capture + its
+  audio.wav → H.264 / AAC MP4, 3x nearest) and `tools/test/showcase.py` (the four clips, TESTING 35):
+  ULTRA INSTINCT (Kid Gohan = id 24 vs Final Boss SSJ Goku: 12 real B-tap parries incl. all ten blasts of the boss's
+  super from above, 0 misses, Gohan 10000/10000 HP, then his 16-hit counter super), TIME SKIP (SSJ Goku vs Frieza,
+  22-hit finish), RANDOMIZER (Krillin's supers as Piccolo / Broly / Gotenks, enemy held still), Z-VANISH (Goku vs
+  Vegeta vanish exchange). ffmpeg: one already on the PC (`FFMPEG=`, docs/WORK_OUTSIDE_FOLDER.txt).
+- **Release zip**: `local/release/DBZ_SSW2_Port_v1.0_windows.zip` = exe + dll + README / BUGFIXES / BOSS_CHARACTERS
+  only (no ROM, no settings / save / records files).
+- V: offcheck PASS after the removal (21/21 + 1382 CHT, 221/221); export + the exe's offcheck battle vs the baseline
+  21/21; `showcase.py` twice = every frame identical (deterministic); clips checked frame by frame (contact sheets).
+  The zip is written with Python's zipfile (forward-slash paths; PowerShell 5.1's Compress-Archive writes backslashes).
+- Not done: pruning old test output in `local/` (~1.8 GB; the bulk delete was refused by the permission check:
+  the user runs it); a LICENSE (the user's decision).
+- For a public release later: `scripts/gen/` is a machine translation of the game's program code (kept by the user's
+  decision, part 37); `tools/melonds-headless/libmelonds_headless.so` is a GPL-3 build of melonDS (its source is
+  upstream; a public repo should say so).

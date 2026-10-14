@@ -447,3 +447,20 @@ A-spam inputs: PowerShell `((0..N) | % { "$(4200 + $_*12):A:3" }) -join ','` (St
   ROM / SAV / SSW2_OUT, `ssw2.py import` there): `allstar=1 asstart=22 … asfakewin=9:59 asrec=<file>` one-hit-KO runs →
   identical AS lines except the art log's white letters (+ "BH") and plate letters (+ "BU").
 - Off: `offcheck` PASS.
+
+## 35. Showcase videos (part 44)
+`python tools/test/showcase.py [ultra_instinct time_skip randomizer z_vanish]` re-records the cheat clips into
+`local/release/videos/*.mp4` (git-ignored: game footage): each is a `ssw2.py run --battle --every 1` capture (PNG per
+frame + the run's `audio.wav`) of a one-enemy BOSS RUSH battle (`allstar=1 bossrush=1 brorder=<enemy> asp1=<P1>`) with
+real P1 button presses, then `ssw2.py clip RUN --from F --to T --out FILE.mp4` (ffmpeg with libx264 + aac via PATH or
+`FFMPEG=`; 3x nearest-neighbour, 59.8261 fps, AAC 48 kHz; the audio offset = (F - 1) x 547.71 samples, audio.wav runs
+from frame 1 to the last capture). The script's header and comments give each clip's setup; checks:
+- ULTRA INSTINCT (Kid Gohan 24 vs Final Boss SSJ Goku 1): `uidbg` → 12 `UI f… PARRY` (stun at 4264, the ten blasts
+  of the boss's super from above 4361-4534 "ignore", stun at 4690), no MISS, `CHT … p1 24 … hp 10000/10000` to the end.
+  Taps 2 frames before each contact (an `inputs=` press at F reaches the fighter as "B pressed" at port frame F-1).
+- TIME SKIP (SSJ Goku 1 vs Boss Frieza 10): `TS f4127 … skips time`, `TS f4251 time runs again (skipper action 2c)`.
+- RANDOMIZER (Krillin 4 vs Boss Ginyu 12, held still by `p2keys=4000:80:1500`, `rzseed=1`): P1 id 5 / 20 / 9 during
+  the three supers.
+- Z-VANISH (Goku 0 vs Boss Vegeta 6, `zvseed=3`): `ZV f4111 VANISH … side 0`, `f4161` / `f4181 … side 1`.
+The script's runs are deterministic: `ssw2.py pngdiff` of two recordings = all frames identical. Frame numbers depend
+on BATTLE_PATH and the battle code: after game changes, re-check the logs above before trusting the clips.

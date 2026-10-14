@@ -24,6 +24,10 @@ Commands
                               changing anything) -> local/baselines/TAG/
   pngdiff DIR_A DIR_B         pixel-compare same-named p<frame>.png captures of two runs
   export                      export the Windows release build into finished/ and copy README / BUGFIXES
+  clip RUN --from F --to T --out FILE.mp4 [--scale 3] [--crf 18] [--top]
+                              MP4 (H.264 + AAC) of a `run --every 1` capture: frames F..T with their part of the run's
+                              audio.wav, nearest-neighbour scaled (--top: upper screen only). Needs ffmpeg (PATH or
+                              FFMPEG=). Showcase videos: docs/TESTING.md "Showcase videos".
 
 Everything this tool writes goes under local/ (git-ignored: captures are ROM-derived pictures).
 Environment overrides: GODOT (Godot 4.7.2 binary; on Windows the *_console.exe), ROM, SAV, SSW2_OUT.
@@ -286,6 +290,41 @@ def cmd_export(a):
     return r
 
 
+DS_FPS = 59.8261                                       # the DS's frame rate (33.513982 MHz / 560190 cycles)
+
+
+def cmd_clip(a):
+    """MP4 (H.264 + AAC) of a `run --every 1` capture: frames FROM..TO + the matching part of its audio.wav."""
+    ff = os.environ.get("FFMPEG") or shutil.which("ffmpeg")
+    if not ff:
+        sys.exit("ffmpeg not found: put it on PATH or set FFMPEG= (needs libx264 + aac)")
+    d = a.run if os.path.isdir(a.run) else os.path.join(LOCAL, "runs", a.run)
+    caps = sorted(int(os.path.basename(p)[1:-4]) for p in glob.glob(os.path.join(d, "p*.png")))
+    if not caps or a.frm not in caps or a.to not in caps:
+        sys.exit("%s: needs every-frame captures p%d..p%d.png (run --every 1)" % (d, a.frm, a.to))
+    n = a.to - a.frm + 1
+    vf = "scale=iw*%d:ih*%d:flags=neighbor" % (a.scale, a.scale)
+    if a.top:
+        vf = "crop=256:192:0:0," + vf
+    cmd = [ff, "-y", "-loglevel", "error", "-framerate", str(DS_FPS), "-start_number", str(a.frm),
+           "-i", os.path.join(d, "p%d.png")]
+    wav = os.path.join(d, "audio.wav")
+    if os.path.exists(wav):                            # audio.wav = every frame from 1 to the run's last one
+        samples = (os.path.getsize(wav) - 44) // 4
+        per = samples / float(caps[-1])
+        cmd += ["-ss", "%.4f" % ((a.frm - 1) * per / 32768.0), "-t", "%.4f" % (n / DS_FPS), "-i", wav]
+    cmd += ["-frames:v", str(n), "-vf", vf, "-c:v", "libx264", "-preset", "slow", "-crf", str(a.crf),
+            "-pix_fmt", "yuv420p", "-movflags", "+faststart"]
+    if os.path.exists(wav):
+        cmd += ["-c:a", "aac", "-b:a", "160k", "-ar", "48000"]      # AAC has no 32768 Hz: resample
+    out = os.path.abspath(a.out)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    r = subprocess.run(cmd + [out]).returncode
+    print("clip %s: %d frames (%.1f s) -> %s (%.1f MB)" % (os.path.basename(d), n, n / DS_FPS, out,
+          os.path.getsize(out) / 1e6 if os.path.exists(out) else 0))
+    return r
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = p.add_subparsers(dest="cmd")
@@ -302,6 +341,10 @@ def main():
     q = sp.add_parser("baseline"); q.add_argument("--tag", default=default_tag())
     q = sp.add_parser("pngdiff"); q.add_argument("a"); q.add_argument("b")
     sp.add_parser("export")
+    q = sp.add_parser("clip"); q.add_argument("run"); q.add_argument("--from", dest="frm", type=int, required=True)
+    q.add_argument("--to", type=int, required=True); q.add_argument("--out", required=True)
+    q.add_argument("--scale", type=int, default=3); q.add_argument("--crf", type=int, default=18)
+    q.add_argument("--top", action="store_true")
     a = p.parse_args()
     if a.cmd == "env":
         print("REPO ", REPO); print("PROJ ", PROJ); print("GODOT", find_godot()); print("ROM  ", find_rom() or "(none)")
@@ -325,6 +368,8 @@ def main():
         print("identical %d, different %d %s, missing %d" % (same, len(diff), diff[:10], len(miss)))
     elif a.cmd == "export":
         return cmd_export(a)
+    elif a.cmd == "clip":
+        return cmd_clip(a)
     else:
         p.print_help()
     return 0

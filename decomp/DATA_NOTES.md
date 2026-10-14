@@ -37,7 +37,7 @@ Not packs: `game/stg_*.bin` (stage 3D, see below), `charselect/list3.bin` (versi
 ```
 Loader: function 0x02020D4C (r1 = id). Same table continues with `*_eff_img.arc` (effect sprites), `cmneffect_img.arc`, `win_img.arc`. | H |
 
-Character ids (table order): 0 gkn Goku, 1 gks SSJ Goku, 2 ghk Kid Gohan, 3 gho Gohan(teen?), 4 crr Krillin, 5 pic Piccolo, 6 vgn Vegeta, 7 vgs SSJ Vegeta, 8 trk, 9 gtk Gotenks, 10 frz Frieza, 11 frm (Frieza final/Mecha?), 12 gnu Ginyu, 13 drg, 14 egh, 15 cel Cell, 16 bmr, 17 bmj, 18 col Cooler, 19 com Metal Cooler, 20 brl Broly, 21 vga, 22 trn Trunks, 23 gtn, 24 ghn, 25 cey, 26 tsh, 27 dnd Dende, 28 stn Hercule, 29 sxsv, 30 bvd Babidi, 31 cej Cell Jr, 32 zbdd, 33 bdk Bardock, 34 dbr Dabura, 35 srn Shenron, 36 nmz. (names beyond the 3-letter codes are M/L until checked against the select screen.)
+Character ids (table order): 0 gkn Goku, 1 gks SSJ Goku, 2 ghk SSJ2 (teen) Gohan, 3 gho adult Gohan (part 44, V), 4 crr Krillin, 5 pic Piccolo, 6 vgn Vegeta, 7 vgs SSJ Vegeta, 8 trk, 9 gtk Gotenks, 10 frz Frieza, 11 frm (Frieza final/Mecha?), 12 gnu Ginyu, 13 drg, 14 egh, 15 cel Cell, 16 bmr, 17 bmj, 18 col Cooler, 19 com Metal Cooler, 20 brl Broly, 21 vga, 22 trn Trunks, 23 gtn, 24 ghn Kid Gohan (part 44, V), 25 cey, 26 tsh, 27 dnd Dende, 28 stn Hercule, 29 sxsv, 30 bvd Babidi, 31 cej Cell Jr, 32 zbdd, 33 bdk Bardock, 34 dbr Dabura, 35 srn Shenron, 36 nmz. (names beyond the 3-letter codes are M/L until checked against the select screen.)
 
 ### Sprite images `chara/<id>_img.arc` (GARC)
 Each entry = one frame image: RLE-compressed, 8192 bytes = **128×128, 4 bpp, linear (not tiled)** — a DS 3D texture (format 3, 16-colour). Pixel 0 = transparent. Low nibble = left pixel. | H (rendered) |
@@ -3393,3 +3393,17 @@ Evidence: local/runs br1-br3, tn1-tn3, gm1 (ssw2.py; `asdbg tndbg`), preview `to
   a bar) read as the font's own; the ranking plate's italic capitals have R / D / O: B (R top half + D lower half) and
   U (O's middle row carried up 0.25 px per row) set "BOSS RUSH RECORDS" in the plate's own style; the port's heavy
   fallback (retitle) does not fit that title. | H |
+
+## Part 44 findings (showcase clips)
+- **Gohan ids** (V, portraits on the battle's lower screen, `asp1=2,3,24`): id 2 = SSJ2 (teen) Gohan, id 3 = adult
+  Gohan, id 24 = Kid Gohan. Corrects the character id list at the top ("2 ghk SSJ2 (teen) Gohan, 3 gho adult Gohan (part 44, V)"): the
+  3-letter codes are file names, not the select screen's names. | H |
+- **Final Boss SSJ Goku's super from above** (V `sup_a`, boss level 3): with the boss above player 1 (p2 Up 30 frames,
+  then X+A), action 0x2C → 0x2D runs ~220 frames and drops ten big blasts, contacts about every 17 frames (port frames
+  4362 … 4535 in that run); each blast is a separate non-reflectable shot (ULTRA INSTINCT "ignore"). On level ground the
+  same input is a huge beam (2 shot objects). The held direction does not choose the variant (relative position does,
+  part 42's +0x20 quadrant). | H |
+- **Capture audio** (V): `audio.wav` of a capture run holds every frame from 1 to the last capture, 547.71 samples per
+  frame at 32768 Hz (= 32768 / 59.8261), so frame F's sound starts at sample (F - 1) x 547.71. | H |
+- **CPU input override** (V): `p2keys` held for the whole battle (e.g. Down, 0x80) replaces the CPU's input every
+  frame: the fighter stays still (no AI moves), a training dummy. | H |

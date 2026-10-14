@@ -1,6 +1,6 @@
 #!/bin/bash
 # Build the headless melonDS 1.1 core + C API used for frame-exact reference captures (Linux).
-# Done in the cloud sandbox; see WORK_OUTSIDE_FOLDER.txt.
+# Done in the cloud sandbox; see docs/WORK_OUTSIDE_FOLDER.txt.
 set -e
 SRC=${1:-$HOME/melonds-src}
 [ -d "$SRC" ] || git clone --depth 1 -b 1.1 https://github.com/melonDS-emu/melonDS.git "$SRC"

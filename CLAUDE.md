@@ -7,7 +7,7 @@ from emulated VRAM/registers. Complete and playable; current work: polish, exact
 
 ## Rules (from the user — do not break)
 1. Work only inside this folder (`SupersonicMain`). Anything that must happen elsewhere is written down in
-   `WORK_OUTSIDE_FOLDER.txt`.
+   `docs/WORK_OUTSIDE_FOLDER.txt`.
 2. Use only the user's own dump (`finished/*.nds`; the user removed `baseroms/` and `100Save/` in part 21); never
    modify it; never download ROMs, BIOS or keys.
 3. **Nothing from the ROM ships with the game or goes into git**: no ROM, no extracted/converted assets. The exported
@@ -30,13 +30,13 @@ from emulated VRAM/registers. Complete and playable; current work: polish, exact
 ## Folder map
 | Path | What |
 |---|---|
-| `finished/` | exported game: `DBZ_SSW2_Port.exe` + `libdsnative.windows.x86_64.dll` + README.txt / BUGFIXES.txt / BOSS_CHARACTERS.txt (+ the user's ROM, never distributed; `linux/` older Linux export) |
+| `finished/` | exported game: `DBZ_SSW2_Port.exe` + `libdsnative.windows.x86_64.dll` + README.txt / BUGFIXES.txt / BOSS_CHARACTERS.txt (+ the user's ROM, never distributed) |
 | `GodotGame/new-game-project/` | the Godot project (below); `data/save100.sav` = the completed save built into the exe |
 | `decomp/tools/` | ROM extraction, converters, Ghidra script, translator (`ghidra2gd.py`, `transpile/`), lockstep compare |
 | `decomp/DATA_NOTES.md` (+ `DATA_NOTES_INDEX.md`), `decomp/notes/` | knowledge base (never read DATA_NOTES whole: use the index + grep) |
 | `decomp/extract/` | generated: extracted ROM files + translation work dir (git-ignored) |
 | `tools/` | Windows: Godot 4.7.2, Python 3.14.8, melonDS 1.1 (+ config). `test/ssw2.py` portable test harness (Windows + Linux), `melonds-headless/` frame-exact melonDS core (Linux), `linux/` Linux test scripts, `windows/` GPU capture + pace tests + `lan_pair.ps1` (two-instance LAN check) |
-| `local/` | git-ignored: test runs, baselines (`baselines/<tag>/`), menu-preview background `prevbg.png` |
+| `local/` | git-ignored: test runs (`runs/`), baselines (`baselines/<tag>/`), menu-preview background `prevbg.png`, `release/` (release zip + showcase clips: game footage, never in git) |
 | `.claude/` | Claude Code: `settings.json` (permissions; generated files protected), `commands/` (/brief /offcheck /deliver /handoff), `agents/ssw2-helper.md` |
 | `reference/` | melonDS reference shots; `reference/states/` savestates (git-ignored, ROM-derived) |
 | `docs/` | see "Where to read next"; `PLAYER_README.txt` / `BUGFIXES.txt` / `BOSS_CHARACTERS.txt` = sources of the finished/ texts |
@@ -45,7 +45,8 @@ Godot project: `scripts/gen/` translated game · `scripts/core/` DS runtime · `
 (`ds_display.gd`), 3D (`ds_gx.gd`, `ds_render3d.gd`, `shaders/ds_poly.gdshader`), `ds_presenter.gd` ·
 `scripts/game/game_ds.gd` main scene (pacing, input, save, flags) · `scripts/qol/` port additions · `native/` C++
 GDExtension (geometry, mixer, SDK memory functions, FS lookup) → `bin/` · `tools/*.gd` debug tools · `assets_qol/` the
-user's art. Legacy, unused: `scenes/battle/`, `scripts/{battle,ui,audio,pilot}/`.
+user's art. `scripts/pilot/` = the Pilot autoload (scripted test input, `pilot=`). The pre-translation hand-built scenes
+(`scenes/battle/`, `scripts/{battle,ui,audio}/`) were removed in part 44 (git history has them).
 
 ## Run, test, deliver (Claude Code on the user's Windows PC, from part 35 on — details `docs/CLAUDE_CODE.md`)
 - `py` = `tools\Python3.14.8\python.exe` (the Windows `py` launcher runs a system Python instead). `git` is not on
@@ -53,8 +54,9 @@ user's art. Legacy, unused: `scenes/battle/`, `scripts/{battle,ui,audio,pilot}/`
   (`docs/CLAUDE_CODE.md` setup). The repo is also a PRIVATE GitHub repository (Nugget1072/dbz-ssw2-godot-port,
   part 37): command-line git has no GitHub login, so push / fetch with GitHub Desktop; nothing ROM-derived may ever
   be committed (`.gitignore`; audit in HANDOFF part 37). One harness for routine work: `py tools\test\ssw2.py env | parse FILE |
-  import | run NAME --battle --every N --from F --to T --inputs ... FLAGS | offcheck | baseline | pngdiff A B | export`
-  (output in `local/`, git-ignored). Slash commands: `/brief`, `/offcheck`, `/deliver`, `/handoff`; helper agent
+  import | run NAME --battle --every N --from F --to T --inputs ... FLAGS | offcheck | baseline | pngdiff A B | export |
+  clip RUN --from F --to T --out X.mp4` (output in `local/`, git-ignored; `clip` = MP4 of an every-frame capture, needs
+  ffmpeg via `FFMPEG=`; `tools/test/showcase.py` re-records the release clips, TESTING 35). Slash commands: `/brief`, `/offcheck`, `/deliver`, `/handoff`; helper agent
   brief: `.claude/agents/ssw2-helper.md`.
 - Play / edit: `tools\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64.exe --path GodotGame\new-game-project`
   (ROM from `finished/`). ROM tools: `py decomp\tools\build_all.py` (→ decomp/extract).
@@ -104,4 +106,4 @@ user's art. Legacy, unused: `scenes/battle/`, `scripts/{battle,ui,audio,pilot}/`
 | Local MP / LAN design + facts | `docs/MULTIPLAYER_DESIGN.md`, `docs/LAN_DESIGN.md` (read their top summary first) |
 | All-Star mode (parts 34-35), Endless mode (part 38) | `docs/ALLSTAR_DESIGN.md` (2a = status + QoLAllStar API, 7 = ENDLESS) |
 | Player-facing texts | `docs/PLAYER_README.txt`, `docs/BUGFIXES.txt`, `docs/BOSS_CHARACTERS.txt` |
-| Original task | `docs/PROJECT_BRIEF.md` (historical: paths there predate part 21) |
+| Original task | `docs/archive/PROJECT_BRIEF.md` (historical: paths there predate part 21) |
