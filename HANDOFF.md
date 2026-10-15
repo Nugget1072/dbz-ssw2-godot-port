@@ -310,6 +310,11 @@ cheats, one with Kid Gohan (not SSJ2 Gohan) parrying Final Boss SSJ Goku's whole
   address; the user turned on GitHub's private-email settings. Backup of the old history:
   `local/backup_before_email_rewrite.bundle`. GitHub still serves the old commits by their exact SHA until its garbage
   collection (GitHub Support can purge them).
+- **Personal-data sweep** (user request): no Windows user name, local folder paths or the PC's IP addresses anywhere —
+  current files, all history (rewritten again: fast-export, the few doc lines with the user's path replaced, trees of
+  later commits identical), release files (exe / dll strings: only Godot's and the sandbox's build paths) and GitHub's
+  repo text. Example IPs in the LAN UI / docs are generic (192.168.1.23, 127.0.0.1, 192.0.2.x). Backups of the old
+  histories: `local/backup_before_*.bundle` (git-ignored, contain the old data).
 - `local/` pruned on the user's request (~1.8 GB of old runs); kept: baselines, release zip, research notes, prevbg.png,
   the history-rewrite bundle. Not done: a LICENSE (the user's decision).
 - For a public release later: `scripts/gen/` is a machine translation of the game's program code (kept by the user's
