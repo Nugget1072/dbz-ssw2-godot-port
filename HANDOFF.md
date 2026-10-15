@@ -315,6 +315,10 @@ cheats, one with Kid Gohan (not SSJ2 Gohan) parrying Final Boss SSJ Goku's whole
   later commits identical), release files (exe / dll strings: only Godot's and the sandbox's build paths) and GitHub's
   repo text. Example IPs in the LAN UI / docs are generic (192.168.1.23, 127.0.0.1, 192.0.2.x). Backups of the old
   histories: `local/backup_before_*.bundle` (git-ignored, contain the old data).
+- **Fresh repository** (user: option 2): the old repo was renamed `dbz-ssw2-godot-port-old`, a new private
+  `Nugget1072/dbz-ssw2-godot-port` (same URL) got only the clean history (main + tag v1.0) and the v1.0 release again
+  (8 files, byte-identical to the tested ones). V: a mirror clone of the new repo = 2 refs, every object scanned clean.
+  The old repo is deleted by the user (Claude may not delete it), so no old commit exists on GitHub any more.
 - `local/` pruned on the user's request (~1.8 GB of old runs); kept: baselines, release zip, research notes, prevbg.png,
   the history-rewrite bundle. Not done: a LICENSE (the user's decision).
 - For a public release later: `scripts/gen/` is a machine translation of the game's program code (kept by the user's
