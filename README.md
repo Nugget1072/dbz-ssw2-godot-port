@@ -25,7 +25,7 @@ mouse is the touch screen. Steam Deck / Linux: runs under Proton (see the player
 ## What the port adds (all optional; switched off it plays exactly like the DS)
 - **Settings menu in the game's own style** (the PORT tile on MODE SELECT): window size up to full screen, 60-240 fps
   smooth motion, controls remapping for keys and pads, gamepad mouse cursor, volume, jukebox, camera zoom, detailed
-  shadows, auto pause, auto skip, damage numbers, input display.
+  shadows, auto pause, auto skip, damage numbers, input display, hitbox viewer (hit boxes red, hurt boxes blue).
 - **New gamemodes** (setting NEW GAMEMODES: the FREE BATTLE tile becomes GAMEMODE): ALL-STAR (beat the whole roster in one long battle), ENDLESS (how long
   can you last?), BOSS RUSH (all 18 boss versions back to back, SSJ Goku last) and TOURNAMENT (an 8-team bracket),
   each with records pages.

@@ -464,3 +464,15 @@ from frame 1 to the last capture). The script's header and comments give each cl
 - Z-VANISH (Goku 0 vs Boss Vegeta 6, `zvseed=3`): `ZV f4111 VANISH … side 0`, `f4161` / `f4181 … side 1`.
 The script's runs are deterministic: `ssw2.py pngdiff` of two recordings = all frames identical. Frame numbers depend
 on BATTLE_PATH and the battle code: after game changes, re-check the logs above before trusting the clips.
+
+## 36. Part 45 (HITBOXES)
+- Pictures: `ssw2.py run hb3 --battle --every 4 --from 4296 --to 6000 --inputs "<BATTLE_ACTIONS with Y at 4700 / 4712 /
+  4724>" weird=hitbox cheatdbg` → p4608 red dash-attack box + blue bodies, p4716 red ki blasts, p5508 / p5520 the
+  Kamehameha's red band along the beam (no screen-sized box), melee red boxes on the punches. Zoom: `hb4 … --inputs
+  "4250:Right:50,4302:Y:4,…" weird=hitbox zoom=4` → boxes scaled with the camera (p4250-4270); no boxes during the throw.
+  `hbdbg` prints each object's raw boxes / handler every 8th frame.
+- Logic unchanged: the offcheck battle (`--every 50 --from 4300 --to 5300`, BATTLE_ACTIONS, `cheatdbg
+  cheats=infinite_health`) with `weird=hitbox` → 1382 `CHT f` lines identical to the baseline.
+- Menu: `qol_preview.tscn` states `p45_hitboxes` / `p45_hitboxes_on` (settings 3 row 4 + its text). (The preview's
+  `controls1_swap` state prints a SCRIPT ERROR in QoLMenu.finish_wait: older, unrelated to part 45.)
+- Off: `offcheck` PASS.

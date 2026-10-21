@@ -2749,6 +2749,7 @@ const FXK_BL := 0x0400                  ## PLTT_BASE pairing keys: blood slot * 
 const FXK_SK := 0x0700                  ## sparkles (slot * 2 + quad) * 4 + generation & 3
 const FXK_CF := 0x0900                  ## confetti slot * 4 + generation & 3
 const FXK_DN := 0x1000                  ## damage numbers: 0x1000 | (per-number base + quad index) & 0xFFF
+										## (part 45 HITBOXES: 0x0100-0x03FF, qol_hitboxes.gd FXK_HB)
 var _fxk_bl := PackedInt32Array()       ## per slot: spawn generation
 var _fxk_sk := PackedInt32Array()
 var _fxk_cf := PackedInt32Array()
@@ -2882,6 +2883,10 @@ func _fx_draw(fx: Variant) -> void:
 		drew = _bc.draw(idx, cv) or drew                # part 42 BODY CHANGE countdown, ray, glow
 	if _zv != null and _on("z_vanish"):
 		drew = _zv.draw(idx, cv) or drew                # part 42 Z-VANISH afterimages
+	if cheats.hitboxes:
+		if _hb == null:
+			_hb = _HB_GD.new(self)
+		drew = _hb.draw(idx, cv) or drew                # part 45 HITBOXES (under the damage numbers)
 	if cheats.damage_numbers:
 		drew = _dn_frame(cv) or drew                    # part 24 DAMAGE NUMBERS (on top of everything)
 	if drew:
@@ -3067,7 +3072,8 @@ func _fx_any() -> bool:
 		or cheats.damage_numbers or cheats.rainbow_ki \
 		or cheats.bomb_rain or _on("green_demon") \
 		or _on("ultra_instinct") or _on("smash_knockback") or _on("hot_potato") \
-		or _on("vampire") or _on("dragon_balls") or _on("time_skip") or _on("body_change") or _on("z_vanish")   # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON, parts 39-41
+		or _on("vampire") or _on("dragon_balls") or _on("time_skip") or _on("body_change") or _on("z_vanish") \
+		or cheats.hitboxes   # part 24 WEIRD 3, part 25 BOMB RAIN, part 36 GREEN DEMON, parts 39-41, part 45 HITBOXES
 
 
 ## the fighter records that can be on screen (both teams, ASSIST SPAM copies)
@@ -3859,6 +3865,13 @@ func _dn_quads(rects: Array, gx: int) -> void:
 		io_write(0x4000494, 4, x0 | y1)
 		io_write(0x4000494, 4, x1 | y1)
 		io_write(0x4000494, 4, x1 | y0)
+
+
+# ---- HITBOXES (part 45) ---------------------------------------------------------------------------------------------
+## Setting HITBOXES (settings page 3, QoLSettings.hitboxes, `weird=hitbox`): everything is in scripts/qol/qol_hitboxes.gd
+## (drawing only); hooks here: _fx_any / _fx_draw. DATA_NOTES part 39 "Collision pass".
+const _HB_GD := preload("res://scripts/qol/qol_hitboxes.gd")
+var _hb = null
 
 
 # ---- BOMB RAIN (part 25) --------------------------------------------------------------------------------------------

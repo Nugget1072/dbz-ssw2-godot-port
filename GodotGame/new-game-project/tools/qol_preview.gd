@@ -138,6 +138,8 @@ func _ready() -> void:
 		["main3", func(): _menu.open(); _press(256); _press(256)],
 		["mpset", func(): _menu.open(); _press(256); _press(256); _press(256)],                       # R R: settings 3
 		["main3_on", func(): _press(128); _press(32); _press(1)],
+		["p45_hitboxes", func(): _menu.open(); _presses(256, 2); _presses(128, 3)],   # part 45: settings 3 row 4 HITBOXES
+		["p45_hitboxes_on", func(): _press(32); _press(1)],
 		["weird", func(): _menu.open(); _press(512); _press(512); _press(512)],
 		["weird3", func(): _menu.open(); _press(512)],
 		["weird3_on", func(): _press(128); _press(32); _press(1); _press(128); _press(128)],

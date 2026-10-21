@@ -6,6 +6,9 @@ how the systems fit together now: `docs/QOL_ARCHITECTURE.md`; decoded facts per 
 page numbers changed in parts 19 / 24 / 26 / 27 / 32 — the current menu is in QOL_ARCHITECTURE.md).
 
 ## Per part (details in DATA_NOTES / transpiler notes)
+- **Part 45** — *HITBOXES setting (2026-10-21)*: settings page 3 row HITBOXES ON / OFF (`qol_hitboxes.gd`): the game's own
+  collision boxes drawn over battles, hit boxes red (live attacks only), hurt boxes blue; beams show their real hit band
+  (FUN_0201F0E4). Drawing only (CHT lines identical with it on).
 - **Part 44** — *release clean-up + showcase clips (2026-10-14)*: the pre-translation hand-built scenes removed
   (`scenes/battle/`, `scripts/{battle,ui,audio}/`, the `Sound` autoload, 3 unused shaders, an orphan .uid; `Game`'s
   legacy match flags), historical docs to `docs/archive/`, `WORK_OUTSIDE_FOLDER.txt` to `docs/`, README.md rewritten

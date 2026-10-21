@@ -1,6 +1,6 @@
 # HANDOFF — state of the port
 
-_Last updated: 2026-10-14 (part 44 — release clean-up, README / release notes, showcase clips; part 43 — gamemodes BOSS RUSH and TOURNAMENT; part 42 — POWERS before CHALLENGES, slower Dragon Balls, cheats NONDIRECTIONAL, Z-VANISH, BODY CHANGE, cheat-mix bug hunt in local MP + LAN; part 41 — cheats VAMPIRE, TIME SKIP, DRAGON BALL HUNT, new cheat page POWERS, marker / bomb sizes fixed; part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
+_Last updated: 2026-10-21 (part 45 — HITBOXES setting; part 44 — release clean-up, README / release notes, showcase clips; part 43 — gamemodes BOSS RUSH and TOURNAMENT; part 42 — POWERS before CHALLENGES, slower Dragon Balls, cheats NONDIRECTIONAL, Z-VANISH, BODY CHANGE, cheat-mix bug hunt in local MP + LAN; part 41 — cheats VAMPIRE, TIME SKIP, DRAGON BALL HUNT, new cheat page POWERS, marker / bomb sizes fixed; part 40 — RANDOMIZER ultimates fixed, FLIGHTLESS jump, SMASH KNOCKBACK off camera, cheats HOT POTATO + RICOCHET KI; part 39 ULTRA INSTINCT etc.; part 38 ENDLESS; parts 36-37 were the first Claude Code
 sessions on the user's PC; part 35 was the last Cowork part: `docs/CLAUDE_CODE.md`)._ Start with `CLAUDE.md` (rules, map, commands).
 Per-part history: `docs/HISTORY.md`.
 
@@ -324,3 +324,15 @@ cheats, one with Kid Gohan (not SSJ2 Gohan) parrying Final Boss SSJ Goku's whole
 - For a public release later: `scripts/gen/` is a machine translation of the game's program code (kept by the user's
   decision, part 37); `tools/melonds-headless/libmelonds_headless.so` is a GPL-3 build of melonDS (its source is
   upstream; a public repo should say so).
+
+## Part 45: HITBOXES setting (2026-10-21) — DONE
+User: an option that shows hit boxes (red) and hurt boxes (blue). Settings page 3 (SETTINGS 3), row HITBOXES ON / OFF,
+saved in settings.cfg ([weird] hitboxes), flag `weird=hitbox` (`hbdbg` debug). Code: `scripts/qol/qol_hitboxes.gd`,
+hooks in QoLGame `_fx_any` / `_fx_draw`; map: QOL_ARCHITECTURE; facts: DATA_NOTES part 45; tests: TESTING 36.
+- Boxes exactly as the collision pass FUN_0201E5BC places them (frame descriptor +0x120, scale, facing), for every drawn
+  fighter record and effect object. Red only while the hit handler is a real attack; blue only while in the pass; red
+  drawn over blue (ki blasts have equal hit / hurt boxes). Beam bodies: the handler's real 32 px band (clipped polygon)
+  instead of their huge first-test box.
+- V: pictures (dash attack, punches, ki blasts, Kamehameha band, zoom 4), CHT lines identical with it on (1382),
+  offcheck PASS, menu preview. Drawing only, so LAN / records unaffected; it is a setting, not a cheat (scores count).
+- Not in the GitHub release v1.0 (made before this part); a new release would need a new tag + upload.

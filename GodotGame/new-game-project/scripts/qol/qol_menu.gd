@@ -224,6 +224,7 @@ func _build() -> void:
 			_add_row("AUTO SKIP", [["askip:1", "ON"], ["askip:0", "OFF"]], "ON: Story Mode dialogue and\nnarration scenes are skipped\nby themselves, and so are the\nblue VS screens before Z-Battle\nfights. OFF: like the original.")
 			_add_row("DAMAGE NUMBERS", [["wset:damage_numbers:1", "ON"], ["wset:damage_numbers:0", "OFF"]], "The damage of every hit pops\nup as a number and floats away.\nBigger hits: bigger, hotter\nnumbers. Handy to compare\nmoves; the fight is the same.")
 			_add_row("INPUT DISPLAY", [["wset:input_display:1", "ON"], ["wset:input_display:0", "OFF"]], "Battles: player 1's D-pad and\nbuttons are shown while held,\nwith the last few inputs, like\na training mode. Good for\nlearning supers and combos.")
+			_add_row("HITBOXES", [["wset:hitboxes:1", "ON"], ["wset:hitboxes:0", "OFF"]], "Battles: the game's own hit\nboxes in RED (where an attack\ncan hit) and hurt boxes in\nBLUE (where you can be hit).\nDrawing only: the same fight.")
 			_layout_main()
 		"mpset":
 			_add_row("MULTIPLAYER", [["mpon:1", "ON"], ["mpon:0", "OFF"]], "ON: VS BATTLE on the Mode Select\nscreen opens LOCAL (two players\non this PC, keyboard / gamepads)\nand LAN (a friend's PC on your\nnetwork). OFF: as in the game.")

@@ -73,6 +73,10 @@ SETTINGS (new in this port)
                      growing number, and numbers stack instead of overlapping.
   INPUT DISPLAY .... in battles, a small strip between the ki gauges shows player 1's D-pad and buttons while held,
                      plus the last few inputs with how many frames each was held, like a training mode.
+  HITBOXES ......... in battles, the game's own collision boxes are drawn over the fighters and shots, like a
+                     training mode: RED = hit boxes (where an attack can hit, only while it can), BLUE = hurt boxes
+                     (where a fighter or shot can be hit). A beam shows the band it really hits. Drawing only:
+                     the fight plays exactly the same, and scores still count.
   The arrows at the top right (or the L / R buttons = A / D keys) switch pages; EXIT goes back to Mode Select.
   The middle tile of Mode Select shows the port's own "PORT" button instead of the game's unused Dragon Ball tile.
 

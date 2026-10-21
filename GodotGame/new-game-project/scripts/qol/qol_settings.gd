@@ -46,6 +46,7 @@ var bomb_rain: bool:
 	get: return cheat("bomb_rain")
 	set(v): cheats["bomb_rain"] = v
 var input_display: bool = false           ## part 25: player 1's buttons shown on the battle screen
+var hitboxes: bool = false                ## part 45 (settings page 3): the collision boxes drawn (hit red, hurt blue)
 var crt_tv: bool = false                  ## part 25: old-TV picture (scanlines, glow, dark corners)
 var performance_mode: bool = false        ## part 32 (BIG CHANGES page): cheaper paths for slow PCs / Steam Deck
 var new_gamemodes: bool = false           ## part 34 (BIG CHANGES page): FREE BATTLE tile -> GAMEMODE (ALL-STAR)
@@ -103,7 +104,7 @@ func load_file() -> void:
 	touch_fuzzy = bool(_val(c, "weird", "touch_fuzzy", touch_fuzzy))
 	epic_mode = bool(_val(c, "weird", "epic_mode", epic_mode))
 	second_fiddle = bool(_val(c, "weird", "second_fiddle", second_fiddle))
-	for k in ["blood", "afterimages", "game_boy", "mirror_mode", "flashy_ki", "screen_shake", "ko_confetti", "damage_numbers", "rainbow_ki", "input_display", "crt_tv"]:
+	for k in ["blood", "afterimages", "game_boy", "mirror_mode", "flashy_ki", "screen_shake", "ko_confetti", "damage_numbers", "rainbow_ki", "input_display", "crt_tv", "hitboxes"]:
 		set(k, bool(_val(c, "weird", k, get(k))))
 	controls.load_cfg(c)
 	mp_input.load_cfg(c)
@@ -156,7 +157,7 @@ func save_file() -> void:
 	c.set_value("weird", "touch_fuzzy", touch_fuzzy)
 	c.set_value("weird", "epic_mode", epic_mode)
 	c.set_value("weird", "second_fiddle", second_fiddle)
-	for k in ["blood", "afterimages", "game_boy", "mirror_mode", "flashy_ki", "screen_shake", "ko_confetti", "damage_numbers", "rainbow_ki", "input_display", "crt_tv"]:
+	for k in ["blood", "afterimages", "game_boy", "mirror_mode", "flashy_ki", "screen_shake", "ko_confetti", "damage_numbers", "rainbow_ki", "input_display", "crt_tv", "hitboxes"]:
 		c.set_value("weird", k, get(k))
 	controls.save_cfg(c)
 	mp_input.save_cfg(c)

@@ -79,6 +79,7 @@ func setup(g, m: DSMachine, rom: PackedByteArray) -> void:
 		settings.rainbow_ki = "rainbow" in w
 		settings.bomb_rain = "bombs" in w
 		settings.input_display = "inputs" in w
+		settings.hitboxes = "hitbox" in w
 		settings.crt_tv = "crt" in w
 	if Game.args.has("zoom"):            # debug / tests: zoom=0..4 sets CAMERA ZOOM (2 = the game's own)
 		settings.camera_zoom = clampi(int(Game.flag("zoom")), 0, 4)

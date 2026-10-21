@@ -105,9 +105,10 @@ Verified against `scripts/` + `tools/` (part 32). Procedures that use them: `doc
 ## Weird stuff
 | Flag | Meaning |
 |---|---|
-| `weird=bevel,fuzzy,epic,fiddle,blood,after,gameboy,mirror,flashy,shake,confetti,dmgnum,rainbow,bombs,inputs,crt` | turn these on (`dmgnum` / `inputs` = DAMAGE NUMBERS / INPUT DISPLAY, settings page 3; `bombs` = BOMB RAIN, a cheat since part 38, also `cheats=bomb_rain`) |
+| `weird=bevel,fuzzy,epic,fiddle,blood,after,gameboy,mirror,flashy,shake,confetti,dmgnum,rainbow,bombs,inputs,crt,hitbox` | turn these on (`dmgnum` / `inputs` = DAMAGE NUMBERS / INPUT DISPLAY, settings page 3; `bombs` = BOMB RAIN, a cheat since part 38, also `cheats=bomb_rain`) |
 | `epicdbg` · `blooddbg` · `flashydbg` | EPIC MODE / BLOOD / FLASHY KI + CONFETTI debug |
 | `w3dbg` · `w3merge=0` | damage numbers / rainbow debug; no merging (stacking test) |
+| `weird=hitbox` · `hbdbg` | (part 45) HITBOXES (settings page 3) on; `HB f… hurt N hit N` per frame + every 8th frame each object's raw boxes (`obj … hit <handler> +4 … boxes [[x0, y0, x1, y1, type], …]`) |
 | `bombdbg` `bombseed=N` `bombrate=F` `bombfx=V` `bombfxcycle` `bombkind=K` `bombpos` `bombvram` | BOMB RAIN |
 | `gddbg` · `gdpos` · `gdspeed=F` · `gdseed=N` · `gdse=N` · `gdwait=N` | GREEN DEMON (part 36, `cheats=green_demon`): `GD f…` spawn / switch / lock / lock lost / KILL / warp / rest / shift lines + a status line every 60 running frames (position, target, distance, the target's top speed) · `GDPOS` every frame · speed in world px / frame (default 0.9) · RNG seed · kill sound id (`-1` = none, for sound tests) · frames to the first spawn (default 90). `gddbg` / `bombdbg` also print the shared texture block's `TEXBLOCK` lines |
 

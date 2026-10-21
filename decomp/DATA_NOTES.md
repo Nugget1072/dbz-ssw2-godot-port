@@ -3407,3 +3407,17 @@ Evidence: local/runs br1-br3, tn1-tn3, gm1 (ssw2.py; `asdbg tndbg`), preview `to
   frame at 32768 Hz (= 32768 / 59.8261), so frame F's sound starts at sample (F - 1) x 547.71. | H |
 - **CPU input override** (V): `p2keys` held for the whole battle (e.g. Down, 0x80) replaces the CPU's input every
   frame: the fighter stays still (no AI moves), a training dummy. | H |
+
+## Part 45 findings (HITBOXES)
+- **Ki blast boxes** (V `hbdbg`, Goku's A blast, effect objects with hit handler FUN_0201F5D8): two boxes with the SAME
+  rectangle, type 1 (attack) and type 2 (hurt: what a dash attack hits to reflect it). | H |
+- **Beam hit test** (H, C = FUN_0201F0E4, V picture): the beam body's frame box is huge (e.g. 734 x 1260 world px for
+  Goku's Kamehameha) and is only the collision pass's first test; the handler then needs the victim's POSITION
+  (+0x38 / +0x3C, not its hurt box) inside the bounding box of the two end objects A = u32 [beam +0] and B = u32 [A +0]
+  (their +0x38 / +0x3C) widened by 0x2000 (32 px) and, unless B's +7 is 0x3C-0x44 or 0xBC-0xC4 (near vertical: then
+  |victim x - B x| < 32 px), |(B y - victim y) - (victim x - B x) * sin / cos| < 0x2000 with sin / cos = s16
+  [0x020B64D4 + 2 * a] / [... + 2 * ((a + 0x40) & 0xFF)], a = B +7 (FUN_020B5E30 = the signed division); then
+  FUN_0201E9EC(beam, victim, 0x11) applies the hit. Other effect hit handlers calling FUN_0201E9EC (FUN_0201EEE0,
+  0201F2CC, 0201F474-0201F6D8, 020302C0, 02032634, 02032E24, 02033E44) are thin wrappers with no geometry. | H |
+- **Throws**: while a throw sequence runs (thrower in a character action >= 0x85, victim 0x34-0x66) neither fighter's
+  frame has collision boxes (V hb4, zoom 4): nothing to draw. | M |
