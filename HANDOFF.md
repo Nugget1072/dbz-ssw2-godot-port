@@ -335,4 +335,6 @@ hooks in QoLGame `_fx_any` / `_fx_draw`; map: QOL_ARCHITECTURE; facts: DATA_NOTE
   instead of their huge first-test box.
 - V: pictures (dash attack, punches, ki blasts, Kamehameha band, zoom 4), CHT lines identical with it on (1382),
   offcheck PASS, menu preview. Drawing only, so LAN / records unaffected; it is a setting, not a cheat (scores count).
-- Not in the GitHub release v1.0 (made before this part); a new release would need a new tag + upload.
+- **GitHub release v1.1** (tag v1.1, "Latest"): the part-45 build (zip + the same 7 files loose, text =
+  docs/RELEASE_NOTES.md with "What's new"). V: downloaded again, zip = loose files = the tested finished exe; with a
+  ROM copy: HITBOXES off = battle baseline 21/21, on = the editor's hitbox run 21/21 (17 pictures with boxes).
